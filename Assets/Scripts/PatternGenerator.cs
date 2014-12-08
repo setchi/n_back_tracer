@@ -3,15 +3,20 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PatternGenerator : MonoBehaviour {
-	
 	public int FieldWidth {
 		set { fieldWidth = value; }
 	}
+	int fieldWidth;
+
 	public int FieldHeight {
 		set { fieldHeight = value; }
 	}
-	int fieldWidth;
 	int fieldHeight;
+	
+	public int NumberOfChain {
+		get { return numberOfChain; }
+	}
+	int numberOfChain = 4;
 	
 	Vector2[] directions = {
 		Vector2.up,
@@ -21,7 +26,10 @@ public class PatternGenerator : MonoBehaviour {
 	};
 	
 	public List<int> Generate(int length, List<int> ignorePattern) {
-		int x = fieldWidth + 2, y = fieldHeight + 2;
+		numberOfChain = length;
+
+		int x = fieldWidth + 2;
+		int y = fieldHeight + 2;
 		int fieldSize = y * x + x;
 		
 		int[] field = SetSentinelsOfWall (new int[fieldSize], x, y);
@@ -62,7 +70,7 @@ public class PatternGenerator : MonoBehaviour {
 	/**/
 	
 	bool PatternBuildDFS(int[] field, Vector2 currentPos, int direction, ref Stack<int> stack) {
-		if (stack.Count == 4)
+		if (stack.Count == numberOfChain)
 			return true;
 		
 		if (IsWall(field, currentPos))

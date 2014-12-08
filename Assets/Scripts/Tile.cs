@@ -29,18 +29,37 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void StartMarkEffect() {
-		StartEffect (1, "OnUpdateMarkEffect");
+		StartEffect (0.9f, "OnUpdateMarkEffect");
 	}
 
-	public void StartTouchEffect() {
-		StartEffect (1, "OnUpdateTouchEffect");
+	public void StartCorrectEffect() {
+		StartEffect (0.6f, "OnUpdateCorrectEffect");
+	}
+
+	public void StartMissEffect() {
+		StartEffect (0.6f, "OnUpdateMissEffect");
 	}
 
 	void OnUpdateMarkEffect(Vector2 value) {
-		spriteRenderer.color = new Color (value.x, 1, value.x);
+		SetScale ((1 - value.x) + 1);
+		SetColor (value.x, 1, value.x);
 	}
 
-	void OnUpdateTouchEffect(Vector2 value) {
-		spriteRenderer.color = new Color (1, value.x, 1);
+	void OnUpdateCorrectEffect(Vector2 value) {
+		SetScale ((1 - value.x) + 1);
+		SetColor (1, value.x, 1);
+	}
+
+	void OnUpdateMissEffect(Vector2 value) {
+		SetScale ((1 - value.x) + 1);
+		SetColor (1, value.x, value.x);
+	}
+	
+	void SetColor(float r, float g, float b) {
+		spriteRenderer.color = new Color(r, g, b);
+	}
+	
+	void SetScale(float scale) {
+		transform.localScale = new Vector3 (scale, scale, scale);
 	}
 }

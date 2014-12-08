@@ -50,16 +50,47 @@ public class PatternRunner : MonoBehaviour {
 	}
 	
 	bool isNBackRun = false;
+	// Mark Animation
+	bool isMarkAnimation = false;
+	int markAnimationPattern = 0;
+	int markAnimationCurrentIndex = 0;
+
 	float timer = 0;
 
 	void Update() {
+		// MarkAnimation
+		if (isMarkAnimation) {
+			timer += Time.deltaTime;
+			
+			if (timer < 0.12f)
+				return;
+			timer = 0;
+			
+			// 発光
+			tiles[patterns[markAnimationPattern][markAnimationCurrentIndex]].StartMarkEffect();
+			markAnimationCurrentIndex++;
+			
+			// アニメーション終了
+			if (markAnimationCurrentIndex >= patterns [markAnimationPattern].Count) {
+				markAnimationCurrentIndex = 0;
+				markAnimationPattern = 0;
+				isMarkAnimation = false;
+				return;
+			}
+		}
+
+
+
+
+
+		// スタート時のnBarkRun
 		if (!isNBackRun) {
 			return;
 		}
 		
 		timer += Time.deltaTime;
 
-		if (timer < 0.14f)
+		if (timer < 0.12f)
 			return;
 		timer = 0;
 
@@ -83,6 +114,7 @@ public class PatternRunner : MonoBehaviour {
 			gameManager.FinishNBackRun();
 			currentIndex = 0;
 			currentPattern = 0;
+			timer = 0;
 			isNBackRun = false;
 		}
 	}
@@ -116,11 +148,19 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	public void Touch(int tileId) {
-		if (patterns[currentPattern] [currentIndex] != tileId) {
+		// 正解
+		if (patterns [currentPattern] [currentIndex] == tileId) {
+			tiles [patterns [currentPattern] [currentIndex]].StartCorrectEffect ();
+
+			if (currentIndex == patternGenerator.NumberOfChain - 1) { // mark animation start index.
+				isMarkAnimation = true;
+				markAnimationCurrentIndex = 0;
+				markAnimationPattern = LoopIndex (currentPattern + backNum, backNum);
+			}
+			IndexIncrement ();
 			return;
 		}
-		tiles [patterns[currentPattern] [currentIndex]].StartTouchEffect();
-		tiles [patterns[LoopIndex (currentPattern + backNum, backNum)][currentIndex]].StartMarkEffect ();
-		IndexIncrement ();
+
+		tiles [tileId].StartMissEffect ();
 	}
 }
