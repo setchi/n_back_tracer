@@ -64,7 +64,7 @@ public class PatternRunner : MonoBehaviour {
 		timer = 0;
 
 		// 発光
-		tiles[patterns[currentPattern][currentIndex]].Lighting();
+		tiles[patterns[currentPattern][currentIndex]].StartMarkEffect();
 		currentIndex++;
 
 		if (currentIndex < patterns [currentPattern].Count) {
@@ -119,8 +119,8 @@ public class PatternRunner : MonoBehaviour {
 		if (patterns[currentPattern] [currentIndex] != tileId) {
 			return;
 		}
-		tiles [patterns[currentPattern] [currentIndex]].FireTouchEffect();
-		tiles [patterns[LoopIndex (currentPattern + backNum, backNum)][currentIndex]].Lighting ();
+		tiles [patterns[currentPattern] [currentIndex]].StartTouchEffect();
+		tiles [patterns[LoopIndex (currentPattern + backNum, backNum)][currentIndex]].StartMarkEffect ();
 		IndexIncrement ();
 	}
 }
