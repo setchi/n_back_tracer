@@ -29,7 +29,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void StartMarkEffect() {
-		StartEffect (1, "OnUpdatePatternEffect");
+		StartEffect (1, "OnUpdateMarkEffect");
 	}
 
 	public void StartTouchEffect() {
