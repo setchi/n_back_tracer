@@ -7,6 +7,17 @@ public class GameManager : MonoBehaviour {
 	int cachedTouchTileId = -1;
 	int currentTouchTileId = -1;
 
+	int currentTurn = 0;
+
+	enum GameState {
+		Standby,
+		nBackRun,
+		Wait,
+		Playing,
+		Finish
+	};
+	GameState gameState = GameState.Standby;
+
 	void Awake() {
 		patternRunner = GetComponent<PatternRunner> ();
 	}
@@ -16,11 +27,38 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void Update () {
-		if (cachedTouchTileId != currentTouchTileId) {
-			// 次のパターンの
-			// Debug.Log ("MouseOver!: " + currentTouchTile.ToString());
-			patternRunner.Touch(currentTouchTileId);
-			cachedTouchTileId = currentTouchTileId;
+
+		switch (gameState) {
+		case GameState.Standby:
+			gameState = GameState.nBackRun;
+			break;
+
+		case GameState.nBackRun:
+			// run start
+			patternRunner.StartNBackRun();
+			gameState = GameState.Wait;
+			break;
+		
+		case GameState.Wait:
+			break;
+
+		case GameState.Playing:
+			if (cachedTouchTileId != currentTouchTileId) {
+				patternRunner.Touch(currentTouchTileId);
+				cachedTouchTileId = currentTouchTileId;
+			}
+			break;
+
+		case GameState.Finish:
+			break;
+
+		default:
+			break;
+
 		}
+	}
+
+	public void FinishNBackRun() {
+		gameState = GameState.Playing;
 	}
 }
