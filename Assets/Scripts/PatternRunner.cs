@@ -15,7 +15,8 @@ public class PatternRunner : MonoBehaviour {
 
 	void Awake() {
 		patternGenerator = GetComponent<PatternGenerator>();
-		patternGenerator.TileNum = tileNum;
+		patternGenerator.FieldWidth = 4;
+		patternGenerator.FieldHeight = 5;
 
 		// パターン初期化
 		for (int i = 0; i <= backNum; i++) {
@@ -42,7 +43,7 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	void SetNewPattern(int currentPattern) {
-		patterns [currentPattern] = patternGenerator.Generate (4);
+		patterns [currentPattern] = patternGenerator.Generate (4, new List<int>()); // length, ignorePattern
 	}
 
 	void PatternIncrement() {
