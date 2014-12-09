@@ -6,7 +6,7 @@ public class PatternRunner : MonoBehaviour {
 	const int tileNum = 4 * 5;
 	Tile[] tiles = new Tile[tileNum];
 
-	const int backNum = 1;
+	int backNum;
 	List<List<int>> patterns = new List<List<int>>();
 
 	PatternGenerator patternGenerator;
@@ -15,12 +15,22 @@ public class PatternRunner : MonoBehaviour {
 	int currentPattern = 0;
 	int currentIndex = 0;
 
+	void ApplyStates(GameObject storageObject) {
+		Storage storage = storageObject ? storageObject.GetComponent<Storage> () : null;
+
+		backNum = storage ? storage.Get("BackNum") : 1 /* default N */;
+		patternGenerator.ChainLength = storage ? storage.Get ("Length") : 4 /* default Chain Num */;
+	}
+
 	void Awake() {
+		gameManager = GetComponent<GameManager>();
+
 		patternGenerator = GetComponent<PatternGenerator>();
 		patternGenerator.FieldWidth = 4;
 		patternGenerator.FieldHeight = 5;
 
-		gameManager = GetComponent<GameManager>();
+		ApplyStates (GameObject.Find ("StorageObject"));
+
 
 		// nBack分リスト初期化
 		for (int i = 0; i <= backNum; i++) {
@@ -29,7 +39,7 @@ public class PatternRunner : MonoBehaviour {
 		
 		// nBack分パターン初期化
 		for (int i = 0; i <= backNum; i++) {
-			UpdatePattern (currentPattern + i);
+			UpdatePattern (currentPattern + i, new List<int>());
 		}
 
 		// タイル配列初期化
@@ -130,13 +140,35 @@ public class PatternRunner : MonoBehaviour {
 		return next > end ? LoopIndex(--next - end, end) : next;
 	}
 
-	void UpdatePattern(int targetPattern) {
-		patterns [targetPattern] = patternGenerator.Generate (4, patterns[LoopIndex (targetPattern - backNum, backNum)]);
+	void UpdatePattern(int targetPattern, List<int> ignoreList) {
+		patterns [targetPattern] = patternGenerator.Generate (ignoreList);
+	}
+
+	List<int> BuildIgnoreList(int targetPattern) {
+		List<int> ignoreList = new List<int>();
+
+		// トリガーになったやつ
+		// List<int> triggerPattern = patterns[LoopIndex (currentPattern - backNum, backNum)];
+		// ignoreList.Add (triggerPattern[triggerPattern.Count - 1]);
+
+		foreach (int i in patterns[LoopIndex (targetPattern - backNum, backNum)]) {
+			ignoreList.Add(i);
+		}
+
+		// 次に出す一個前のパターン全部
+		foreach (int i in patterns[LoopIndex(targetPattern - 1, backNum)]) {
+			ignoreList.Add(i);
+		}
+
+		return ignoreList;
 	}
 
 	void PatternIncrement() {
 		currentPattern = LoopIndex (currentPattern + 1, backNum);
-		UpdatePattern (LoopIndex (currentPattern + backNum, backNum));
+
+		int targetPattern = LoopIndex (currentPattern + backNum, backNum);
+		List<int> ignoreList = BuildIgnoreList (targetPattern);
+		UpdatePattern (targetPattern, ignoreList);
 	}
 
 	void IndexIncrement() {
@@ -152,7 +184,7 @@ public class PatternRunner : MonoBehaviour {
 		if (patterns [currentPattern] [currentIndex] == tileId) {
 			tiles [patterns [currentPattern] [currentIndex]].StartCorrectEffect ();
 
-			if (currentIndex == patternGenerator.NumberOfChain - 1) { // mark animation start index.
+			if (currentIndex == patternGenerator.ChainLength - 1) { // mark animation start index.
 				isMarkAnimation = true;
 				markAnimationCurrentIndex = 0;
 				markAnimationPattern = LoopIndex (currentPattern + backNum, backNum);

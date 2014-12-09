@@ -3,21 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PatternGenerator : MonoBehaviour {
+	int fieldWidth;
+	int fieldHeight;
+	int chainLength = 4; /* default 4 */
+
 	public int FieldWidth {
 		set { fieldWidth = value; }
 	}
-	int fieldWidth;
 
 	public int FieldHeight {
 		set { fieldHeight = value; }
 	}
-	int fieldHeight;
 	
-	public int NumberOfChain {
-		get { return numberOfChain; }
+	public int ChainLength {
+		set { chainLength = value; }
+		get { return chainLength; }
 	}
-	int numberOfChain = 4;
-	
+
 	Vector2[] directions = {
 		Vector2.up,
 		Vector2.right,
@@ -25,18 +27,13 @@ public class PatternGenerator : MonoBehaviour {
 		-Vector3.right
 	};
 	
-	public List<int> Generate(int length, List<int> ignorePattern) {
-		numberOfChain = length;
-
+	public List<int> Generate(List<int> ignorePattern) {
 		int x = fieldWidth + 2;
 		int y = fieldHeight + 2;
-		int fieldSize = y * x + x;
-		
-		int[] field = SetSentinelsOfWall (new int[fieldSize], x, y);
-		field = PatternWriteToField (field, ignorePattern);
-		
+
+		int[] field = SetupField (x, y, ignorePattern);
 		Stack<int> patternStack = new Stack<int> ();
-		
+
 		while (!PatternBuildDFS (
 			field,
 			new Vector2(Random.Range(0, fieldWidth - 1), Random.Range(0, fieldHeight - 1)),
@@ -46,8 +43,17 @@ public class PatternGenerator : MonoBehaviour {
 
 		return new List<int>(patternStack.ToArray ());
 	}
+
+	int[] SetupField(int x, int y, List<int> ignorePattern) {
+		int fieldSize = y * x + x;
+
+		int[] field = SetSentinelsOfWall (new int[fieldSize], x, y);
+		field = PatternWriteToField (field, ignorePattern);
+
+		return field;
+	}
 	
-	/**
+	/**/
 	string ArrToString(int[] arr, int endX, int endY) {
 		string str = "";
 		for (int y = 0; y < endY; y++) {
@@ -69,14 +75,14 @@ public class PatternGenerator : MonoBehaviour {
 	}
 	/**/
 	
-	bool PatternBuildDFS(int[] field, Vector2 currentPos, int direction, ref Stack<int> stack) {
-		if (stack.Count == numberOfChain)
+	bool PatternBuildDFS(int[] field, Vector2 currentPos, int direction, ref Stack<int> pattern) {
+		if (pattern.Count == chainLength)
 			return true;
 		
 		if (IsWall(field, currentPos))
 			return false;
 		
-		stack.Push (fieldWidth * (int)currentPos.y + (int)currentPos.x);
+		pattern.Push (fieldWidth * (int)currentPos.y + (int)currentPos.x);
 		
 		// 後ろは見ない
 		List<int> notBackIndexes = new List<int>(new int[] {0, 1, 3});
@@ -85,13 +91,13 @@ public class PatternGenerator : MonoBehaviour {
 			int newDirection = LoopIndex (direction + notBackIndex, directions.Length - 1);
 			
 			// 進めるところまで進む
-			if (PatternBuildDFS(field, currentPos + directions[newDirection], newDirection, ref stack)) {
+			if (PatternBuildDFS(field, currentPos + directions[newDirection], newDirection, ref pattern)) {
 				return true;
 			}
 			notBackIndexes.Remove(notBackIndex);
 		}
 		
-		stack.Pop ();
+		pattern.Pop ();
 		return false;
 	}
 	
