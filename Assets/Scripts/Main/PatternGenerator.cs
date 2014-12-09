@@ -27,11 +27,11 @@ public class PatternGenerator : MonoBehaviour {
 		-Vector3.right
 	};
 	
-	public List<int> Generate(List<int> ignorePattern) {
+	public List<int> Generate(ref List<int> ignorePattern) {
 		int x = fieldWidth + 2;
 		int y = fieldHeight + 2;
 
-		int[] field = SetupField (x, y, ignorePattern);
+		int[] field = SetupField (x, y, ref ignorePattern);
 		Stack<int> patternStack = new Stack<int> ();
 
 		while (!PatternBuildDFS (
@@ -44,13 +44,11 @@ public class PatternGenerator : MonoBehaviour {
 		return new List<int>(patternStack.ToArray ());
 	}
 
-	int[] SetupField(int x, int y, List<int> ignorePattern) {
+	int[] SetupField(int x, int y, ref List<int> ignorePattern) {
 		int fieldSize = y * x + x;
 
 		int[] field = SetSentinelsOfWall (new int[fieldSize], x, y);
-		field = PatternWriteToField (field, ignorePattern);
-
-		return field;
+		return PatternWriteToField (ref field, ref ignorePattern);
 	}
 	
 	/**
@@ -78,10 +76,12 @@ public class PatternGenerator : MonoBehaviour {
 	bool PatternBuildDFS(ref int[] field, Vector2 currentPos, int direction, ref Stack<int> pattern) {
 		if (pattern.Count == chainLength)
 			return true;
-		
-		if (IsWall(field, currentPos))
+
+		int fieldPos = CalcFieldPos (currentPos);
+		if (field[fieldPos] == 1)
 			return false;
 		
+		field [fieldPos] = 1;
 		pattern.Push (fieldWidth * (int)currentPos.y + (int)currentPos.x);
 		
 		// 後ろは見ない
@@ -97,15 +97,15 @@ public class PatternGenerator : MonoBehaviour {
 			notBackIndexes.Remove(notBackIndex);
 		}
 		
-		pattern.Pop ();
+		field[fieldPos] = 0;
 		return false;
 	}
-	
-	bool IsWall(int[] field, Vector2 pos) {
-		return field [((int)pos.y + 1) * (fieldWidth + 2) + (int)pos.x + 1] == 1;
+
+	int CalcFieldPos(Vector2 pos) {
+		return ((int)pos.y + 1) * (fieldWidth + 2) + (int)pos.x + 1;
 	}
 	
-	int[] PatternWriteToField(int[] field, List<int> pattern) {
+	int[] PatternWriteToField(ref int[] field, ref List<int> pattern) {
 		foreach (int idx in pattern) {
 			int fieldX = idx % fieldWidth + 1;
 			int fieldY = idx / fieldWidth + 1;

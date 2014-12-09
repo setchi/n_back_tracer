@@ -177,7 +177,7 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	void UpdatePattern(int targetPattern, List<int> ignoreList) {
-		patterns [targetPattern] = patternGenerator.Generate (ignoreList);
+		patterns [targetPattern] = patternGenerator.Generate (ref ignoreList);
 	}
 
 	List<int> BuildIgnoreList(int targetPattern) {
