@@ -98,6 +98,8 @@ public class PatternGenerator : MonoBehaviour {
 		}
 		
 		field[fieldPos] = 0;
+		pattern.Pop ();
+
 		return false;
 	}
 
