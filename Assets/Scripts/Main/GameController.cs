@@ -21,6 +21,9 @@ public class GameController : MonoBehaviour {
 	}
 
 	public void OnTouchTile(int tileId) {
+		if (gameState != GameState.Playing)
+			return;
+
 		currentTouchTileId = tileId;
 	}
 

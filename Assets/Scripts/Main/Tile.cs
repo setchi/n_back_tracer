@@ -15,7 +15,7 @@ public class Tile : MonoBehaviour {
 		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
 	}
 
-	void OnMouseOver() {
+	void OnMouseEnter() {
 		gameController.OnTouchTile (tileId);
 	}
 
