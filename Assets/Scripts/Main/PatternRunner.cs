@@ -65,14 +65,40 @@ public class PatternRunner : MonoBehaviour {
 	int markAnimationPattern = 0;
 	int markAnimationCurrentIndex = 0;
 
+	// Hint Animation
+	bool isHintAnimation = false;
+	int hintAnimationCurrentIndex = 0;
+	int hintAnimationPattern = 0;
+	float hintAnimationTriggerTimer = 0;
+
+
 	float timer = 0;
 
 	void Update() {
+		// HintAnimation
+		if (isHintAnimation) {
+			timer += Time.deltaTime;
+
+			if (timer < 0.10f)
+				return;
+			timer = 0;
+
+			tiles[patterns[currentPattern][hintAnimationCurrentIndex]].StartHintEffect();
+
+			hintAnimationCurrentIndex++;
+			if (hintAnimationCurrentIndex >= patterns[hintAnimationPattern].Count) {
+				hintAnimationCurrentIndex = 0;
+				hintAnimationPattern = 0;
+				isHintAnimation = false;
+				return;
+			}
+		}
+
 		// MarkAnimation
 		if (isMarkAnimation) {
 			timer += Time.deltaTime;
 			
-			if (timer < 0.12f)
+			if (timer < 0.10f)
 				return;
 			timer = 0;
 			
@@ -95,6 +121,14 @@ public class PatternRunner : MonoBehaviour {
 
 		// スタート時のnBarkRun
 		if (!isNBackRun) {
+			hintAnimationTriggerTimer += Time.deltaTime;
+			if (hintAnimationTriggerTimer < 2f) {
+				return;
+			}
+
+			hintAnimationTriggerTimer = 0;
+			hintAnimationPattern = currentPattern;
+			isHintAnimation = true;
 			return;
 		}
 		
@@ -180,6 +214,8 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	public void Touch(int tileId) {
+		hintAnimationTriggerTimer = 0;
+
 		// 正解
 		if (patterns [currentPattern] [currentIndex] == tileId) {
 			tiles [patterns [currentPattern] [currentIndex]].StartCorrectEffect ();

@@ -53,7 +53,7 @@ public class PatternGenerator : MonoBehaviour {
 		return field;
 	}
 	
-	/**/
+	/**
 	string ArrToString(int[] arr, int endX, int endY) {
 		string str = "";
 		for (int y = 0; y < endY; y++) {
