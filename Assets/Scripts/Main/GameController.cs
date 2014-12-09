@@ -1,13 +1,11 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameManager : MonoBehaviour {
+public class GameController : MonoBehaviour {
 	PatternRunner patternRunner;
 
 	int cachedTouchTileId = -1;
 	int currentTouchTileId = -1;
-
-	int currentTurn = 0;
 
 	enum GameState {
 		Standby,

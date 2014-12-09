@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class Tile : MonoBehaviour {
@@ -8,15 +8,15 @@ public class Tile : MonoBehaviour {
 	int tileId;
 
 	SpriteRenderer spriteRenderer;
-	GameManager gameManager;
+	GameController gameController;
 
 	void Awake() {
 		spriteRenderer = GetComponent<SpriteRenderer> ();
-		gameManager = GameObject.Find ("Tiles").GetComponent<GameManager>();
+		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
 	}
 
 	void OnMouseOver() {
-		gameManager.OnTouchTile (tileId);
+		gameController.OnTouchTile (tileId);
 	}
 
 	void StartEffect(float time, string onUpdateFunName) {

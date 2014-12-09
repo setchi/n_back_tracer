@@ -10,7 +10,7 @@ public class PatternRunner : MonoBehaviour {
 	List<List<int>> patterns = new List<List<int>>();
 
 	PatternGenerator patternGenerator;
-	GameManager gameManager;
+	GameController gameController;
 
 	int currentPattern = 0;
 	int currentIndex = 0;
@@ -23,7 +23,7 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	void Awake() {
-		gameManager = GetComponent<GameManager>();
+		gameController = GetComponent<GameController>();
 
 		patternGenerator = GetComponent<PatternGenerator>();
 		patternGenerator.FieldWidth = 4;
@@ -121,7 +121,7 @@ public class PatternRunner : MonoBehaviour {
 		// 条件も仮
 		if (currentPattern >= backNum) {
 			// finish
-			gameManager.FinishNBackRun();
+			gameController.FinishNBackRun();
 			currentIndex = 0;
 			currentPattern = 0;
 			timer = 0;
