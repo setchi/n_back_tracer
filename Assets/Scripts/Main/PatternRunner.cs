@@ -10,6 +10,7 @@ public class PatternRunner : MonoBehaviour {
 	List<List<int>> patterns = new List<List<int>>();
 
 	PatternGenerator patternGenerator;
+	ScoreManager scoreManager;
 	GameController gameController;
 
 	int currentPattern = 0;
@@ -24,6 +25,7 @@ public class PatternRunner : MonoBehaviour {
 
 	void Awake() {
 		gameController = GetComponent<GameController>();
+		scoreManager = GetComponent<ScoreManager>();
 
 		patternGenerator = GetComponent<PatternGenerator>();
 		patternGenerator.FieldWidth = 4;
@@ -209,6 +211,7 @@ public class PatternRunner : MonoBehaviour {
 		currentIndex = LoopIndex (currentIndex + 1, patterns [currentPattern].Count - 1);
 
 		if (currentIndex == 0) {
+			scoreManager.CorrectPattern();
 			PatternIncrement();
 		}
 	}
@@ -218,6 +221,7 @@ public class PatternRunner : MonoBehaviour {
 
 		// 正解
 		if (patterns [currentPattern] [currentIndex] == tileId) {
+			scoreManager.CorrectTouch();
 			tiles [patterns [currentPattern] [currentIndex]].StartCorrectEffect ();
 
 			if (currentIndex == patternGenerator.ChainLength - 1) { // mark animation start index.
@@ -228,7 +232,8 @@ public class PatternRunner : MonoBehaviour {
 			IndexIncrement ();
 			return;
 		}
-
+		
+		scoreManager.Miss ();
 		tiles [tileId].StartMissEffect ();
 	}
 }

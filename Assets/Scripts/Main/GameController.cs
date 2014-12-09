@@ -1,8 +1,13 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class GameController : MonoBehaviour {
 	PatternRunner patternRunner;
+	TimeKeeper timeKeeper;
+	ScoreManager scoreManager;
+	Text timeLimitText;
+	Storage storage;
 
 	int cachedTouchTileId = -1;
 	int currentTouchTileId = -1;
@@ -18,6 +23,12 @@ public class GameController : MonoBehaviour {
 
 	void Awake() {
 		patternRunner = GetComponent<PatternRunner> ();
+		timeKeeper = GetComponent<TimeKeeper>();
+		scoreManager = GetComponent<ScoreManager>();
+		timeLimitText = GameObject.Find ("TimeLimit").GetComponent<Text>();
+
+		GameObject storageObject = GameObject.Find ("StorageObject");
+		storage = storageObject ? storageObject.GetComponent<Storage>() : null;
 	}
 
 	public void OnTouchTile(int tileId) {
@@ -35,12 +46,12 @@ public class GameController : MonoBehaviour {
 			break;
 
 		case GameState.nBackRun:
-			// run start
 			patternRunner.StartNBackRun();
 			gameState = GameState.Wait;
 			break;
 		
 		case GameState.Wait:
+			// do nothing
 			break;
 
 		case GameState.Playing:
@@ -48,9 +59,16 @@ public class GameController : MonoBehaviour {
 				patternRunner.Touch(currentTouchTileId);
 				cachedTouchTileId = currentTouchTileId;
 			}
+
+			timeLimitText.text = "Limit: " + timeKeeper.GetRemainingTime().ToString ();
+
 			break;
 
 		case GameState.Finish:
+			if (storage) {
+				storage.Set("Score", scoreManager.GetScore());
+			}
+			Application.LoadLevel ("Result");
 			break;
 
 		default:
@@ -61,5 +79,11 @@ public class GameController : MonoBehaviour {
 
 	public void FinishNBackRun() {
 		gameState = GameState.Playing;
+		timeKeeper.StartCountdown ();
 	}
+
+	public void TimeOver() {
+		gameState = GameState.Finish;
+	}
+
 }

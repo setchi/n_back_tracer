@@ -35,7 +35,7 @@ public class PatternGenerator : MonoBehaviour {
 		Stack<int> patternStack = new Stack<int> ();
 
 		while (!PatternBuildDFS (
-			field,
+			ref field,
 			new Vector2(Random.Range(0, fieldWidth - 1), Random.Range(0, fieldHeight - 1)),
 			Random.Range(0, 3),
 			ref patternStack
@@ -75,7 +75,7 @@ public class PatternGenerator : MonoBehaviour {
 	}
 	/**/
 	
-	bool PatternBuildDFS(int[] field, Vector2 currentPos, int direction, ref Stack<int> pattern) {
+	bool PatternBuildDFS(ref int[] field, Vector2 currentPos, int direction, ref Stack<int> pattern) {
 		if (pattern.Count == chainLength)
 			return true;
 		
@@ -91,7 +91,7 @@ public class PatternGenerator : MonoBehaviour {
 			int newDirection = LoopIndex (direction + notBackIndex, directions.Length - 1);
 			
 			// 進めるところまで進む
-			if (PatternBuildDFS(field, currentPos + directions[newDirection], newDirection, ref pattern)) {
+			if (PatternBuildDFS(ref field, currentPos + directions[newDirection], newDirection, ref pattern)) {
 				return true;
 			}
 			notBackIndexes.Remove(notBackIndex);
