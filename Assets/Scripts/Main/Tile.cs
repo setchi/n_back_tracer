@@ -34,7 +34,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void StartCorrectEffect() {
-		StartEffect (0.6f, "OnUpdateCorrectEffect", iTween.EaseType.linear);
+		StartEffect (0.4f, "OnUpdateCorrectEffect", iTween.EaseType.linear);
 	}
 
 	public void StartMissEffect() {

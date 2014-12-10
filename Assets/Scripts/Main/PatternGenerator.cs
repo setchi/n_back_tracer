@@ -45,7 +45,7 @@ public class PatternGenerator : MonoBehaviour {
 				ignorePattern.RemoveAt(ignorePattern.Count - 1);
 				field = SetupField(x, y, ref ignorePattern);
 				maxTry = 100;
-			}		
+			}
 		};
 
 		return new List<int>(patternStack.ToArray ());

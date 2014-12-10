@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -61,113 +62,76 @@ public class PatternRunner : MonoBehaviour {
 		return res;
 	}
 	
-	bool isNBackRun = false;
-	// Mark Animation
-	bool isMarkAnimation = false;
-	int markAnimationPattern = 0;
-	int markAnimationCurrentIndex = 0;
-
-	// Hint Animation
-	bool isHintAnimation = false;
-	int hintAnimationCurrentIndex = 0;
-	int hintAnimationPattern = 0;
+	bool isStandby = true;
 	float hintAnimationTriggerTimer = 0;
+	Action updateAnimation;
 
+	// 名前がちょっと変
+	void StartAnimation(float interval, int targetPattern, int index, Action<Tile> tileEffectStartDelegate) {
+		float timer = 0;
 
+		updateAnimation = () => {
+			if ((timer += Time.deltaTime) < interval)
+				return;
+			
+			timer = 0;
+			tileEffectStartDelegate (tiles [patterns [targetPattern] [index]]);
+			index++;
+
+			if (index >= patterns [targetPattern].Count) {
+				updateAnimation = null;
+			}
+		};
+	}
+	
 	float timer = 0;
-
 	void Update() {
-		// HintAnimation
-		if (isHintAnimation) {
-			timer += Time.deltaTime;
-
-			if (timer < 0.10f)
-				return;
-			timer = 0;
-
-			tiles[patterns[currentPattern][hintAnimationCurrentIndex]].StartHintEffect();
-
-			hintAnimationCurrentIndex++;
-			if (hintAnimationCurrentIndex >= patterns[hintAnimationPattern].Count) {
-				hintAnimationCurrentIndex = 0;
-				hintAnimationPattern = 0;
-				isHintAnimation = false;
-				return;
-			}
+		if (updateAnimation != null) {
+			updateAnimation();
 		}
-
-		// MarkAnimation
-		if (isMarkAnimation) {
-			timer += Time.deltaTime;
-			
-			if (timer < 0.10f)
-				return;
-			timer = 0;
-			
-			// 発光
-			tiles[patterns[markAnimationPattern][markAnimationCurrentIndex]].StartMarkEffect();
-			markAnimationCurrentIndex++;
-			
-			// アニメーション終了
-			if (markAnimationCurrentIndex >= patterns [markAnimationPattern].Count) {
-				markAnimationCurrentIndex = 0;
-				markAnimationPattern = 0;
-				isMarkAnimation = false;
-				return;
-			}
-		}
-
-
-
-
 
 		// スタート時のnBarkRun
-		if (!isNBackRun) {
+		if (isStandby) {
+			if (updateAnimation != null)
+				return;
+
+			timer += Time.deltaTime;
+			if (timer < 0.9f)
+				return;
+
+			// 次のパターンを走らせるまで少し時間を置く
+			timer = 0;
+			currentPattern++;
+			
+			// 条件も仮
+			if (currentPattern >= backNum) {
+				// finish
+				gameController.FinishNBackRun();
+				currentPattern = 0;
+				isStandby = false;
+			} else {
+				StartNBackRun();
+			}
+		
+		} else {
 			hintAnimationTriggerTimer += Time.deltaTime;
 			if (hintAnimationTriggerTimer < 2f) {
 				return;
 			}
-
 			hintAnimationTriggerTimer = 0;
-			hintAnimationCurrentIndex = currentIndex;
-			hintAnimationPattern = currentPattern;
-			isHintAnimation = true;
-			return;
-		}
-		
-		timer += Time.deltaTime;
-
-		if (timer < 0.12f)
-			return;
-		timer = 0;
-
-		// 発光
-		tiles[patterns[currentPattern][currentIndex]].StartMarkEffect();
-		currentIndex++;
-
-		if (currentIndex < patterns [currentPattern].Count) {
-			return;
-		}
-
-		// 次のパターンを走らせるまで少し時間を置く
-		timer = -0.9f;
-
-		currentIndex = 0;
-		currentPattern++;
-
-		// 条件も仮
-		if (currentPattern >= backNum) {
-			// finish
-			gameController.FinishNBackRun();
-			currentIndex = 0;
-			currentPattern = 0;
-			timer = 0;
-			isNBackRun = false;
+			
+			// start hint animation
+			StartAnimation(
+				0.10f,
+				currentPattern,
+				currentIndex,
+				(Tile tile) => tile.StartHintEffect()
+			);
 		}
 	}
 
 	public void StartNBackRun() {
-		isNBackRun = true;
+		StartAnimation (0.12f, 0, 0, (Tile tile) => tile.StartMarkEffect());
 	}
 	
 	int LoopIndex(int next, int end) {
@@ -211,6 +175,7 @@ public class PatternRunner : MonoBehaviour {
 	void IndexIncrement() {
 		currentIndex = LoopIndex (currentIndex + 1, patterns [currentPattern].Count - 1);
 
+		// Correct pattern
 		if (currentIndex == 0) {
 			scoreManager.CorrectPattern();
 			PatternIncrement();
@@ -220,15 +185,19 @@ public class PatternRunner : MonoBehaviour {
 	public void Touch(int tileId) {
 		hintAnimationTriggerTimer = 0;
 
-		// 正解
+		// Correct touch
 		if (patterns [currentPattern] [currentIndex] == tileId) {
 			scoreManager.CorrectTouch();
 			tiles [patterns [currentPattern] [currentIndex]].StartCorrectEffect ();
-
-			if (currentIndex == patternGenerator.ChainLength - 1) { // mark animation start index.
-				isMarkAnimation = true;
-				markAnimationCurrentIndex = 0;
-				markAnimationPattern = LoopIndex (currentPattern + backNum, backNum);
+			
+			// start next pattern animation
+			if (currentIndex == patternGenerator.ChainLength - 1) {
+				StartAnimation(
+					0.10f,
+					LoopIndex (currentPattern + backNum, backNum),
+					0,
+					(Tile tile) => tile.StartMarkEffect()
+				);
 			}
 			IndexIncrement ();
 			return;
