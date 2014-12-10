@@ -4,15 +4,15 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PatternRunner : MonoBehaviour {
+	public event Action OnFinishPriorNRun;
+	PatternGenerator patternGenerator;
+	ScoreManager scoreManager;
+
 	const int tileNum = 4 * 5;
 	Tile[] tiles = new Tile[tileNum];
 
 	int backNum;
 	List<List<int>> patterns = new List<List<int>>();
-
-	PatternGenerator patternGenerator;
-	ScoreManager scoreManager;
-	GameController gameController;
 
 	int currentPattern = 0;
 	int currentIndex = 0;
@@ -25,7 +25,6 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	void Awake() {
-		gameController = GetComponent<GameController>();
 		scoreManager = GetComponent<ScoreManager>();
 
 		patternGenerator = GetComponent<PatternGenerator>();
@@ -33,7 +32,6 @@ public class PatternRunner : MonoBehaviour {
 		patternGenerator.FieldHeight = 5;
 
 		ApplyStates (GameObject.Find ("StorageObject"));
-
 
 		// nBack分リスト初期化
 		for (int i = 0; i <= backNum; i++) {
@@ -67,7 +65,7 @@ public class PatternRunner : MonoBehaviour {
 	Action updateAnimation;
 
 	// 名前がちょっと変
-	void StartAnimation(float interval, int targetPattern, int index, Action<Tile> tileEffectStartDelegate) {
+	void StartAnimation(float interval, int targetPattern, int index, Action<Tile> tileEffectEmitter) {
 		float timer = 0;
 
 		updateAnimation = () => {
@@ -75,7 +73,7 @@ public class PatternRunner : MonoBehaviour {
 				return;
 			
 			timer = 0;
-			tileEffectStartDelegate (tiles [patterns [targetPattern] [index]]);
+			tileEffectEmitter (tiles [patterns [targetPattern] [index]]);
 			index++;
 
 			if (index >= patterns [targetPattern].Count) {
@@ -105,12 +103,11 @@ public class PatternRunner : MonoBehaviour {
 			
 			// 条件も仮
 			if (currentPattern >= backNum) {
-				// finish
-				gameController.FinishNBackRun();
+				OnFinishPriorNRun();
 				currentPattern = 0;
 				isStandby = false;
 			} else {
-				StartNBackRun();
+				StartPriorNRun();
 			}
 		
 		} else {
@@ -130,8 +127,8 @@ public class PatternRunner : MonoBehaviour {
 		}
 	}
 
-	public void StartNBackRun() {
-		StartAnimation (0.12f, 0, 0, (Tile tile) => tile.StartMarkEffect());
+	public void StartPriorNRun() {
+		StartAnimation (0.12f, currentPattern, 0, (Tile tile) => tile.StartMarkEffect());
 	}
 	
 	int LoopIndex(int next, int end) {
