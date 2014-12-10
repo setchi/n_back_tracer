@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System;
 using System.Collections;
 
 public class TimeKeeper : MonoBehaviour {
-	public event Action OnTimeOut;
+	public event Action TimedOut;
 	public float timeLimit;
 
 	float remainingTime;
@@ -17,7 +17,7 @@ public class TimeKeeper : MonoBehaviour {
 
 		if (remainingTime < 0) {
 			isPlaying = false;
-			OnTimeOut();
+			TimedOut();
 		}
 	}
 

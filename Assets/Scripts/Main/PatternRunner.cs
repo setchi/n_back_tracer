@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PatternRunner : MonoBehaviour {
-	public event Action OnFinishPriorNRun;
+	public event Action PriorNRunEnded;
 	PatternGenerator patternGenerator;
 	ScoreManager scoreManager;
 
@@ -103,7 +103,7 @@ public class PatternRunner : MonoBehaviour {
 			
 			// 条件も仮
 			if (currentPattern >= backNum) {
-				OnFinishPriorNRun();
+				PriorNRunEnded();
 				currentPattern = 0;
 				isStandby = false;
 			} else {
@@ -122,13 +122,13 @@ public class PatternRunner : MonoBehaviour {
 				0.10f,
 				currentPattern,
 				currentIndex,
-				(Tile tile) => tile.StartHintEffect()
+				(Tile tile) => tile.EmitHintEffect()
 			);
 		}
 	}
 
 	public void StartPriorNRun() {
-		StartAnimation (0.12f, currentPattern, 0, (Tile tile) => tile.StartMarkEffect());
+		StartAnimation (0.12f, currentPattern, 0, (Tile tile) => tile.EmitMarkEffect());
 	}
 	
 	int LoopIndex(int next, int end) {
@@ -185,7 +185,7 @@ public class PatternRunner : MonoBehaviour {
 		// Correct touch
 		if (patterns [currentPattern] [currentIndex] == tileId) {
 			scoreManager.CorrectTouch();
-			tiles [patterns [currentPattern] [currentIndex]].StartCorrectEffect ();
+			tiles [patterns [currentPattern] [currentIndex]].EmitCorrectEffect ();
 			
 			// start next pattern animation
 			if (currentIndex == patternGenerator.ChainLength - 1) {
@@ -193,7 +193,7 @@ public class PatternRunner : MonoBehaviour {
 					0.10f,
 					LoopIndex (currentPattern + backNum, backNum),
 					0,
-					(Tile tile) => tile.StartMarkEffect()
+					(Tile tile) => tile.EmitMarkEffect()
 				);
 			}
 			IndexIncrement ();
@@ -201,6 +201,6 @@ public class PatternRunner : MonoBehaviour {
 		}
 		
 		scoreManager.Miss ();
-		tiles [tileId].StartMissEffect ();
+		tiles [tileId].EmitMissEffect ();
 	}
 }

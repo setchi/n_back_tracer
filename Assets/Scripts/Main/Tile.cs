@@ -16,10 +16,10 @@ public class Tile : MonoBehaviour {
 	}
 
 	void OnMouseEnter() {
-		gameController.OnTouchTile (tileId);
+		gameController.TouchedTile (tileId);
 	}
 
-	void StartEffect(float time, string onUpdateFunName, iTween.EaseType easeType) {
+	void EmitEffect(float time, string onUpdateFunName, iTween.EaseType easeType) {
 		iTween.ValueTo (gameObject, iTween.Hash(
 			"from", Vector2.zero,
 			"to", new Vector2(1, 1),
@@ -29,39 +29,39 @@ public class Tile : MonoBehaviour {
 		));
 	}
 
-	public void StartMarkEffect() {
-		StartEffect (0.9f, "OnUpdateMarkEffect", iTween.EaseType.linear);
+	public void EmitMarkEffect() {
+		EmitEffect (0.9f, "UpdateMarkEffect", iTween.EaseType.linear);
 	}
 
-	public void StartCorrectEffect() {
-		StartEffect (0.4f, "OnUpdateCorrectEffect", iTween.EaseType.linear);
+	public void EmitCorrectEffect() {
+		EmitEffect (0.4f, "UpdateCorrectEffect", iTween.EaseType.linear);
 	}
 
-	public void StartMissEffect() {
-		StartEffect (0.6f, "OnUpdateMissEffect", iTween.EaseType.linear);
+	public void EmitMissEffect() {
+		EmitEffect (0.6f, "UpdateMissEffect", iTween.EaseType.linear);
 	}
 
-	public void StartHintEffect() {
-		StartEffect (0.6f, "OnUpdateHintEffect", iTween.EaseType.linear);
+	public void EmitHintEffect() {
+		EmitEffect (0.6f, "UpdateHintEffect", iTween.EaseType.linear);
 	}
 
 	float alpha = 0.8f;
-	void OnUpdateMarkEffect(Vector2 value) {
+	void UpdateMarkEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
 		SetColor (value.x, 1, value.x, 1 - value.x * alpha);
 	}
 
-	void OnUpdateCorrectEffect(Vector2 value) {
+	void UpdateCorrectEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
 		SetColor (1, value.x, 1, 1 - value.x * alpha);
 	}
 
-	void OnUpdateMissEffect(Vector2 value) {
+	void UpdateMissEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
 		SetColor (1, value.x, value.x, 1 - value.x * alpha);
 	}
 
-	void OnUpdateHintEffect(Vector2 value) {
+	void UpdateHintEffect(Vector2 value) {
 		SetColor (1, value.x, 1, 1 - value.x * alpha);
 	}
 

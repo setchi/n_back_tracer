@@ -12,9 +12,9 @@ public class GameController : MonoBehaviour {
 
 	enum GameState {
 		Standby,
-		nBackRun,
+		PriorNRun,
 		Wait,
-		Playing,
+		Play,
 		Finish
 	};
 	GameState gameState = GameState.Standby;
@@ -23,19 +23,19 @@ public class GameController : MonoBehaviour {
 		timeKeeper = GetComponent<TimeKeeper>();
 		patternRunner = GetComponent<PatternRunner> ();
 		
-		timeKeeper.OnTimeOut += () => {
+		timeKeeper.TimedOut += () => {
 			gameState = GameState.Finish;
 		};
-		patternRunner.OnFinishPriorNRun += () => {
-			gameState = GameState.Playing;
+		patternRunner.PriorNRunEnded += () => {
+			gameState = GameState.Play;
 			timeKeeper.StartCountdown ();
 		};
 
 		timeLimitText = GameObject.Find ("TimeLimit").GetComponent<Text>();
 	}
 
-	public void OnTouchTile(int tileId) {
-		if (gameState != GameState.Playing)
+	public void TouchedTile(int tileId) {
+		if (gameState != GameState.Play)
 			return;
 
 		currentTouchTileId = tileId;
@@ -44,10 +44,10 @@ public class GameController : MonoBehaviour {
 	void Update () {
 		switch (gameState) {
 		case GameState.Standby:
-			gameState = GameState.nBackRun;
+			gameState = GameState.PriorNRun;
 			break;
 		
-		case GameState.nBackRun:
+		case GameState.PriorNRun:
 			patternRunner.StartPriorNRun();
 			gameState = GameState.Wait;
 			break;
@@ -56,7 +56,7 @@ public class GameController : MonoBehaviour {
 			// do nothing
 			break;
 		
-		case GameState.Playing:
+		case GameState.Play:
 			if (cachedTouchTileId != currentTouchTileId) {
 				patternRunner.Touch(currentTouchTileId);
 				cachedTouchTileId = currentTouchTileId;
