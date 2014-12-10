@@ -119,7 +119,7 @@ public class PatternRunner : MonoBehaviour {
 			
 			// start hint animation
 			StartAnimation(
-				0.10f,
+				0.40f / patternGenerator.ChainLength,
 				currentPattern,
 				currentIndex,
 				(Tile tile) => tile.EmitHintEffect()
@@ -128,7 +128,7 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	public void StartPriorNRun() {
-		StartAnimation (0.12f, currentPattern, 0, (Tile tile) => tile.EmitMarkEffect());
+		StartAnimation (0.4f / patternGenerator.ChainLength, currentPattern, 0, (Tile tile) => tile.EmitMarkEffect());
 	}
 	
 	int LoopIndex(int next, int end) {
@@ -190,17 +190,18 @@ public class PatternRunner : MonoBehaviour {
 			// start next pattern animation
 			if (currentIndex == patternGenerator.ChainLength - 1) {
 				StartAnimation(
-					0.10f,
+					0.40f / patternGenerator.ChainLength,
 					LoopIndex (currentPattern + backNum, backNum),
 					0,
 					(Tile tile) => tile.EmitMarkEffect()
 				);
 			}
 			IndexIncrement ();
-			return;
-		}
 		
-		scoreManager.Miss ();
-		tiles [tileId].EmitMissEffect ();
+		// Miss touch
+		} else {
+			scoreManager.MissTouch ();
+			tiles [tileId].EmitMissEffect ();
+		}
 	}
 }

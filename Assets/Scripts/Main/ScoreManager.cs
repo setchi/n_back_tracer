@@ -12,7 +12,7 @@ public class ScoreManager : MonoBehaviour {
 		score += 1; // てきとう
 	}
 
-	public void Miss() {
+	public void MissTouch() {
 		// miss
 		score *= 0.8f; // てきとう
 	}
