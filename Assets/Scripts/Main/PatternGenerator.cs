@@ -34,12 +34,19 @@ public class PatternGenerator : MonoBehaviour {
 		int[] field = SetupField (x, y, ref ignorePattern);
 		Stack<int> patternStack = new Stack<int> ();
 
+		int maxTry = 100;
 		while (!PatternBuildDFS (
 			ref field,
 			new Vector2(Random.Range(0, fieldWidth - 1), Random.Range(0, fieldHeight - 1)),
 			Random.Range(0, 3),
 			ref patternStack
-		));
+		)) {
+			if (--maxTry < 0) {
+				ignorePattern.RemoveAt(ignorePattern.Count - 1);
+				field = SetupField(x, y, ref ignorePattern);
+				maxTry = 100;
+			}		
+		};
 
 		return new List<int>(patternStack.ToArray ());
 	}

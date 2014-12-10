@@ -45,28 +45,29 @@ public class Tile : MonoBehaviour {
 		StartEffect (0.6f, "OnUpdateHintEffect", iTween.EaseType.linear);
 	}
 
+	float alpha = 0.8f;
 	void OnUpdateMarkEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
-		SetColor (value.x, 1, value.x);
+		SetColor (value.x, 1, value.x, 1 - value.x * alpha);
 	}
 
 	void OnUpdateCorrectEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
-		SetColor (1, value.x, 1);
+		SetColor (1, value.x, 1, 1 - value.x * alpha);
 	}
 
 	void OnUpdateMissEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
-		SetColor (1, value.x, value.x);
+		SetColor (1, value.x, value.x, 1 - value.x * alpha);
 	}
 
 	void OnUpdateHintEffect(Vector2 value) {
-		SetColor (1, value.x, 1);
+		SetColor (1, value.x, 1, 1 - value.x * alpha);
 	}
 
 	
-	void SetColor(float r, float g, float b) {
-		spriteRenderer.color = new Color(r, g, b);
+	void SetColor(float r, float g, float b, float a) {
+		spriteRenderer.color = new Color(r, g, b, a);
 	}
 	
 	void SetScale(float scale) {
