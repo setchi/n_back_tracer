@@ -45,7 +45,7 @@ public class Tile : MonoBehaviour {
 		EmitEffect (0.6f, "UpdateHintEffect", iTween.EaseType.linear);
 	}
 
-	float alpha = 0.8f;
+	float alpha = 0.9f;
 	void UpdateMarkEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
 		SetColor (value.x, 1, value.x, 1 - value.x * alpha);
