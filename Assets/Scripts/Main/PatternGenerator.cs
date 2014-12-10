@@ -71,7 +71,8 @@ public class PatternGenerator : MonoBehaviour {
 		field [fieldPos] = 1;
 		pattern.Push (fieldWidth * (int)currentPos.y + (int)currentPos.x);
 
-		foreach (int i in new int[]{0, 1, 2, 3}.OrderBy(i => Guid.NewGuid()).ToArray()) {
+		int[] shuffledIndexes = new int[] {0, 1, 2, 3}.OrderBy (i => Guid.NewGuid ()).ToArray ();
+		foreach (int i in shuffledIndexes) {
 			int newDirIndex = LoopIndex (dirIndex + i, directions.Length - 1);
 			// 進めるところまで進む
 			if (PatternDFS(ref field, currentPos + directions[newDirIndex], newDirIndex, ref pattern)) {
@@ -81,7 +82,6 @@ public class PatternGenerator : MonoBehaviour {
 		
 		field[fieldPos] = 0;
 		pattern.Pop ();
-
 		return false;
 	}
 
