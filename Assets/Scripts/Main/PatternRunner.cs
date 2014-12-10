@@ -129,6 +129,7 @@ public class PatternRunner : MonoBehaviour {
 			}
 
 			hintAnimationTriggerTimer = 0;
+			hintAnimationCurrentIndex = currentIndex;
 			hintAnimationPattern = currentPattern;
 			isHintAnimation = true;
 			return;
