@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 
 public class TimeKeeper : MonoBehaviour {
-	public event Action TimedOut;
+	public event Action TimeUp;
 	public float timeLimit;
 
 	float remainingTime;
@@ -17,7 +17,7 @@ public class TimeKeeper : MonoBehaviour {
 
 		if (remainingTime < 0) {
 			isPlaying = false;
-			TimedOut();
+			TimeUp();
 		}
 	}
 

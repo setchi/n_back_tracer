@@ -23,7 +23,7 @@ public class GameController : MonoBehaviour {
 		timeKeeper = GetComponent<TimeKeeper>();
 		patternRunner = GetComponent<PatternRunner> ();
 		
-		timeKeeper.TimedOut += () => {
+		timeKeeper.TimeUp += () => {
 			gameState = GameState.Finish;
 		};
 		patternRunner.PriorNRunEnded += () => {

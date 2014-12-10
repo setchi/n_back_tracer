@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -35,10 +37,10 @@ public class PatternGenerator : MonoBehaviour {
 		Stack<int> patternStack = new Stack<int> ();
 
 		int maxTry = 100;
-		while (!PatternBuildDFS (
+		while (!PatternDFS (
 			ref field,
-			new Vector2(Random.Range(0, fieldWidth - 1), Random.Range(0, fieldHeight - 1)),
-			Random.Range(0, 3),
+			new Vector2(UnityEngine.Random.Range(0, fieldWidth - 1), UnityEngine.Random.Range(0, fieldHeight - 1)),
+			UnityEngine.Random.Range(0, 3),
 			ref patternStack
 		)) {
 			if (--maxTry < 0) {
@@ -58,29 +60,7 @@ public class PatternGenerator : MonoBehaviour {
 		return PatternWriteToField (ref field, ref ignorePattern);
 	}
 	
-	/**
-	string ArrToString(int[] arr, int endX, int endY) {
-		string str = "";
-		for (int y = 0; y < endY; y++) {
-			for (int x = 0; x < endX; x++) {
-				str += arr[y * endX + x].ToString();
-			}
-			str += "\n";
-		}
-		return str;
-	}
-
-	string ListToString(List<int> list) {
-		string res = "";
-		
-		foreach (var i in list) {
-			res += i.ToString() + " ";
-		}
-		return res;
-	}
-	/**/
-	
-	bool PatternBuildDFS(ref int[] field, Vector2 currentPos, int direction, ref Stack<int> pattern) {
+	bool PatternDFS(ref int[] field, Vector2 currentPos, int dirIndex, ref Stack<int> pattern) {
 		if (pattern.Count == chainLength)
 			return true;
 
@@ -90,18 +70,13 @@ public class PatternGenerator : MonoBehaviour {
 		
 		field [fieldPos] = 1;
 		pattern.Push (fieldWidth * (int)currentPos.y + (int)currentPos.x);
-		
-		// 後ろは見ない
-		List<int> notBackIndexes = new List<int>(new int[] {0, 1, 3});
-		for (int i = 0, end = notBackIndexes.Count ; i < end; i++) {
-			int notBackIndex = notBackIndexes[Random.Range(0, end - i - 1)];
-			int newDirection = LoopIndex (direction + notBackIndex, directions.Length - 1);
-			
+
+		foreach (int i in new int[]{0, 1, 2, 3}.OrderBy(i => Guid.NewGuid()).ToArray()) {
+			int newDirIndex = LoopIndex (dirIndex + i, directions.Length - 1);
 			// 進めるところまで進む
-			if (PatternBuildDFS(ref field, currentPos + directions[newDirection], newDirection, ref pattern)) {
+			if (PatternDFS(ref field, currentPos + directions[newDirIndex], newDirIndex, ref pattern)) {
 				return true;
 			}
-			notBackIndexes.Remove(notBackIndex);
 		}
 		
 		field[fieldPos] = 0;

@@ -19,30 +19,30 @@ public class Tile : MonoBehaviour {
 		gameController.TouchedTile (tileId);
 	}
 
-	void EmitEffect(float time, string onUpdateFunName, iTween.EaseType easeType) {
+	void EmitEffect(float time, iTween.EaseType easeType, string updateMethodName) {
 		iTween.ValueTo (gameObject, iTween.Hash(
 			"from", Vector2.zero,
 			"to", new Vector2(1, 1),
 			"time", time,
 			"easetype", easeType,
-			"onupdate", onUpdateFunName
+			"onupdate", updateMethodName
 		));
 	}
 
 	public void EmitMarkEffect() {
-		EmitEffect (0.9f, "UpdateMarkEffect", iTween.EaseType.linear);
+		EmitEffect (0.9f, iTween.EaseType.linear, "UpdateMarkEffect");
 	}
 
 	public void EmitCorrectEffect() {
-		EmitEffect (0.4f, "UpdateCorrectEffect", iTween.EaseType.linear);
+		EmitEffect (0.4f, iTween.EaseType.linear, "UpdateCorrectEffect");
 	}
 
 	public void EmitMissEffect() {
-		EmitEffect (0.6f, "UpdateMissEffect", iTween.EaseType.linear);
+		EmitEffect (0.6f, iTween.EaseType.linear, "UpdateMissEffect");
 	}
 
 	public void EmitHintEffect() {
-		EmitEffect (0.6f, "UpdateHintEffect", iTween.EaseType.linear);
+		EmitEffect (0.6f, iTween.EaseType.linear, "UpdateHintEffect");
 	}
 
 	float alpha = 0.9f;
@@ -53,7 +53,7 @@ public class Tile : MonoBehaviour {
 
 	void UpdateCorrectEffect(Vector2 value) {
 		SetScale ((1 - value.x) * 0.8f + 1);
-		SetColor (1, value.x, 1, 1 - value.x * alpha);
+		SetColor (value.x, 1, 1, 1 - value.x * alpha);
 	}
 
 	void UpdateMissEffect(Vector2 value) {
@@ -62,7 +62,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	void UpdateHintEffect(Vector2 value) {
-		SetColor (1, value.x, 1, 1 - value.x * alpha);
+		SetColor (value.x, 1, 1, 1 - value.x * alpha);
 	}
 
 	

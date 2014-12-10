@@ -26,11 +26,9 @@ public class PatternRunner : MonoBehaviour {
 
 	void Awake() {
 		scoreManager = GetComponent<ScoreManager>();
-
 		patternGenerator = GetComponent<PatternGenerator>();
 		patternGenerator.FieldWidth = 4;
 		patternGenerator.FieldHeight = 5;
-
 		ApplyStates (GameObject.Find ("StorageObject"));
 
 		// nBack分リスト初期化
