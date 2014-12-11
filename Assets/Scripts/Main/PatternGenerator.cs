@@ -31,10 +31,11 @@ public class PatternGenerator : MonoBehaviour {
 			int y = Mathf.FloorToInt (i / workX);
 			return y == 0 || x == 0 || y == workY - 1 || x == workX - 1;
 		};
+		Func<Func<int, bool>, Func<int, bool>> not = func => i => !func(i);
 
 		int[] field = InitField (workX, workY, ignoreIndexes, isWall);
 		int[] shuffledStartPos = GenerateShuffledIndexFromRange (workX, workY)
-			.Where (i => !isWall (i)).ToArray ();
+			.Where (not(isWall)).ToArray ();
 
 		Stack<int> patternStack = new Stack<int> ();
 		int index = 0;
