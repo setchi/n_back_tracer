@@ -34,7 +34,7 @@ public class PatternGenerator : MonoBehaviour {
 		Func<Func<int, bool>, Func<int, bool>> not = func => i => !func(i);
 
 		int[] field = InitField (workX, workY, ignoreIndexes, isWall);
-		int[] shuffledStartPos = GenerateShuffledIndexFromRange (workX, workY)
+		int[] shuffledStartPos = GenerateShuffledIndexFromRange (0, workX * workY)
 			.Where (not(isWall)).ToArray ();
 
 		Stack<int> patternStack = new Stack<int> ();
