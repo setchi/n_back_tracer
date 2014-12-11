@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 using System.Collections;
 
 public class Tile : MonoBehaviour {
@@ -10,7 +11,10 @@ public class Tile : MonoBehaviour {
 	SpriteRenderer spriteRenderer;
 	GameController gameController;
 	LineRenderer lineRenderer;
-	int effectDuplicateCount = 0;
+	Action UpdateEffect;
+	
+	Color defaultColor = new Color(0.2f, 0.2f, 0.2f, 1);
+	float timer = 0;
 
 	void Awake() {
 		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
@@ -19,6 +23,13 @@ public class Tile : MonoBehaviour {
 		lineRenderer.SetWidth (0.1f, 0.1f);
 		// 線のスタート位置は常にタイルの中心
 		lineRenderer.SetPosition(0, Vector3.zero);
+	}
+
+	void Update() {
+		if (UpdateEffect != null) {
+			UpdateEffect ();
+			timer += Time.deltaTime;
+		}
 	}
 
 	public void DrawLine(Vector3 endPos) {
@@ -31,53 +42,46 @@ public class Tile : MonoBehaviour {
 		gameController.TouchedTile (tileId);
 	}
 
-	void EmitEffect(float time, iTween.EaseType easeType, string updateMethodName) {
-		effectDuplicateCount++;
-		iTween.ValueTo (gameObject, iTween.Hash(
-			"from", Vector2.zero,
-			"to", new Vector2(1, 1),
-			"time", time,
-			"easetype", easeType,
-			"onupdate", updateMethodName,
-			"oncomplete", "CompleteEffect"
-		));
+	void EmitEffect(float time, Action<float> onUpdate) {
+		timer = 0;
+
+		UpdateEffect = () => {
+			if (timer < time) {
+				onUpdate(timer / time);
+			
+			} else {
+				UpdateEffect = null;
+				onUpdate(1);
+				CompleteEffect();
+			}
+		};
 	}
 
 	public void EmitMarkEffect() {
-		EmitEffect (1f, iTween.EaseType.linear, "UpdateMarkEffect");
+		EmitEffect (1f, value => {
+			UpdateColor (Color.white * 0.07f + Color.green * 0.93f, defaultColor, value);
+			UpdateScale ((1 - value) * 0.3f + 1);
+		});
 	}
 
 	public void EmitCorrectEffect() {
-		EmitEffect (0.4f, iTween.EaseType.linear, "UpdateCorrectEffect");
+		EmitEffect (0.4f, value => {
+			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value);
+			UpdateScale ((1 - value) * 0.3f + 1);
+		});
 	}
 
 	public void EmitMissEffect() {
-		EmitEffect (0.6f, iTween.EaseType.linear, "UpdateMissEffect");
+		EmitEffect (0.6f, value => {
+			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, value);
+			UpdateScale ((1 - value) * 0.3f + 1);
+		});
 	}
 
 	public void EmitHintEffect() {
-		EmitEffect (0.6f, iTween.EaseType.linear, "UpdateHintEffect");
-	}
-
-
-	Color defaultColor = new Color(0.1f, 0.1f, 0.1f, 1);
-	void UpdateMarkEffect(Vector2 value) {
-		UpdateColor (Color.white * 0.07f + Color.green * 0.93f, defaultColor, value.x);
-		UpdateScale ((1 - value.x) * 0.3f + 1);
-	}
-
-	void UpdateCorrectEffect(Vector2 value) {
-		UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value.x);
-		UpdateScale ((1 - value.x) * 0.3f + 1);
-	}
-
-	void UpdateMissEffect(Vector2 value) {
-		UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, value.x);
-		UpdateScale ((1 - value.x) * 0.3f + 1);
-	}
-
-	void UpdateHintEffect(Vector2 value) {
-		UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value.x);
+		EmitEffect (0.6f, value => {
+			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value);
+		});
 	}
 
 	void UpdateColor(Color from, Color to, float value) {
@@ -91,11 +95,6 @@ public class Tile : MonoBehaviour {
 	}
 	
 	void CompleteEffect() {
-		// 複数のエフェクトが同時進行している場合、
-		// 線を消す処理は最後のエフェクトで行う
-		effectDuplicateCount--;
-		if (effectDuplicateCount == 0) {
-			EraseLine();
-		}
+		EraseLine();
 	}
 }
