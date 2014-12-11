@@ -9,28 +9,42 @@ public class Tile : MonoBehaviour {
 
 	SpriteRenderer spriteRenderer;
 	GameController gameController;
+	LineRenderer lineRenderer;
+	int effectDuplicateCount = 0;
 
 	void Awake() {
-		spriteRenderer = GetComponent<SpriteRenderer> ();
 		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
+		spriteRenderer = GetComponent<SpriteRenderer> ();
+		lineRenderer = GetComponentInChildren<LineRenderer>();
+		lineRenderer.SetWidth (0.1f, 0.1f);
+		// 線のスタート位置は常にタイルの中心
+		lineRenderer.SetPosition(0, Vector3.zero);
 	}
+
+	public void DrawLine(Vector3 endPos) {
+		lineRenderer.SetPosition(1, endPos);
+	}
+	
+	void EraseLine() { DrawLine (Vector3.zero); }
 
 	void OnMouseEnter() {
 		gameController.TouchedTile (tileId);
 	}
 
 	void EmitEffect(float time, iTween.EaseType easeType, string updateMethodName) {
+		effectDuplicateCount++;
 		iTween.ValueTo (gameObject, iTween.Hash(
 			"from", Vector2.zero,
 			"to", new Vector2(1, 1),
 			"time", time,
 			"easetype", easeType,
-			"onupdate", updateMethodName
+			"onupdate", updateMethodName,
+			"oncomplete", "CompleteEffect"
 		));
 	}
 
 	public void EmitMarkEffect() {
-		EmitEffect (0.9f, iTween.EaseType.linear, "UpdateMarkEffect");
+		EmitEffect (1f, iTween.EaseType.linear, "UpdateMarkEffect");
 	}
 
 	public void EmitCorrectEffect() {
@@ -45,32 +59,43 @@ public class Tile : MonoBehaviour {
 		EmitEffect (0.6f, iTween.EaseType.linear, "UpdateHintEffect");
 	}
 
-	float alpha = 0.9f;
+
+	Color defaultColor = new Color(0.1f, 0.1f, 0.1f, 1);
 	void UpdateMarkEffect(Vector2 value) {
-		SetScale ((1 - value.x) * 0.8f + 1);
-		SetColor (value.x, 1, value.x, 1 - value.x * alpha);
+		UpdateColor (Color.white * 0.07f + Color.green * 0.93f, defaultColor, value.x);
+		UpdateScale ((1 - value.x) * 0.3f + 1);
 	}
 
 	void UpdateCorrectEffect(Vector2 value) {
-		SetScale ((1 - value.x) * 0.8f + 1);
-		SetColor (value.x, 1, 1, 1 - value.x * alpha);
+		UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value.x);
+		UpdateScale ((1 - value.x) * 0.3f + 1);
 	}
 
 	void UpdateMissEffect(Vector2 value) {
-		SetScale ((1 - value.x) * 0.8f + 1);
-		SetColor (1, value.x, value.x, 1 - value.x * alpha);
+		UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, value.x);
+		UpdateScale ((1 - value.x) * 0.3f + 1);
 	}
 
 	void UpdateHintEffect(Vector2 value) {
-		SetColor (value.x, 1, 1, 1 - value.x * alpha);
+		UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value.x);
 	}
 
-	
-	void SetColor(float r, float g, float b, float a) {
-		spriteRenderer.color = new Color(r, g, b, a);
+	void UpdateColor(Color from, Color to, float value) {
+		Color color = from - (from - to) * value;
+		spriteRenderer.color = color;
+		lineRenderer.material.color = color;
 	}
 	
-	void SetScale(float scale) {
+	void UpdateScale(float scale) {
 		transform.localScale = new Vector3 (scale, scale, scale);
+	}
+	
+	void CompleteEffect() {
+		// 複数のエフェクトが同時進行している場合、
+		// 線を消す処理は最後のエフェクトで行う
+		effectDuplicateCount--;
+		if (effectDuplicateCount == 0) {
+			EraseLine();
+		}
 	}
 }

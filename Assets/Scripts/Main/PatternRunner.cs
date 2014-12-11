@@ -72,12 +72,22 @@ public class PatternRunner : MonoBehaviour {
 			
 			timer = 0;
 			tileEffectEmitter (tiles [patterns [targetPattern] [index]]);
-			index++;
+			DrawLine(targetPattern, index, currentIndex);
 
+			index++;
 			if (index >= patterns [targetPattern].Count) {
 				updateAnimation = null;
 			}
 		};
+	}
+
+	void DrawLine(int targetPattern, int index, int currentIndex) {
+		Tile currentTile = tiles [patterns [targetPattern] [index]];
+		Tile prevTile = tiles[patterns[targetPattern][index == 0 ? index : currentIndex != 0 && index == currentIndex ? index : index - 1]];
+
+		currentTile.DrawLine(
+			prevTile.gameObject.transform.position - currentTile.gameObject.transform.position
+		);
 	}
 	
 	float timer = 0;
@@ -184,6 +194,7 @@ public class PatternRunner : MonoBehaviour {
 		if (patterns [currentPattern] [currentIndex] == tileId) {
 			scoreManager.CorrectTouch();
 			tiles [patterns [currentPattern] [currentIndex]].EmitCorrectEffect ();
+			DrawLine(currentPattern, currentIndex, 0);
 			
 			// start next pattern animation
 			if (currentIndex == patternGenerator.ChainLength - 1) {
