@@ -22,7 +22,7 @@ public class PatternGenerator : MonoBehaviour {
 		get { return chainLength; }
 	}
 	
-	public List<int> Generate(ref List<int> ignorePattern) {
+	public List<int> Generate(ref List<int> ignoreIndexes) {
 		int workX = fieldWidth + 2;
 		int workY = fieldHeight + 2;
 
@@ -32,7 +32,7 @@ public class PatternGenerator : MonoBehaviour {
 			return y == 0 || x == 0 || y == workY - 1 || x == workX - 1;
 		};
 
-		int[] field = InitField (workX, workY, ignorePattern, isWall);
+		int[] field = InitField (workX, workY, ignoreIndexes, isWall);
 		int[] shuffledStartPos = GenerateShuffledIndexFromRange (workX, workY)
 			.Where (i => !isWall (i)).ToArray ();
 
@@ -47,19 +47,21 @@ public class PatternGenerator : MonoBehaviour {
 		)) {
 			if (++index == shuffledStartPos.Length) {
 				index = 0;
-				ignorePattern.RemoveAt(ignorePattern.Count - 1);
-				field = InitField(workX, workY, ignorePattern, isWall);
+				ignoreIndexes.RemoveAt(ignoreIndexes.Count - 1);
+				field = InitField(workX, workY, ignoreIndexes, isWall);
 			}
 		};
 
-		return new List<int>(patternStack.ToArray ());
+		return patternStack.ToList();
 	}
 	
-	int[] InitField(int x, int y, List<int> ignorePattern, Func<int, bool> isWall) {
+	int[] InitField(int x, int y, List<int> ignoreIndexes, Func<int, bool> isWall) {
 		int fieldSize = y * x + x;
-		var wallIndexes = Enumerable.Range (0, fieldSize).Where (i => isWall (i))
-			.Union (ignorePattern.Select (i => (i / fieldWidth + 1) * (fieldWidth + 2) + i % fieldWidth + 1));
-		
+		var wallIndexes = Enumerable.Range (0, fieldSize).Where (isWall)
+			.Union (ignoreIndexes.Select (
+				i => Mathf.FloorToInt (i / fieldWidth + 1) * (fieldWidth + 2) + i % fieldWidth + 1
+			));
+
 		return Enumerable.Repeat (0, fieldSize)
 			.Select ((v, i) => wallIndexes.Contains (i) ? 1 : v).ToArray ();
 	}
