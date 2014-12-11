@@ -25,64 +25,47 @@ public class PatternGenerator : MonoBehaviour {
 	public List<int> Generate(ref List<int> ignorePattern) {
 		int workX = fieldWidth + 2;
 		int workY = fieldHeight + 2;
-		int[] field = SetupField (workX, workY, ref ignorePattern);
+
+		Func<int, bool> isWall = i => {
+			int y = Mathf.FloorToInt (i / workX);
+			int x = i % workX;
+			return y == 0 || x == 0 || y == workY - 1 || x == workX - 1;
+		};
+
+		int[] field = SetupField (workX, workY, ignorePattern, isWall);
+		int[] shuffledStartPos = GenerateShuffledIndexFromRange (workX, workY)
+			.Where (i => !isWall (i)).ToArray ();
 
 		Stack<int> patternStack = new Stack<int> ();
-		Stack<int> shuffledStartPos = new Stack<int> (
-			GenerateShuffledStackFromRange (0, workX * workY).Where ((i) => {
-				int y = Mathf.FloorToInt(i / workX);
-				int x = i % workX;
-				return y != 0 && x != 0 && y != workY - 1 && x != workX - 1;
-			})
-		);
+		int index = 0;
 
 		while (!PatternDFS (
 			ref field,
-			shuffledStartPos.Pop(),
+			shuffledStartPos[index],
 			UnityEngine.Random.Range(0, 3),
 			ref patternStack
 		)) {
-			if (shuffledStartPos.Count == 0) {
+			if (++index == shuffledStartPos.Length) {
+				index = 0;
 				ignorePattern.RemoveAt(ignorePattern.Count - 1);
-				field = SetupField(workX, workY, ref ignorePattern);
-				shuffledStartPos = GenerateShuffledStackFromRange(0, fieldWidth * fieldHeight);
+				field = SetupField(workX, workY, ignorePattern, isWall);
 			}
 		};
 
 		return new List<int>(patternStack.ToArray ());
 	}
 	
-	int[] SetupField(int x, int y, ref List<int> ignorePattern) {
+	int[] SetupField(int x, int y, List<int> ignorePattern, Func<int, bool> isWall) {
 		int fieldSize = y * x + x;
-		int[] field = SetSentinelsOfWall (new int[fieldSize], x, y);
-		return PatternWriteToField (ref field, ref ignorePattern);
-	}
-	
-	int[] SetSentinelsOfWall(int[] field, int endX, int endY) {
-		for (int y = 0; y < endY; y++)
-			for (int x = 0; x < endX; x++)
-				field[y * endX + x] = (
-					x == 0 ||
-					y == 0 ||
-					x == endX - 1 ||
-					y == endY - 1
-				) ? 1 : 0;
+		var wallIndexes = Enumerable.Range (0, fieldSize).Where (i => isWall (i))
+			.Union (ignorePattern.Select (i => (i / fieldWidth + 1) * (fieldWidth + 2) + i % fieldWidth + 1));
 		
-		return field;
-	}
-	
-	int[] PatternWriteToField(ref int[] field, ref List<int> pattern) {
-		foreach (int idx in pattern) {
-			int x = idx % fieldWidth + 1;
-			int y = idx / fieldWidth + 1;
-			field[y * (fieldWidth + 2) + x] = 1;
-		}
-		
-		return field;
+		return Enumerable.Repeat (0, fieldSize)
+			.Select ((v, i) => wallIndexes.Contains (i) ? 1 : v).ToArray ();
 	}
 
-	Stack<int> GenerateShuffledStackFromRange(int start, int count) {
-		return new Stack<int> (Enumerable.Range(start, count).OrderBy (i => Guid.NewGuid ()));
+	IEnumerable<int> GenerateShuffledIndexFromRange(int start, int count) {
+		return Enumerable.Range (start, count).OrderBy (i => Guid.NewGuid ());
 	}
 	
 	bool PatternDFS(ref int[] field, int currentPos, int dirIndex, ref Stack<int> pattern) {
@@ -96,7 +79,7 @@ public class PatternGenerator : MonoBehaviour {
 		pattern.Push (CalcPatternIndex(currentPos));
 		
 		int[] directions = { -fieldWidth - 2, 1, fieldWidth + 2, -1 };
-		foreach (int i in GenerateShuffledStackFromRange (0, 4)) {
+		foreach (int i in GenerateShuffledIndexFromRange (0, 4)) {
 			int newDirIndex = CirculatoryIndex (dirIndex + i, directions.Length - 1);
 			// 進めるところまで進む
 			if (PatternDFS(ref field, currentPos + directions[newDirIndex], newDirIndex, ref pattern)) {
@@ -115,10 +98,9 @@ public class PatternGenerator : MonoBehaviour {
 		return y * fieldWidth + x;
 	}
 	
-	
 	int CirculatoryIndex(int next, int end) {
 		if (next < 0)
-			return CirculatoryIndex(end + (next + 1), end);
-		return next > end ? CirculatoryIndex(--next - end, end) : next;
+			return CirculatoryIndex (end + (next + 1), end);
+		return next > end ? CirculatoryIndex (--next - end, end) : next;
 	}
 }
