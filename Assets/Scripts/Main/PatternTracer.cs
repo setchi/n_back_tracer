@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PatternRunner : MonoBehaviour {
+public class PatternTracer : MonoBehaviour {
 	public event Action PriorNRunEnded;
 	PatternGenerator patternGenerator;
 	ScoreManager scoreManager;
@@ -60,13 +60,13 @@ public class PatternRunner : MonoBehaviour {
 	
 	bool isStandby = true;
 	float hintAnimationTriggerTimer = 0;
-	Action updateAnimation;
+	Action updateTrace;
 
 	// 名前がちょっと変
-	void StartAnimation(float interval, int targetPattern, int index, Action<Tile> tileEffectEmitter) {
+	void StartPatternTrace(float interval, int targetPattern, int index, Action<Tile> tileEffectEmitter) {
 		float timer = 0;
 
-		updateAnimation = () => {
+		updateTrace = () => {
 			if ((timer += Time.deltaTime) < interval)
 				return;
 			
@@ -76,7 +76,7 @@ public class PatternRunner : MonoBehaviour {
 
 			index++;
 			if (index >= patterns [targetPattern].Count) {
-				updateAnimation = null;
+				updateTrace = null;
 			}
 		};
 	}
@@ -92,13 +92,13 @@ public class PatternRunner : MonoBehaviour {
 	
 	float timer = 0;
 	void Update() {
-		if (updateAnimation != null) {
-			updateAnimation();
+		if (updateTrace != null) {
+			updateTrace();
 		}
 
 		// スタート時のnBarkRun
 		if (isStandby) {
-			if (updateAnimation != null)
+			if (updateTrace != null)
 				return;
 
 			timer += Time.deltaTime;
@@ -126,7 +126,7 @@ public class PatternRunner : MonoBehaviour {
 			hintAnimationTriggerTimer = 0;
 			
 			// start hint animation
-			StartAnimation(
+			StartPatternTrace(
 				0.40f / patternGenerator.ChainLength,
 				currentPattern,
 				currentIndex,
@@ -136,14 +136,13 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	public void StartPriorNRun() {
-		StartAnimation (0.4f / patternGenerator.ChainLength, currentPattern, 0, (Tile tile) => tile.EmitMarkEffect());
+		StartPatternTrace (0.4f / patternGenerator.ChainLength, currentPattern, 0, (Tile tile) => tile.EmitMarkEffect());
 	}
 	
-	int LoopIndex(int next, int end) {
-		if (next < 0) {
-			return LoopIndex(end + (next + 1), end);
-		}
-		return next > end ? LoopIndex(--next - end, end) : next;
+	int CirculatoryIndex(int next, int end) {
+		if (next < 0)
+			return CirculatoryIndex(end + (next + 1), end);
+		return next > end ? CirculatoryIndex(--next - end, end) : next;
 	}
 
 	void UpdatePattern(int targetPattern, List<int> ignoreList) {
@@ -157,12 +156,12 @@ public class PatternRunner : MonoBehaviour {
 		// List<int> triggerPattern = patterns[LoopIndex (currentPattern - backNum, backNum)];
 		// ignoreList.Add (triggerPattern[triggerPattern.Count - 1]);
 
-		foreach (int i in patterns[LoopIndex (targetPattern - backNum, backNum)]) {
+		foreach (int i in patterns[CirculatoryIndex (targetPattern - backNum, backNum)]) {
 			ignoreList.Add(i);
 		}
 
 		// 次に出す一個前のパターン全部
-		foreach (int i in patterns[LoopIndex(targetPattern - 1, backNum)]) {
+		foreach (int i in patterns[CirculatoryIndex(targetPattern - 1, backNum)]) {
 			ignoreList.Add(i);
 		}
 
@@ -170,15 +169,15 @@ public class PatternRunner : MonoBehaviour {
 	}
 
 	void PatternIncrement() {
-		currentPattern = LoopIndex (currentPattern + 1, backNum);
+		currentPattern = CirculatoryIndex (currentPattern + 1, backNum);
 
-		int targetPattern = LoopIndex (currentPattern + backNum, backNum);
+		int targetPattern = CirculatoryIndex (currentPattern + backNum, backNum);
 		List<int> ignoreList = BuildIgnoreList (targetPattern);
 		UpdatePattern (targetPattern, ignoreList);
 	}
 
 	void IndexIncrement() {
-		currentIndex = LoopIndex (currentIndex + 1, patterns [currentPattern].Count - 1);
+		currentIndex = CirculatoryIndex (currentIndex + 1, patterns [currentPattern].Count - 1);
 
 		// Correct pattern
 		if (currentIndex == 0) {
@@ -198,9 +197,9 @@ public class PatternRunner : MonoBehaviour {
 			
 			// start next pattern animation
 			if (currentIndex == patternGenerator.ChainLength - 1) {
-				StartAnimation(
+				StartPatternTrace(
 					0.40f / patternGenerator.ChainLength,
-					LoopIndex (currentPattern + backNum, backNum),
+					CirculatoryIndex (currentPattern + backNum, backNum),
 					0,
 					(Tile tile) => tile.EmitMarkEffect()
 				);

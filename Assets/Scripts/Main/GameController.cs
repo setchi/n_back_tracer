@@ -1,9 +1,9 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 
 public class GameController : MonoBehaviour {
-	PatternRunner patternRunner;
+	PatternTracer patternTracer;
 	TimeKeeper timeKeeper;
 	Text timeLimitText;
 
@@ -21,12 +21,12 @@ public class GameController : MonoBehaviour {
 
 	void Awake() {
 		timeKeeper = GetComponent<TimeKeeper>();
-		patternRunner = GetComponent<PatternRunner> ();
+		patternTracer = GetComponent<PatternTracer> ();
 		
 		timeKeeper.TimeUp += () => {
 			gameState = GameState.Finish;
 		};
-		patternRunner.PriorNRunEnded += () => {
+		patternTracer.PriorNRunEnded += () => {
 			gameState = GameState.Play;
 			timeKeeper.StartCountdown ();
 		};
@@ -48,7 +48,7 @@ public class GameController : MonoBehaviour {
 			break;
 		
 		case GameState.PriorNRun:
-			patternRunner.StartPriorNRun();
+			patternTracer.StartPriorNRun();
 			gameState = GameState.Wait;
 			break;
 		
@@ -58,7 +58,7 @@ public class GameController : MonoBehaviour {
 		
 		case GameState.Play:
 			if (cachedTouchTileId != currentTouchTileId) {
-				patternRunner.Touch(currentTouchTileId);
+				patternTracer.Touch(currentTouchTileId);
 				cachedTouchTileId = currentTouchTileId;
 			}
 			timeLimitText.text = "Limit: " + timeKeeper.GetRemainingTime().ToString ();
