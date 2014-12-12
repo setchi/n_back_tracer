@@ -44,7 +44,7 @@ public class PatternTracer : MonoBehaviour {
 		// タイル配列初期化
 		tiles = Enumerable.Range (0, tileNum)
 			.Select (i => {
-				var tile = GameObject.Find ("Tile" + i.ToString ()).GetComponent<Tile> ();
+				var tile = GameObject.Find ("Tile " + i.ToString ()).GetComponent<Tile> ();
 				tile.TileId = i;
 				return tile;
 			}).ToArray ();
@@ -64,7 +64,7 @@ public class PatternTracer : MonoBehaviour {
 	float hintAnimationTriggerTimer = 0;
 	List<Predicate<int>> updateActions = new List<Predicate<int>> ();
 
-	void StartPatternTrace(float interval, int patternIndex, int startIndex, Action<Tile> tileEffectEmitter) {
+	void StartPatternTrace(float interval, int patternIndex, int startIndex, Action<Tile> tileEffectEmitter, bool drawLine) {
 		var timer = 0f;
 		var index = startIndex;
 		var targetPattern = patterns [patternIndex];
@@ -75,7 +75,9 @@ public class PatternTracer : MonoBehaviour {
 			
 			timer = 0;
 			tileEffectEmitter (tiles [targetPattern [index]]);
-			DrawLine(targetPattern, index, startIndex);
+
+			if (drawLine)
+				DrawLine(targetPattern, index, startIndex);
 			
 			index++;
 			if (index < targetPattern.Count) {
@@ -144,13 +146,20 @@ public class PatternTracer : MonoBehaviour {
 				0.40f / patternGenerator.ChainLength,
 				currentPattern,
 				currentIndex,
-				(Tile tile) => tile.EmitHintEffect()
+				(Tile tile) => tile.EmitHintEffect(),
+				false
 			);
 		}
 	}
 
 	public void StartPriorNRun() {
-		StartPatternTrace (0.4f / patternGenerator.ChainLength, currentPattern, 0, (Tile tile) => tile.EmitMarkEffect());
+		StartPatternTrace (
+			0.4f / patternGenerator.ChainLength,
+			currentPattern,
+			0,
+			(Tile tile) => tile.EmitMarkEffect(),
+			true
+		);
 	}
 	
 	int CirculatoryIndex(int next, int end) {
@@ -194,14 +203,16 @@ public class PatternTracer : MonoBehaviour {
 					0.40f / patternGenerator.ChainLength,
 					CirculatoryIndex (currentPattern + backNum, backNum),
 					0,
-					(Tile tile) => tile.EmitMarkEffect()
+					(Tile tile) => tile.EmitMarkEffect(),
+					true
 				);
 
 				StartPatternTrace(
 					0.40f / patternGenerator.ChainLength,
 					CirculatoryIndex(currentPattern, backNum),
 					0,
-					(Tile tile) => tile.EmitPatternCorrectEffect()
+					(Tile tile) => tile.EmitPatternCorrectEffect(),
+					true
 				);
 
 				scoreManager.CorrectPattern();
