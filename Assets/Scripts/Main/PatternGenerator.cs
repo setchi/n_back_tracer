@@ -22,7 +22,7 @@ public class PatternGenerator : MonoBehaviour {
 		get { return chainLength; }
 	}
 	
-	public List<int> Generate(ref List<int> ignoreIndexes) {
+	public List<int> Generate(List<int> ignoreIndexes) {
 		var workX = fieldWidth + 2;
 		var workY = fieldHeight + 2;
 
@@ -48,7 +48,7 @@ public class PatternGenerator : MonoBehaviour {
 		)) {
 			if (++index == shuffledStartPos.Length) {
 				index = 0;
-				ignoreIndexes.RemoveAt(ignoreIndexes.Count - 1);
+				ignoreIndexes.Remove(ignoreIndexes.Last());
 				field = InitField(workX, workY, ignoreIndexes, isWall);
 			}
 		};
@@ -56,7 +56,7 @@ public class PatternGenerator : MonoBehaviour {
 		return patternStack.ToList();
 	}
 	
-	int[] InitField(int x, int y, List<int> ignoreIndexes, Func<int, bool> isWall) {
+	int[] InitField(int x, int y, IEnumerable<int> ignoreIndexes, Func<int, bool> isWall) {
 		var fieldSize = y * x + x;
 		var wallIndexes = Enumerable.Range (0, fieldSize).Where (isWall)
 			.Union (ignoreIndexes.Select (

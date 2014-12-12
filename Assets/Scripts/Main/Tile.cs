@@ -64,10 +64,18 @@ public class Tile : MonoBehaviour {
 		}, EraseLine);
 	}
 
-	public void EmitCorrectEffect() {
+	public void EmitCorrectTouchEffect() {
+		UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, 0);
+
 		SetTimer (0.4f, position => {
-			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, position);
 			UpdateScale ((1 - position) * 0.3f + 1);
+		});
+	}
+
+	public void EmitPatternCorrectEffect() {
+		SetTimer (0.4f, position => {
+			UpdateColor (Color.white, defaultColor, position);
+			// UpdateScale ((1 - position) * 0.3f + 1);
 		}, EraseLine);
 	}
 

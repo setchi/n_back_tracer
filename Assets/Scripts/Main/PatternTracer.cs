@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System;
+using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,7 +13,7 @@ public class PatternTracer : MonoBehaviour {
 	Tile[] tiles = new Tile[tileNum];
 
 	int backNum;
-	List<List<int>> patterns = new List<List<int>>();
+	List<List<int>> patterns;
 
 	int currentPattern = 0;
 	int currentIndex = 0;
@@ -31,21 +32,22 @@ public class PatternTracer : MonoBehaviour {
 		patternGenerator.FieldHeight = 5;
 		ApplyStates (GameObject.Find ("StorageObject"));
 
-		// nBack分リスト初期化
-		for (int i = 0; i <= backNum; i++) {
-			patterns.Add(new List<int>());
-		}
-		
-		// nBack分パターン初期化
-		for (int i = 0; i <= backNum; i++) {
-			UpdatePattern (currentPattern + i, new List<int>());
-		}
+		// パターン初期化
+		var ignoreIndexes = new List<int> ();
+		patterns = Enumerable.Range (0, backNum + 1)
+			.Select (i => {
+				var newPattern = patternGenerator.Generate (ignoreIndexes);
+				ignoreIndexes.AddRange(newPattern);
+				return newPattern;
+			}).ToList ();
 
 		// タイル配列初期化
-		for (int i = 0; i < tileNum; i++) {
-			tiles[i] = GameObject.Find("Tile" + i.ToString()).GetComponent<Tile>();		
-			tiles[i].TileId = i;
-		}
+		tiles = Enumerable.Range (0, tileNum)
+			.Select (i => {
+				var tile = GameObject.Find ("Tile" + i.ToString ()).GetComponent<Tile> ();
+				tile.TileId = i;
+				return tile;
+			}).ToArray ();
 	}
 
 	/* テスト用 */
@@ -60,30 +62,32 @@ public class PatternTracer : MonoBehaviour {
 	
 	bool isStandby = true;
 	float hintAnimationTriggerTimer = 0;
-	Action updateTrace;
+	List<Predicate<int>> updateActions = new List<Predicate<int>> ();
 
-	// 名前がちょっと変
-	void StartPatternTrace(float interval, int targetPattern, int index, Action<Tile> tileEffectEmitter) {
-		float timer = 0;
+	void StartPatternTrace(float interval, int patternIndex, int startIndex, Action<Tile> tileEffectEmitter) {
+		var timer = 0f;
+		var index = startIndex;
+		var targetPattern = patterns [patternIndex];
 
-		updateTrace = () => {
+		updateActions.Add (i => {
 			if ((timer += Time.deltaTime) < interval)
-				return;
+				return false;
 			
 			timer = 0;
-			tileEffectEmitter (tiles [patterns [targetPattern] [index]]);
-			DrawLine(targetPattern, index, currentIndex);
-
+			tileEffectEmitter (tiles [targetPattern [index]]);
+			DrawLine(targetPattern, index, startIndex);
+			
 			index++;
-			if (index >= patterns [targetPattern].Count) {
-				updateTrace = null;
+			if (index < targetPattern.Count) {
+				return false;
 			}
-		};
+			return true;
+		});
 	}
 
-	void DrawLine(int targetPattern, int index, int currentIndex) {
-		Tile currentTile = tiles [patterns [targetPattern] [index]];
-		Tile prevTile = tiles[patterns[targetPattern][index == 0 ? index : currentIndex != 0 && index == currentIndex ? index : index - 1]];
+	void DrawLine(List<int> targetPattern, int index, int currentIndex) {
+		Tile currentTile = tiles [targetPattern [index]];
+		Tile prevTile = tiles[targetPattern [index == 0 ? index : currentIndex != 0 && index == currentIndex ? index : index - 1]];
 
 		currentTile.DrawLine(
 			prevTile.gameObject.transform.position - currentTile.gameObject.transform.position
@@ -92,13 +96,23 @@ public class PatternTracer : MonoBehaviour {
 	
 	float timer = 0;
 	void Update() {
-		if (updateTrace != null) {
-			updateTrace();
+		if (updateActions.Count > 0) {
+			var completeActions = new Stack<Predicate<int>>();
+
+			foreach (var updateAction in updateActions) {
+				if (updateAction(0)) {
+					completeActions.Push(updateAction);
+				}
+			}
+
+			foreach (var completeAction in completeActions) {
+				updateActions.Remove(completeAction);
+			}
 		}
 
 		// スタート時のnBarkRun
 		if (isStandby) {
-			if (updateTrace != null)
+			if (updateActions.Count > 0)
 				return;
 
 			timer += Time.deltaTime;
@@ -145,45 +159,21 @@ public class PatternTracer : MonoBehaviour {
 		return next > end ? CirculatoryIndex(--next - end, end) : next;
 	}
 
-	void UpdatePattern(int targetPattern, List<int> ignoreList) {
-		patterns [targetPattern] = patternGenerator.Generate (ref ignoreList);
-	}
-
-	List<int> BuildIgnoreList(int targetPattern) {
-		List<int> ignoreList = new List<int>();
-
-		// トリガーになったやつ
-		// List<int> triggerPattern = patterns[LoopIndex (currentPattern - backNum, backNum)];
-		// ignoreList.Add (triggerPattern[triggerPattern.Count - 1]);
-
-		foreach (int i in patterns[CirculatoryIndex (targetPattern - backNum, backNum)]) {
-			ignoreList.Add(i);
-		}
-
-		// 次に出す一個前のパターン全部
-		foreach (int i in patterns[CirculatoryIndex(targetPattern - 1, backNum)]) {
-			ignoreList.Add(i);
-		}
-
-		return ignoreList;
+	List<int> BuildIgnoreIndexes(int targetPattern) {
+		return (patterns [CirculatoryIndex (targetPattern - backNum, backNum)])
+			.Union (patterns [CirculatoryIndex (targetPattern - 1, backNum)]).ToList ();
 	}
 
 	void PatternIncrement() {
 		currentPattern = CirculatoryIndex (currentPattern + 1, backNum);
 
-		int targetPattern = CirculatoryIndex (currentPattern + backNum, backNum);
-		List<int> ignoreList = BuildIgnoreList (targetPattern);
-		UpdatePattern (targetPattern, ignoreList);
+		var targetPattern = CirculatoryIndex (currentPattern + backNum, backNum);
+		var ignoreIndexes = BuildIgnoreIndexes (targetPattern);
+		patterns [targetPattern] = patternGenerator.Generate (ignoreIndexes);
 	}
 
 	void IndexIncrement() {
 		currentIndex = CirculatoryIndex (currentIndex + 1, patterns [currentPattern].Count - 1);
-
-		// Correct pattern
-		if (currentIndex == 0) {
-			scoreManager.CorrectPattern();
-			PatternIncrement();
-		}
 	}
 
 	public void Touch(int tileId) {
@@ -192,22 +182,34 @@ public class PatternTracer : MonoBehaviour {
 		// Correct touch
 		if (patterns [currentPattern] [currentIndex] == tileId) {
 			scoreManager.CorrectTouch();
-			tiles [patterns [currentPattern] [currentIndex]].EmitCorrectEffect ();
-			DrawLine(currentPattern, currentIndex, 0);
-			
-			// start next pattern animation
-			if (currentIndex == patternGenerator.ChainLength - 1) {
+			tiles [patterns [currentPattern] [currentIndex]].EmitCorrectTouchEffect ();
+			DrawLine(patterns[currentPattern], currentIndex, 0);
+
+			IndexIncrement ();
+
+			// Correct Pattern
+			if (currentIndex == 0) {
+				// start next pattern animation
 				StartPatternTrace(
 					0.40f / patternGenerator.ChainLength,
 					CirculatoryIndex (currentPattern + backNum, backNum),
 					0,
 					(Tile tile) => tile.EmitMarkEffect()
 				);
+
+				StartPatternTrace(
+					0.40f / patternGenerator.ChainLength,
+					CirculatoryIndex(currentPattern, backNum),
+					0,
+					(Tile tile) => tile.EmitPatternCorrectEffect()
+				);
+
+				scoreManager.CorrectPattern();
+				PatternIncrement();
 			}
-			IndexIncrement ();
 		
 		// Miss touch
-		} else {
+		} else if (!patterns[currentPattern].Contains(tileId)) {
 			scoreManager.MissTouch ();
 			tiles [tileId].EmitMissEffect ();
 		}
