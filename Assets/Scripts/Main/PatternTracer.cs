@@ -98,19 +98,7 @@ public class PatternTracer : MonoBehaviour {
 	
 	float timer = 0;
 	void Update() {
-		if (updateActions.Count > 0) {
-			var completeActions = new Stack<Predicate<int>>();
-
-			foreach (var updateAction in updateActions) {
-				if (!updateAction(0)) {
-					completeActions.Push(updateAction);
-				}
-			}
-
-			foreach (var completeAction in completeActions) {
-				updateActions.Remove(completeAction);
-			}
-		}
+		updateActions = updateActions.Where (action => action (0)).ToList ();
 
 		// スタート時のnBarkRun
 		if (isStandby) {
