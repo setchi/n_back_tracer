@@ -19,7 +19,7 @@ public class Tile : MonoBehaviour {
 		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
 		spriteRenderer = GetComponent<SpriteRenderer> ();
 		lineRenderer = GetComponentInChildren<LineRenderer>();
-		lineRenderer.SetWidth (0.2f, 0.2f);
+		lineRenderer.SetWidth (0.15f, 0.15f);
 		// 線のスタート位置は常にタイルの中心
 		lineRenderer.SetPosition(0, Vector3.zero);
 	}
@@ -58,9 +58,11 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitMarkEffect() {
+		var currentScale = transform.localScale.x;
+
 		SetTimer (1f, position => {
 			UpdateColor (Color.green, defaultColor, position);
-			UpdateScale (1.3f, 1, position);
+			UpdateScale (currentScale, 1, position);
 		}, EraseLine);
 	}
 
