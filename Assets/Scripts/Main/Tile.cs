@@ -19,7 +19,7 @@ public class Tile : MonoBehaviour {
 		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
 		spriteRenderer = GetComponent<SpriteRenderer> ();
 		lineRenderer = GetComponentInChildren<LineRenderer>();
-		lineRenderer.SetWidth (0.1f, 0.1f);
+		lineRenderer.SetWidth (0.2f, 0.2f);
 		// 線のスタート位置は常にタイルの中心
 		lineRenderer.SetPosition(0, Vector3.zero);
 	}
@@ -59,36 +59,38 @@ public class Tile : MonoBehaviour {
 
 	public void EmitMarkEffect() {
 		SetTimer (1f, position => {
-			UpdateColor (Color.white * 0.07f + Color.green * 0.93f, defaultColor, position);
-			UpdateScale ((1 - position) * 0.3f + 1);
+			UpdateColor (Color.green, defaultColor, position);
+			UpdateScale (1.3f, 1, position);
 		}, EraseLine);
 	}
 
 	public void EmitCorrectTouchEffect() {
-		UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, 0);
+		UpdateColor (Color.cyan, defaultColor, 0);
 
 		SetTimer (0.4f, position => {
-			UpdateScale ((1 - position) * 0.3f + 1);
+			UpdateScale (1.3f, 1, position);
 		});
 	}
 
 	public void EmitPatternCorrectEffect() {
+		var currentScale = transform.localScale.x;
+
 		SetTimer (0.4f, position => {
-			UpdateColor (Color.white, defaultColor, position);
-			// UpdateScale ((1 - position) * 0.3f + 1);
+			UpdateColor (Color.cyan, defaultColor, position);
+			UpdateScale (currentScale, 1, position);
 		}, EraseLine);
 	}
 
 	public void EmitMissEffect() {
 		SetTimer (0.6f, position => {
 			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, position);
-			UpdateScale ((1 - position) * 0.3f + 1);
+			UpdateScale (1.3f, 1, position);
 		}, EraseLine);
 	}
 
 	public void EmitHintEffect() {
 		SetTimer (0.6f, position => {
-			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, position);
+			UpdateColor (Color.cyan, defaultColor, position);
 		}, EraseLine);
 	}
 
@@ -98,7 +100,8 @@ public class Tile : MonoBehaviour {
 		lineRenderer.material.color = color;
 	}
 	
-	void UpdateScale(float scale) {
+	void UpdateScale(float from, float to, float position) {
+		var scale = from - (from - to) * position;
 		transform.localScale = new Vector3 (scale, scale, scale);
 	}
 }

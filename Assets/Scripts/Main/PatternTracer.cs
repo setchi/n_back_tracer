@@ -71,7 +71,7 @@ public class PatternTracer : MonoBehaviour {
 
 		updateActions.Add (i => {
 			if ((timer += Time.deltaTime) < interval)
-				return false;
+				return true;
 			
 			timer = 0;
 			tileEffectEmitter (tiles [targetPattern [index]]);
@@ -81,9 +81,9 @@ public class PatternTracer : MonoBehaviour {
 			
 			index++;
 			if (index < targetPattern.Count) {
-				return false;
+				return true;
 			}
-			return true;
+			return false;
 		});
 	}
 
@@ -102,7 +102,7 @@ public class PatternTracer : MonoBehaviour {
 			var completeActions = new Stack<Predicate<int>>();
 
 			foreach (var updateAction in updateActions) {
-				if (updateAction(0)) {
+				if (!updateAction(0)) {
 					completeActions.Push(updateAction);
 				}
 			}
@@ -143,10 +143,10 @@ public class PatternTracer : MonoBehaviour {
 			
 			// start hint animation
 			StartPatternTrace(
-				0.40f / patternGenerator.ChainLength,
+				0.4f / patternGenerator.ChainLength,
 				currentPattern,
 				currentIndex,
-				(Tile tile) => tile.EmitHintEffect(),
+				tile => tile.EmitHintEffect(),
 				false
 			);
 		}
@@ -157,7 +157,7 @@ public class PatternTracer : MonoBehaviour {
 			0.4f / patternGenerator.ChainLength,
 			currentPattern,
 			0,
-			(Tile tile) => tile.EmitMarkEffect(),
+			tile => tile.EmitMarkEffect(),
 			true
 		);
 	}
@@ -173,7 +173,7 @@ public class PatternTracer : MonoBehaviour {
 			.Union (patterns [CirculatoryIndex (targetPattern - 1, backNum)]).ToList ();
 	}
 
-	void PatternIncrement() {
+	void UpdatePattern() {
 		currentPattern = CirculatoryIndex (currentPattern + 1, backNum);
 
 		var targetPattern = CirculatoryIndex (currentPattern + backNum, backNum);
@@ -200,27 +200,27 @@ public class PatternTracer : MonoBehaviour {
 			if (currentIndex == 0) {
 				// start next pattern animation
 				StartPatternTrace(
-					0.40f / patternGenerator.ChainLength,
+					0.4f / patternGenerator.ChainLength,
 					CirculatoryIndex (currentPattern + backNum, backNum),
 					0,
-					(Tile tile) => tile.EmitMarkEffect(),
+					tile => tile.EmitMarkEffect(),
 					true
 				);
 
 				StartPatternTrace(
-					0.40f / patternGenerator.ChainLength,
+					0.0f / patternGenerator.ChainLength,
 					CirculatoryIndex(currentPattern, backNum),
 					0,
-					(Tile tile) => tile.EmitPatternCorrectEffect(),
+					tile => tile.EmitPatternCorrectEffect(),
 					true
 				);
 
 				scoreManager.CorrectPattern();
-				PatternIncrement();
+				UpdatePattern();
 			}
 		
 		// Miss touch
-		} else if (!patterns[currentPattern].Contains(tileId)) {
+		} else if (!patterns[currentPattern].Where ((v, i) => i < currentIndex).Contains(tileId)) {
 			scoreManager.MissTouch ();
 			tiles [tileId].EmitMissEffect ();
 		}
