@@ -11,10 +11,9 @@ public class Tile : MonoBehaviour {
 	SpriteRenderer spriteRenderer;
 	GameController gameController;
 	LineRenderer lineRenderer;
-	Action UpdateEffect;
+	Action UpdateTime;
 	
 	Color defaultColor = new Color(0.2f, 0.2f, 0.2f, 1);
-	float timer = 0;
 
 	void Awake() {
 		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
@@ -26,14 +25,12 @@ public class Tile : MonoBehaviour {
 	}
 
 	void Update() {
-		if (UpdateEffect != null) {
-			UpdateEffect ();
-			timer += Time.deltaTime;
-		}
+		if (UpdateTime != null)
+			UpdateTime ();
 	}
 
-	public void DrawLine(Vector3 endPos) {
-		lineRenderer.SetPosition(1, endPos);
+	public void DrawLine(Vector3 endPosition) {
+		lineRenderer.SetPosition(1, endPosition);
 	}
 	
 	void EraseLine() { DrawLine (Vector3.zero); }
@@ -42,59 +39,58 @@ public class Tile : MonoBehaviour {
 		gameController.TouchedTile (tileId);
 	}
 
-	void EmitEffect(float time, Action<float> onUpdate) {
-		timer = 0;
+	void SetTimer(float endTime, Action<float> onUpdate, Action onComplete = null) {
+		var currentTime = 0f;
 
-		UpdateEffect = () => {
-			if (timer < time) {
-				onUpdate(timer / time);
+		UpdateTime = () => {
+			if (currentTime < endTime) {
+				onUpdate(currentTime / endTime);
+				currentTime += Time.deltaTime;
 			
 			} else {
-				UpdateEffect = null;
+				UpdateTime = null;
 				onUpdate(1);
-				CompleteEffect();
+
+				if (onComplete != null)
+					onComplete();
 			}
 		};
 	}
 
 	public void EmitMarkEffect() {
-		EmitEffect (1f, value => {
-			UpdateColor (Color.white * 0.07f + Color.green * 0.93f, defaultColor, value);
-			UpdateScale ((1 - value) * 0.3f + 1);
-		});
+		SetTimer (1f, position => {
+			UpdateColor (Color.white * 0.07f + Color.green * 0.93f, defaultColor, position);
+			UpdateScale ((1 - position) * 0.3f + 1);
+		}, EraseLine);
 	}
 
 	public void EmitCorrectEffect() {
-		EmitEffect (0.4f, value => {
-			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value);
-			UpdateScale ((1 - value) * 0.3f + 1);
-		});
+		SetTimer (0.4f, position => {
+			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, position);
+			UpdateScale ((1 - position) * 0.3f + 1);
+		}, EraseLine);
 	}
 
 	public void EmitMissEffect() {
-		EmitEffect (0.6f, value => {
-			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, value);
-			UpdateScale ((1 - value) * 0.3f + 1);
-		});
+		SetTimer (0.6f, position => {
+			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, position);
+			UpdateScale ((1 - position) * 0.3f + 1);
+		}, EraseLine);
 	}
 
 	public void EmitHintEffect() {
-		EmitEffect (0.6f, value => {
-			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, value);
-		});
+		SetTimer (0.6f, position => {
+			UpdateColor ((Color.white + Color.cyan * 2) / 2.5f, defaultColor, position);
+		}, EraseLine);
 	}
 
-	void UpdateColor(Color from, Color to, float value) {
-		Color color = from - (from - to) * value;
+	void UpdateColor(Color from, Color to, float position) {
+		var color = from - (from - to) * position;
 		spriteRenderer.color = color;
 		lineRenderer.material.color = color;
 	}
 	
 	void UpdateScale(float scale) {
 		transform.localScale = new Vector3 (scale, scale, scale);
-	}
-	
-	void CompleteEffect() {
-		EraseLine();
 	}
 }

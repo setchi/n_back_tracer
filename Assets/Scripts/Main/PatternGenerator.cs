@@ -23,22 +23,22 @@ public class PatternGenerator : MonoBehaviour {
 	}
 	
 	public List<int> Generate(ref List<int> ignoreIndexes) {
-		int workX = fieldWidth + 2;
-		int workY = fieldHeight + 2;
+		var workX = fieldWidth + 2;
+		var workY = fieldHeight + 2;
 
 		Func<int, bool> isWall = i => {
-			int x = i % workX;
-			int y = Mathf.FloorToInt (i / workX);
+			var x = i % workX;
+			var y = Mathf.FloorToInt (i / workX);
 			return y == 0 || x == 0 || y == workY - 1 || x == workX - 1;
 		};
 		Func<Func<int, bool>, Func<int, bool>> not = func => i => !func(i);
 
-		int[] field = InitField (workX, workY, ignoreIndexes, isWall);
-		int[] shuffledStartPos = GenerateShuffledIndexFromRange (0, workX * workY)
-			.Where (not(isWall)).ToArray ();
+		var field = InitField (workX, workY, ignoreIndexes, isWall);
+		var shuffledStartPos = GenerateShuffledIndexes (0, workX * workY)
+			.Where (not (isWall)).ToArray ();
 
-		Stack<int> patternStack = new Stack<int> ();
-		int index = 0;
+		var patternStack = new Stack<int> ();
+		var index = 0;
 
 		while (!PatternDFS (
 			ref field,
@@ -57,17 +57,17 @@ public class PatternGenerator : MonoBehaviour {
 	}
 	
 	int[] InitField(int x, int y, List<int> ignoreIndexes, Func<int, bool> isWall) {
-		int fieldSize = y * x + x;
+		var fieldSize = y * x + x;
 		var wallIndexes = Enumerable.Range (0, fieldSize).Where (isWall)
 			.Union (ignoreIndexes.Select (
 				i => Mathf.FloorToInt (i / fieldWidth + 1) * (fieldWidth + 2) + i % fieldWidth + 1
 			));
 
 		return Enumerable.Repeat (0, fieldSize)
-			.Select ((v, i) => wallIndexes.Contains (i) ? 1 : v).ToArray ();
+			.Select ((v, i) => wallIndexes.Contains (i) ? 1 : 0).ToArray ();
 	}
 
-	IEnumerable<int> GenerateShuffledIndexFromRange(int start, int count) {
+	IEnumerable<int> GenerateShuffledIndexes(int start, int count) {
 		return Enumerable.Range (start, count).OrderBy (i => Guid.NewGuid ());
 	}
 	
@@ -82,7 +82,7 @@ public class PatternGenerator : MonoBehaviour {
 		pattern.Push (CalcPatternIndex(currentPos));
 		
 		int[] directions = { -fieldWidth - 2, 1, fieldWidth + 2, -1 };
-		foreach (int i in GenerateShuffledIndexFromRange (0, 4)) {
+		foreach (int i in GenerateShuffledIndexes (0, 4)) {
 			int newDirIndex = CirculatoryIndex (dirIndex + i, directions.Length - 1);
 			// 進めるところまで進む
 			if (PatternDFS(ref field, currentPos + directions[newDirIndex], newDirIndex, ref pattern)) {
@@ -96,8 +96,8 @@ public class PatternGenerator : MonoBehaviour {
 	}
 
 	int CalcPatternIndex(int fieldPos) {
-		int x = fieldPos % (fieldWidth + 2) - 1;
-		int y = Mathf.FloorToInt (fieldPos / (fieldWidth + 2)) - 1;
+		var x = fieldPos % (fieldWidth + 2) - 1;
+		var y = Mathf.FloorToInt (fieldPos / (fieldWidth + 2)) - 1;
 		return y * fieldWidth + x;
 	}
 	
