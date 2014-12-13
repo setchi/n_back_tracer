@@ -61,16 +61,24 @@ public class Tile : MonoBehaviour {
 		var currentScale = transform.localScale.x;
 
 		SetTimer (1f, position => {
-			UpdateColor (Color.green, defaultColor, position);
+			/*
+			var threshold = 0.35f;
+			if (position < threshold) {
+				UpdateColor (Color.white , Color.green, position * (1 / threshold));
+			} else {
+				UpdateColor (Color.green, defaultColor, (position - threshold) / (1 - threshold));
+			}*/
 			UpdateScale (currentScale, 1, position);
+			UpdateColor(Color.green, defaultColor, position);
 		}, EraseLine);
 	}
 
 	public void EmitCorrectTouchEffect() {
-		UpdateColor (Color.cyan, defaultColor, 0);
+		// UpdateColor (Color.white, Color.cyan, 1);
 
 		SetTimer (0.4f, position => {
 			UpdateScale (1.3f, 1, position);
+			UpdateColor (Color.white, Color.cyan, position);
 		});
 	}
 
