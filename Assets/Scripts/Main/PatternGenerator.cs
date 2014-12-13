@@ -5,20 +5,20 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PatternGenerator : MonoBehaviour {
-	int width;
-	int height;
+	int col;
+	int row;
 	int chainLength = 4; /* default 4 */
 
-	public int Width { set { width = value; } }
-	public int Height { set { height = value; } }
+	public int Col { set { col = value; } }
+	public int Row { set { row = value; } }
 	public int ChainLength {
 		set { chainLength = value; }
 		get { return chainLength; }
 	}
 	
 	public List<int> Generate(List<int> ignoreIndexes) {
-		var workX = width + 2;
-		var workY = height + 2;
+		var workX = col + 2;
+		var workY = row + 2;
 
 		Func<int, bool> isWall = i => {
 			var x = i % workX;
@@ -57,9 +57,9 @@ public class PatternGenerator : MonoBehaviour {
 			.Union (
 				ignoreIndexes
 					// 六角形のはみ出てる部分を除外(仮)
-			        .Union (Enumerable.Range (0, width * height) .Where (i => i % (width * 2) == width - 1))
+			        .Union (Enumerable.Range (0, col * row) .Where (i => i % (col * 2) == col - 1))
 					// work配列座標に変換
-			        .Select (i => Mathf.FloorToInt (i / width + 1) * x + (i % width + 1)
+			        .Select (i => Mathf.FloorToInt (i / col + 1) * x + (i % col + 1)
 			));
 
 		return Enumerable.Repeat (0, fieldSize)
@@ -80,7 +80,7 @@ public class PatternGenerator : MonoBehaviour {
 		field [currentPos] = 1;
 		pattern.Push (CalcPatternIndex(currentPos));
 		
-		int[] directions = { -width - 2, 1, width + 2, -1 };
+		int[] directions = { -col - 2, 1, col + 2, -1 };
 		foreach (int i in GenerateShuffledIndexes (0, 4)) {
 			int newDirIndex = CirculatoryIndex (dirIndex + i, directions.Length - 1);
 			// 進めるところまで進む
@@ -95,9 +95,9 @@ public class PatternGenerator : MonoBehaviour {
 	}
 
 	int CalcPatternIndex(int fieldPos) {
-		var x = fieldPos % (width + 2) - 1;
-		var y = Mathf.FloorToInt (fieldPos / (width + 2)) - 1;
-		return y * width + x;
+		var x = fieldPos % (col + 2) - 1;
+		var y = Mathf.FloorToInt (fieldPos / (col + 2)) - 1;
+		return y * col + x;
 	}
 	
 	int CirculatoryIndex(int next, int end) {

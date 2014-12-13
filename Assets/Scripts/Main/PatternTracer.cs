@@ -28,8 +28,8 @@ public class PatternTracer : MonoBehaviour {
 	void Awake() {
 		scoreManager = GetComponent<ScoreManager>();
 		patternGenerator = GetComponent<PatternGenerator>();
-		patternGenerator.Width = 4;
-		patternGenerator.Height = 7;
+		patternGenerator.Col = 4;
+		patternGenerator.Row = 7;
 		ApplyStates (GameObject.Find ("StorageObject"));
 
 		// パターン初期化
@@ -92,7 +92,8 @@ public class PatternTracer : MonoBehaviour {
 		Tile prevTile = tiles[targetPattern [index == 0 ? index : currentIndex != 0 && index == currentIndex ? index : index - 1]];
 
 		currentTile.DrawLine(
-			prevTile.gameObject.transform.position - currentTile.gameObject.transform.position
+			0.8f * /* ← 反対側に飛び出るのを防ぐ暫定対応 */
+			(prevTile.gameObject.transform.position - currentTile.gameObject.transform.position)
 		);
 	}
 	
@@ -142,7 +143,7 @@ public class PatternTracer : MonoBehaviour {
 
 	public void StartPriorNRun() {
 		StartPatternTrace (
-			0.4f / patternGenerator.ChainLength,
+			0.5f / patternGenerator.ChainLength,
 			currentPattern,
 			0,
 			tile => tile.EmitMarkEffect(),
@@ -188,7 +189,7 @@ public class PatternTracer : MonoBehaviour {
 			if (currentIndex == 0) {
 				// start next pattern animation
 				StartPatternTrace(
-					0.4f / patternGenerator.ChainLength,
+					0.5f / patternGenerator.ChainLength,
 					CirculatoryIndex (currentPattern + backNum, backNum),
 					0,
 					tile => tile.EmitMarkEffect(),

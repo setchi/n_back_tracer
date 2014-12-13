@@ -68,7 +68,7 @@ public class Tile : MonoBehaviour {
 			} else {
 				UpdateColor (Color.green, defaultColor, (position - threshold) / (1 - threshold));
 			}//*/
-			UpdateScale (1.3f, 1, position);
+			UpdateScale (currentScale, 1, position);
 			// UpdateColor(Color.green, defaultColor, position);
 		}, EraseLine);
 	}
