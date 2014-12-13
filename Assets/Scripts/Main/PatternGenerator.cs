@@ -5,26 +5,20 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class PatternGenerator : MonoBehaviour {
-	int fieldWidth;
-	int fieldHeight;
+	int width;
+	int height;
 	int chainLength = 4; /* default 4 */
 
-	public int FieldWidth {
-		set { fieldWidth = value; }
-	}
-
-	public int FieldHeight {
-		set { fieldHeight = value; }
-	}
-	
+	public int Width { set { width = value; } }
+	public int Height { set { height = value; } }
 	public int ChainLength {
 		set { chainLength = value; }
 		get { return chainLength; }
 	}
 	
 	public List<int> Generate(List<int> ignoreIndexes) {
-		var workX = fieldWidth + 2;
-		var workY = fieldHeight + 2;
+		var workX = width + 2;
+		var workY = height + 2;
 
 		Func<int, bool> isWall = i => {
 			var x = i % workX;
@@ -58,9 +52,14 @@ public class PatternGenerator : MonoBehaviour {
 	
 	int[] InitField(int x, int y, IEnumerable<int> ignoreIndexes, Func<int, bool> isWall) {
 		var fieldSize = y * x + x;
+
 		var wallIndexes = Enumerable.Range (0, fieldSize).Where (isWall)
-			.Union (ignoreIndexes.Select (
-				i => Mathf.FloorToInt (i / fieldWidth + 1) * (fieldWidth + 2) + i % fieldWidth + 1
+			.Union (
+				ignoreIndexes
+					// 六角形のはみ出てる部分を除外(仮)
+			        .Union (Enumerable.Range (0, width * height) .Where (i => i % (width * 2) == width - 1))
+					// work配列座標に変換
+			        .Select (i => Mathf.FloorToInt (i / width + 1) * x + (i % width + 1)
 			));
 
 		return Enumerable.Repeat (0, fieldSize)
@@ -81,7 +80,7 @@ public class PatternGenerator : MonoBehaviour {
 		field [currentPos] = 1;
 		pattern.Push (CalcPatternIndex(currentPos));
 		
-		int[] directions = { -fieldWidth - 2, 1, fieldWidth + 2, -1 };
+		int[] directions = { -width - 2, 1, width + 2, -1 };
 		foreach (int i in GenerateShuffledIndexes (0, 4)) {
 			int newDirIndex = CirculatoryIndex (dirIndex + i, directions.Length - 1);
 			// 進めるところまで進む
@@ -96,9 +95,9 @@ public class PatternGenerator : MonoBehaviour {
 	}
 
 	int CalcPatternIndex(int fieldPos) {
-		var x = fieldPos % (fieldWidth + 2) - 1;
-		var y = Mathf.FloorToInt (fieldPos / (fieldWidth + 2)) - 1;
-		return y * fieldWidth + x;
+		var x = fieldPos % (width + 2) - 1;
+		var y = Mathf.FloorToInt (fieldPos / (width + 2)) - 1;
+		return y * width + x;
 	}
 	
 	int CirculatoryIndex(int next, int end) {
