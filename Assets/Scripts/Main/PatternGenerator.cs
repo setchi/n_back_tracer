@@ -57,7 +57,7 @@ public class PatternGenerator : MonoBehaviour {
 			.Union (
 				ignoreIndexes
 					// 六角形のはみ出てる部分を除外(仮)
-			        .Union (Enumerable.Range (0, col * row) .Where (i => i % (col * 2) == col - 1))
+					//  .Union (Enumerable.Range (0, col * row) .Where (i => i % (col * 2) == col - 1))
 					// work配列座標に変換
 			        .Select (i => Mathf.FloorToInt (i / col + 1) * x + (i % col + 1)
 			));

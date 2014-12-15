@@ -1,6 +1,8 @@
 using UnityEngine;
 using System;
+using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 
 public class Tile : MonoBehaviour {
 	public int TileId {
@@ -11,7 +13,7 @@ public class Tile : MonoBehaviour {
 	SpriteRenderer spriteRenderer;
 	GameController gameController;
 	LineRenderer lineRenderer;
-	Action UpdateTime;
+	List<Func<int, bool>> UpdateActions;
 	
 	Color defaultColor = new Color(0.2f, 0.2f, 0.2f, 1);
 
@@ -22,11 +24,12 @@ public class Tile : MonoBehaviour {
 		lineRenderer.SetWidth (0.13f, 0.13f);
 		// 線のスタート位置は常にタイルの中心
 		lineRenderer.SetPosition(0, Vector3.zero);
+
+		UpdateActions = new List<Func<int, bool>>();
 	}
 
 	void Update() {
-		if (UpdateTime != null)
-			UpdateTime ();
+		UpdateActions = UpdateActions.Where(action => action(0)).ToList();
 	}
 
 	public void DrawLine(Vector3 endPosition) {
@@ -35,32 +38,39 @@ public class Tile : MonoBehaviour {
 	
 	void EraseLine() { DrawLine (Vector3.zero); }
 
+	void CompleteEffect() {
+		if (UpdateActions.Count == 1)
+			EraseLine();
+	}
+
 	void OnMouseEnter() {
 		gameController.TouchedTile (tileId);
 	}
 
-	void SetTimer(float endTime, Func<float, float, float, float> easing, Action<float> onUpdate, Action onComplete = null) {
+	void SetTimer(bool important, float endTime, Func<float, float, float, float> easing, Action<float> onUpdate, Action onComplete = null) {
 		var currentTime = 0f;
-
-		UpdateTime = () => {
+		Func<int, bool> action = i => {
 			if (currentTime < endTime) {
 				onUpdate(easing(0, 1, currentTime / endTime));
 				currentTime += Time.deltaTime;
-			
-			} else {
-				UpdateTime = null;
-				onUpdate(1);
-
-				if (onComplete != null)
-					onComplete();
+				return true;
 			}
+			onUpdate(1);
+			
+			if (onComplete != null)
+			onComplete();
+			
+			return false;
 		};
+
+		if (important) UpdateActions = new List<Func<int, bool>> () {action};
+		else UpdateActions.Add(action);
 	}
 
 	public void EmitMarkEffect() {
 		var currentScale = transform.localScale.x;
 
-		SetTimer (1f, Easing.linear, position => {
+		SetTimer (true, 1f, Easing.linear, position => {
 			//*
 			var threshold = 0.35f;
 			if (position < threshold) {
@@ -70,38 +80,37 @@ public class Tile : MonoBehaviour {
 			}//*/
 			UpdateScale (currentScale, 1, position);
 			// UpdateColor(Color.green, defaultColor, position);
-		}, EraseLine);
+		}, CompleteEffect);
 	}
 
 	public void EmitCorrectTouchEffect() {
 		// UpdateColor (Color.white, Color.cyan, 1);
 
-		SetTimer (0.4f, Easing.easeOutBounce, position => {
+		SetTimer (true, 0.4f, Easing.easeOutBounce, position => {
 			UpdateScale (1.3f, 1, position);
 			UpdateColor (Color.white, Color.cyan, position);
 		});
 	}
 
 	public void EmitPatternCorrectEffect() {
-		var currentScale = transform.localScale.x;
-
-		SetTimer (0.4f, Easing.easeOutBounce, position => {
+		SetTimer (false, 0.4f, Easing.linear, position => {
 			UpdateColor (Color.cyan, defaultColor, position);
-			UpdateScale (currentScale, 1, position);
-		}, EraseLine);
+		}, CompleteEffect);
 	}
 
 	public void EmitMissEffect() {
-		SetTimer (0.6f, Easing.easeInCubic, position => {
+		EraseLine();
+
+		SetTimer (true, 0.6f, Easing.linear, position => {
 			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, position);
 			UpdateScale (1.3f, 1, position);
-		}, EraseLine);
+		}, CompleteEffect);
 	}
 
 	public void EmitHintEffect() {
-		SetTimer (0.6f, Easing.linear, position => {
+		SetTimer (true, 0.6f, Easing.linear, position => {
 			UpdateColor (Color.cyan, defaultColor, position);
-		}, EraseLine);
+		}, CompleteEffect);
 	}
 
 	void UpdateColor(Color from, Color to, float position) {
