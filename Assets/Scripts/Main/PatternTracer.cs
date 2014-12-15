@@ -9,7 +9,7 @@ public class PatternTracer : MonoBehaviour {
 	PatternGenerator patternGenerator;
 	ScoreManager scoreManager;
 
-	const int tileNum = 4 * 7;
+	const int tileNum = 4 * 5;
 	Tile[] tiles = new Tile[tileNum];
 
 	int backNum;
@@ -29,7 +29,7 @@ public class PatternTracer : MonoBehaviour {
 		scoreManager = GetComponent<ScoreManager>();
 		patternGenerator = GetComponent<PatternGenerator>();
 		patternGenerator.Col = 4;
-		patternGenerator.Row = 7;
+		patternGenerator.Row = 5;
 		ApplyStates (GameObject.Find ("StorageObject"));
 
 		// パターン初期化
@@ -44,7 +44,7 @@ public class PatternTracer : MonoBehaviour {
 		// タイル配列初期化
 		tiles = Enumerable.Range (0, tileNum)
 			.Select (i => {
-				var tile = GameObject.Find ("Tile" + i.ToString ()).GetComponent<Tile> ();
+				var tile = GameObject.Find ("Tile " + i.ToString ()).GetComponent<Tile> ();
 				tile.TileId = i;
 				return tile;
 			}).ToArray ();

@@ -39,12 +39,12 @@ public class Tile : MonoBehaviour {
 		gameController.TouchedTile (tileId);
 	}
 
-	void SetTimer(float endTime, Action<float> onUpdate, Action onComplete = null) {
+	void SetTimer(float endTime, Func<float, float, float, float> easing, Action<float> onUpdate, Action onComplete = null) {
 		var currentTime = 0f;
 
 		UpdateTime = () => {
 			if (currentTime < endTime) {
-				onUpdate(currentTime / endTime);
+				onUpdate(easing(0, 1, currentTime / endTime));
 				currentTime += Time.deltaTime;
 			
 			} else {
@@ -60,7 +60,7 @@ public class Tile : MonoBehaviour {
 	public void EmitMarkEffect() {
 		var currentScale = transform.localScale.x;
 
-		SetTimer (1f, position => {
+		SetTimer (1f, Easing.linear, position => {
 			//*
 			var threshold = 0.35f;
 			if (position < threshold) {
@@ -76,7 +76,7 @@ public class Tile : MonoBehaviour {
 	public void EmitCorrectTouchEffect() {
 		// UpdateColor (Color.white, Color.cyan, 1);
 
-		SetTimer (0.4f, position => {
+		SetTimer (0.4f, Easing.easeOutBounce, position => {
 			UpdateScale (1.3f, 1, position);
 			UpdateColor (Color.white, Color.cyan, position);
 		});
@@ -85,21 +85,21 @@ public class Tile : MonoBehaviour {
 	public void EmitPatternCorrectEffect() {
 		var currentScale = transform.localScale.x;
 
-		SetTimer (0.4f, position => {
+		SetTimer (0.4f, Easing.easeOutBounce, position => {
 			UpdateColor (Color.cyan, defaultColor, position);
 			UpdateScale (currentScale, 1, position);
 		}, EraseLine);
 	}
 
 	public void EmitMissEffect() {
-		SetTimer (0.6f, position => {
+		SetTimer (0.6f, Easing.easeInCubic, position => {
 			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, position);
 			UpdateScale (1.3f, 1, position);
 		}, EraseLine);
 	}
 
 	public void EmitHintEffect() {
-		SetTimer (0.6f, position => {
+		SetTimer (0.6f, Easing.linear, position => {
 			UpdateColor (Color.cyan, defaultColor, position);
 		}, EraseLine);
 	}
