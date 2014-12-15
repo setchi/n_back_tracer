@@ -143,7 +143,7 @@ public class PatternTracer : MonoBehaviour {
 
 	public void StartPriorNRun() {
 		StartPatternTrace (
-			0.5f / patternGenerator.ChainLength,
+			0.4f / patternGenerator.ChainLength,
 			currentPattern,
 			0,
 			tile => tile.EmitMarkEffect(),
@@ -189,7 +189,7 @@ public class PatternTracer : MonoBehaviour {
 			if (currentIndex == 0) {
 				// start next pattern animation
 				StartPatternTrace(
-					0.5f / patternGenerator.ChainLength,
+					0.4f / patternGenerator.ChainLength,
 					CirculatoryIndex (currentPattern + backNum, backNum),
 					0,
 					tile => tile.EmitMarkEffect(),

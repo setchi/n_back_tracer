@@ -6,6 +6,7 @@ public class GameController : MonoBehaviour {
 	PatternTracer patternTracer;
 	TimeKeeper timeKeeper;
 	Text timeLimitText;
+	ScreenEffectManager screenEffectManager;
 
 	int cachedTouchTileId = -1;
 	int currentTouchTileId = -1;
@@ -15,6 +16,7 @@ public class GameController : MonoBehaviour {
 		PriorNRun,
 		Wait,
 		Play,
+		FinishEffect,
 		Finish
 	};
 	GameState gameState = GameState.Standby;
@@ -22,9 +24,10 @@ public class GameController : MonoBehaviour {
 	void Awake() {
 		timeKeeper = GetComponent<TimeKeeper>();
 		patternTracer = GetComponent<PatternTracer> ();
-		
+		screenEffectManager = GetComponent<ScreenEffectManager>();
+
 		timeKeeper.TimeUp += () => {
-			gameState = GameState.Finish;
+			gameState = GameState.FinishEffect;
 		};
 		patternTracer.PriorNRunEnded += () => {
 			gameState = GameState.Play;
@@ -62,6 +65,13 @@ public class GameController : MonoBehaviour {
 				cachedTouchTileId = currentTouchTileId;
 			}
 			timeLimitText.text = "Limit: " + timeKeeper.GetRemainingTime().ToString ();
+			break;
+		
+		case GameState.FinishEffect:
+			screenEffectManager.StartFinishAnimation(() => {
+				gameState = GameState.Finish;
+			});
+			gameState = GameState.Wait;
 			break;
 		
 		case GameState.Finish:
