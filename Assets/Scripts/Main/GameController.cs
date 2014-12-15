@@ -68,7 +68,7 @@ public class GameController : MonoBehaviour {
 			break;
 		
 		case GameState.FinishEffect:
-			screenEffectManager.StartFinishAnimation(() => {
+			screenEffectManager.EmitFinishAnimation(() => {
 				gameState = GameState.Finish;
 			});
 			gameState = GameState.Wait;

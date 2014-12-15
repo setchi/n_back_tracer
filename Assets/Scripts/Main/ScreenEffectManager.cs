@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class ScreenEffectManager : MonoBehaviour {
-	List<Func<int, bool>> AnimationList;
+	List<Func<int, bool>> AnimateActionList;
 	GameObject effectBackObject;
 	GameObject finishTextObject;
 	GameObject effectObject;
@@ -18,14 +18,14 @@ public class ScreenEffectManager : MonoBehaviour {
 		maskSpriteRenderer = GameObject.Find("Mask").GetComponent<SpriteRenderer>();
 		effectObject = GameObject.Find("Effect");
 		effectObject.SetActive(false);
-		AnimationList = new List<Func<int, bool>>();
+		AnimateActionList = new List<Func<int, bool>>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		if (AnimationList.Count > 0)
-			if (!AnimationList[0](0))
-				AnimationList.RemoveAt(0);
+		if (AnimateActionList.Count > 0)
+			if (!AnimateActionList[0](0))
+				AnimateActionList.RemoveAt(0);
 	}
 
 	Func<int, bool> SetAnimation(float endTime, Action<float> onUpdate, Action onComplete = null) {
@@ -45,13 +45,13 @@ public class ScreenEffectManager : MonoBehaviour {
 		};
 	}
 
-	public void StartFinishAnimation(Action callback) {
+	public void EmitFinishAnimation(Action callback) {
 		effectObject.SetActive(true);
 
 		var backSpriteRenderer = effectBackObject.GetComponent<SpriteRenderer>();
 		var textSpriteRenderer = finishTextObject.GetComponent<SpriteRenderer>();
 
-		AnimationList.Add(SetAnimation(0.4f, pos => {
+		AnimateActionList.Add(SetAnimation(0.4f, pos => {
 			var backColor = backSpriteRenderer.color;
 			var backScale = effectBackObject.transform.localScale;
 			var backRot = effectBackObject.transform.localRotation;
@@ -64,12 +64,12 @@ public class ScreenEffectManager : MonoBehaviour {
 			finishTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
 			effectBackObject.transform.localScale = new Vector3(600, scale, 0);
 			effectBackObject.transform.localRotation = Quaternion.Euler(rot, rot, 0);
-			finishTextObject.transform.localRotation = Quaternion.Euler(rot, -rot / 1.3f, rot / 1.3f);
+			finishTextObject.transform.localRotation = Quaternion.Euler(rot, -rot / 1.5f, rot / 1.5f);
 		}));
 
-		AnimationList.Add(SetAnimation(0.5f, pos => {}));
+		AnimateActionList.Add(SetAnimation(0.5f, pos => {}));
 
-		AnimationList.Add(SetAnimation(1f, pos => {
+		AnimateActionList.Add(SetAnimation(1f, pos => {
 			var backColor = backSpriteRenderer.color;
 			var textColor = textSpriteRenderer.color;
 			var maskColor = maskSpriteRenderer.color;
