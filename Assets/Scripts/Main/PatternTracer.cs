@@ -27,9 +27,7 @@ public class PatternTracer : MonoBehaviour {
 
 	void Awake() {
 		scoreManager = GetComponent<ScoreManager>();
-		patternGenerator = GetComponent<PatternGenerator>();
-		patternGenerator.Col = 4;
-		patternGenerator.Row = 5;
+		patternGenerator = new PatternGenerator(4, 5);
 		ApplyStates (GameObject.Find ("StorageObject"));
 
 		// パターン初期化

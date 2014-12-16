@@ -64,10 +64,11 @@ public class Tile : MonoBehaviour {
 	public void EmitCorrectTouchEffect() {
 		// UpdateColor (Color.white, Color.cyan, 1);
 		updateCount++;
-		tweenExecutor.SeriesExecute(
+		tweenExecutor.Stop().SeriesExecute(
 			new Tween(0.4f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
 				.ValueTo(Vector3.one, new Vector3(0, 1, 1), EaseType.easeOutBounce, value => UpdateColor(new Color(value.x, value.y, value.z)))
+				.Complete(CompleteEffect)
 		);
 	}
 
@@ -75,8 +76,8 @@ public class Tile : MonoBehaviour {
 		updateCount++;
 		tweenExecutor.SeriesExecute(
 			new Tween(0.4f)
-			.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
-			.Complete(CompleteEffect)
+				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
+				.Complete(CompleteEffect)
 		);
 	}
 
@@ -84,7 +85,7 @@ public class Tile : MonoBehaviour {
 		updateCount++;
 		EraseLine();
 
-		tweenExecutor.SeriesExecute(
+		tweenExecutor.Stop().SeriesExecute(
 			new Tween(0.6f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.linear)
 				.ValueTo(Vector3.one + new Vector3(1, 0, 0) * 2/ 2.5f, defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))

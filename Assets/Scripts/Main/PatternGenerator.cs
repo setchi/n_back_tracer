@@ -4,16 +4,19 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PatternGenerator : MonoBehaviour {
+public class PatternGenerator {
 	int col;
 	int row;
 	int chainLength = 4; /* default 4 */
 
-	public int Col { set { col = value; } }
-	public int Row { set { row = value; } }
 	public int ChainLength {
 		set { chainLength = value; }
 		get { return chainLength; }
+	}
+
+	public PatternGenerator(int col, int row) {
+		this.col = col;
+		this.row = row;
 	}
 	
 	public List<int> Generate(List<int> ignoreIndexes) {
