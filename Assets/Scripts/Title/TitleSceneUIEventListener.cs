@@ -25,9 +25,9 @@ public class TitleSceneUIEventListener : MonoBehaviour {
 		TransitionIfReady ();
 	}
 	
-	void OnClickN1Button() { SetBackNum (2); }
-	void OnClickN2Button() { SetBackNum (3); }
-	void OnClickN3Button() { SetBackNum (4); }
+	void OnClickN1Button() { SetBackNum (1); }
+	void OnClickN2Button() { SetBackNum (2); }
+	void OnClickN3Button() { SetBackNum (3); }
 	
 	void OnClickL4Button() { SetLength (4); }
 	void OnClickL5Button() { SetLength (5); }

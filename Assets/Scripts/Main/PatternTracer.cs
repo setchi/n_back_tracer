@@ -115,12 +115,12 @@ public class PatternTracer : MonoBehaviour {
 			currentPattern++;
 			
 			// 条件も仮
-			if (currentPattern >= backNum) {
+			if (currentPattern < backNum) {
+				StartPriorNRun();
+			} else {
 				PriorNRunEnded();
 				currentPattern = 0;
 				isStandby = false;
-			} else {
-				StartPriorNRun();
 			}
 		
 		} else {
@@ -163,15 +163,9 @@ public class PatternTracer : MonoBehaviour {
 	}
 
 	void UpdatePattern() {
-		currentPattern = CirculatoryIndex (currentPattern + 1, backNum);
-
 		var targetPattern = CirculatoryIndex (currentPattern + backNum, backNum);
 		var ignoreIndexes = BuildIgnoreIndexes (targetPattern);
 		patterns [targetPattern] = patternGenerator.Generate (ignoreIndexes);
-	}
-
-	void IndexIncrement() {
-		currentIndex = CirculatoryIndex (currentIndex + 1, patterns [currentPattern].Count - 1);
 	}
 
 	public void Touch(int tileId) {
@@ -183,10 +177,10 @@ public class PatternTracer : MonoBehaviour {
 			tiles [patterns [currentPattern] [currentIndex]].EmitCorrectTouchEffect ();
 			DrawLine(patterns[currentPattern], currentIndex, 0);
 
-			IndexIncrement ();
+			// index increment
+			currentIndex = CirculatoryIndex (currentIndex + 1, patterns [currentPattern].Count - 1);
 
-			// Correct Pattern
-			if (currentIndex == 0) {
+			if (currentIndex == 1) {
 				// start next pattern animation
 				StartPatternTrace(
 					0.4f / patternGenerator.ChainLength,
@@ -195,6 +189,10 @@ public class PatternTracer : MonoBehaviour {
 					tile => tile.EmitMarkEffect(),
 					true
 				);
+			}
+
+			// Correct Pattern
+			if (currentIndex == 0) {
 
 				StartPatternTrace(
 					0.0f / patternGenerator.ChainLength,
@@ -203,8 +201,10 @@ public class PatternTracer : MonoBehaviour {
 					tile => tile.EmitPatternCorrectEffect(),
 					true
 				);
-
+				
 				scoreManager.CorrectPattern();
+				// increment pattern index
+				currentPattern = CirculatoryIndex (currentPattern + 1, backNum);
 				UpdatePattern();
 			}
 		
