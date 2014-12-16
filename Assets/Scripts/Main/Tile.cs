@@ -13,9 +13,10 @@ public class Tile : MonoBehaviour {
 	SpriteRenderer spriteRenderer;
 	GameController gameController;
 	LineRenderer lineRenderer;
-	List<Func<int, bool>> UpdateActions;
-	
-	Color defaultColor = new Color(0.2f, 0.2f, 0.2f, 1);
+	TweenExecutor tweenExecutor;
+
+	int updateCount = 0;
+	Vector3 defaultColor = Vector3.one * 0.2f;
 
 	void Awake() {
 		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
@@ -25,11 +26,11 @@ public class Tile : MonoBehaviour {
 		// 線のスタート位置は常にタイルの中心
 		lineRenderer.SetPosition(0, Vector3.zero);
 
-		UpdateActions = new List<Func<int, bool>>();
+		tweenExecutor = new TweenExecutor();
 	}
 
 	void Update() {
-		UpdateActions = UpdateActions.Where(action => action(0)).ToList();
+		tweenExecutor.Update();
 	}
 
 	public void DrawLine(Vector3 endPosition) {
@@ -39,7 +40,8 @@ public class Tile : MonoBehaviour {
 	void EraseLine() { DrawLine (Vector3.zero); }
 
 	void CompleteEffect() {
-		if (UpdateActions.Count == 1)
+		updateCount--;
+		if (updateCount == 0)
 			EraseLine();
 	}
 
@@ -47,80 +49,60 @@ public class Tile : MonoBehaviour {
 		gameController.TouchedTile (tileId);
 	}
 
-	void SetAnimation(bool important, float endTime, Func<float, float, float, float> easing, Action<float> onUpdate, Action onComplete = null) {
-		var currentTime = 0f;
-		Func<int, bool> action = i => {
-			if (currentTime < endTime) {
-				onUpdate(easing(0, 1, currentTime / endTime));
-				currentTime += Time.deltaTime;
-				return true;
-			}
-			onUpdate(1);
-			
-			if (onComplete != null)
-			onComplete();
-			
-			return false;
-		};
-
-		if (important) UpdateActions = new List<Func<int, bool>> () {action};
-		else UpdateActions.Add(action);
-	}
-
 	public void EmitMarkEffect() {
-		var currentScale = transform.localScale.x;
-
-		SetAnimation (true, 1f, EaseType.linear, position => {
-			//*
-			var threshold = 0.35f;
-			if (position < threshold) {
-				UpdateColor (Color.white , Color.green, position * (1 / threshold));
-			} else {
-				UpdateColor (Color.green, defaultColor, (position - threshold) / (1 - threshold));
-			}//*/
-			UpdateScale (currentScale, 1, position);
-			// UpdateColor(Color.green, defaultColor, position);
-		}, CompleteEffect);
+		updateCount++;
+		tweenExecutor.SeriesExecute(new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
+		tweenExecutor.SeriesExecute(
+			new Tween(0.35f)
+				.ValueTo(Vector3.one, new Vector3(0, 1, 0), EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z))),
+			new Tween(0.65f)
+				.ValueTo(new Vector3(0, 1, 0), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
+				.Complete(CompleteEffect)
+		);
 	}
 
 	public void EmitCorrectTouchEffect() {
 		// UpdateColor (Color.white, Color.cyan, 1);
-
-		SetAnimation (true, 0.4f, EaseType.easeOutBounce, position => {
-			UpdateScale (1.3f, 1, position);
-			UpdateColor (Color.white, Color.cyan, position);
-		});
+		updateCount++;
+		tweenExecutor.SeriesExecute(
+			new Tween(0.4f)
+				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
+				.ValueTo(Vector3.one, new Vector3(0, 1, 1), EaseType.easeOutBounce, value => UpdateColor(new Color(value.x, value.y, value.z)))
+		);
 	}
 
 	public void EmitPatternCorrectEffect() {
-		SetAnimation (false, 0.4f, EaseType.linear, position => {
-			UpdateColor (Color.cyan, defaultColor, position);
-		}, CompleteEffect);
+		updateCount++;
+		tweenExecutor.SeriesExecute(
+			new Tween(0.4f)
+			.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
+			.Complete(CompleteEffect)
+		);
 	}
 
 	public void EmitMissEffect() {
+		updateCount++;
 		EraseLine();
 
-		SetAnimation (true, 0.6f, EaseType.linear, position => {
-			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, position);
-			UpdateScale (1.3f, 1, position);
-		}, CompleteEffect);
+		tweenExecutor.SeriesExecute(
+			new Tween(0.6f)
+				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.linear)
+				.ValueTo(Vector3.one + new Vector3(1, 0, 0) * 2/ 2.5f, defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
+				.Complete(CompleteEffect)
+		);
 	}
 
 	public void EmitHintEffect() {
-		SetAnimation (true, 0.6f, EaseType.linear, position => {
-			UpdateColor (Color.cyan, defaultColor, position);
-		}, CompleteEffect);
+		updateCount++;
+		tweenExecutor.SeriesExecute(
+			new Tween(0.6f)
+				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
+				.Complete(CompleteEffect)
+		);
 	}
 
-	void UpdateColor(Color from, Color to, float position) {
-		var color = from - (from - to) * position;
+	void UpdateColor(Color color) {
 		spriteRenderer.color = color;
 		lineRenderer.material.color = color;
-	}
-	
-	void UpdateScale(float from, float to, float position) {
-		var scale = from - (from - to) * position;
-		transform.localScale = new Vector3 (scale, scale, scale);
 	}
 }

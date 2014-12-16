@@ -84,7 +84,14 @@ public class Tween {
 		});
 		return this;
 	}
-
+	
+	public Tween ColorTo(SpriteRenderer target, Color from, Color to, Func<float, float, float, float> ease) {
+		UpdateActions.Add(percentage => {
+			target.color = from - (from - to) * ease(0, 1, percentage);
+		});
+		return this;
+	}
+	
 	public Tween ColorTo(SpriteRenderer target, Color to, Func<float, float, float, float> ease) {
 		Color from = Color.white;
 		bool init = false;
@@ -148,6 +155,11 @@ public class Tween {
 			var euler = from - (from - to) * ease(0, 1, percentage);
 			target.transform.localRotation = Quaternion.Euler(euler.x, euler.y, euler.z);
 		});
+		return this;
+	}
+
+	public Tween ValueTo(Vector3 from, Vector3 to, Func<float, float, float, float> ease, Action<Vector3> onUpdate) {
+		UpdateActions.Add(percentage => onUpdate(from - (from - to) * ease(0, 1, percentage)));
 		return this;
 	}
 }
