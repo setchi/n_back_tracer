@@ -3,11 +3,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class TweenExecutor : MonoBehaviour {
+public class TweenExecutor {
 	List<List<Func<bool>>> UpdateActionLists = new List<List<Func<bool>>>();
 	List<List<Func<bool>>> UpdateActionListsAddRequests = new List<List<Func<bool>>>();
 
-	void Update () {
+	public void Update () {
 		UpdateActionLists = UpdateActionLists.Where(updateActionList => {
 			if (updateActionList.Count == 0)
 				return false;

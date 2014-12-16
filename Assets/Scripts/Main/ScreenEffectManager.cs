@@ -8,7 +8,6 @@ public class ScreenEffectManager : MonoBehaviour {
 	GameObject readyTextObject;
 	GameObject goTextObject;
 	SpriteRenderer maskSpriteRenderer;
-
 	TweenExecutor tweenExecutor;
 
 	// Use this for initialization
@@ -18,8 +17,12 @@ public class ScreenEffectManager : MonoBehaviour {
 		readyTextObject = GameObject.Find("ReadyText");
 		goTextObject = GameObject.Find("GoText");
 		maskSpriteRenderer = GameObject.Find("Mask").GetComponent<SpriteRenderer>();
-		tweenExecutor = GetComponent<TweenExecutor>();
+		tweenExecutor = new TweenExecutor();
 		HidingAll();
+	}
+
+	void Update() {
+		tweenExecutor.Update();
 	}
 
 	void Show(params GameObject[] objects) {
