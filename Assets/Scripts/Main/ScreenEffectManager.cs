@@ -3,15 +3,16 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using EaseDelegate = System.Func<float, float, System.Func<float, float, float, float>, float>;
 
 public class ScreenEffectManager : MonoBehaviour {
-	List<Func<int, bool>> AnimateActionList;
 	GameObject effectBackObject;
 	GameObject timeupTextObject;
 	GameObject readyTextObject;
 	GameObject goTextObject;
 	GameObject effectObject;
 	SpriteRenderer maskSpriteRenderer;
+	Tween tween;
 
 	// Use this for initialization
 	void Awake () {
@@ -19,9 +20,9 @@ public class ScreenEffectManager : MonoBehaviour {
 		timeupTextObject = GameObject.Find("TimeupText");
 		readyTextObject = GameObject.Find("ReadyText");
 		goTextObject = GameObject.Find("GoText");
-		maskSpriteRenderer = GameObject.Find("Mask").GetComponent<SpriteRenderer>();
 		effectObject = GameObject.Find("Effect");
-		AnimateActionList = new List<Func<int, bool>>();
+		maskSpriteRenderer = GameObject.Find("Mask").GetComponent<SpriteRenderer>();
+		tween = GetComponent<Tween>();
 
 		HidingAll();
 	}
@@ -47,47 +48,29 @@ public class ScreenEffectManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (AnimateActionList.Count > 0)
-			if (!AnimateActionList[0](0))
-				AnimateActionList.RemoveAt(0);
-	}
-
-	Func<int, bool> SetAnimation(float endTime, Action<float> onUpdate, Action onComplete = null) {
-		var currentTime = 0f;
-
-		return i => {
-			if (currentTime < endTime) {
-				onUpdate(currentTime / endTime);
-				currentTime += Time.deltaTime;
-				return true;
-			}
-			onUpdate(1);
-			if (onComplete != null)
-				onComplete();
-			
-			return false;
-		};
 	}
 
 	public void AnimationStop() {
-		AnimateActionList.RemoveAll(i => true);
+		tween.Stop();
 		HidingAll();
 	}
 
 	public void EmitReadyAnimation() {
 		Show (readyTextObject);
-		
-		AnimateActionList.Add(SetAnimation(0.7f, pos => {
-			var scale = Easing.easeOutCirc(1, 1.3f, pos);
-			readyTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
-		}));
-		
-		AnimateActionList.Add(SetAnimation(0.7f, pos => {
-			var scale = Easing.easeInCirc(1.3f, 1, pos);
-			readyTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
-		}, () => {
-			EmitReadyAnimation();
-		}));
+
+		tween.SeriesExecute(
+			tween.Animate(0.65f, easeDelegate => {
+				var scale = easeDelegate(1, 1.3f, EaseType.easeOutCirc);
+				readyTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
+			}),
+
+			tween.Animate(0.65f, easeDelegate => {
+				var scale = easeDelegate(1.3f, 1, EaseType.easeInCirc);
+				readyTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
+			}, () => {
+				EmitReadyAnimation();
+			})
+		);
 	}
 
 	public void EmitGoAnimation() {
@@ -97,11 +80,11 @@ public class ScreenEffectManager : MonoBehaviour {
 		var startScale = goTextObject.transform.localScale.x;
 		var startColor = spriteRenderer.color;
 
-		AnimateActionList.Add(SetAnimation(0.7f, pos => {
-			var scale = Easing.easeOutCirc(startScale * 0.8f, startScale, pos);
+		tween.SeriesExecute(tween.Animate(0.7f, easeDelegate => {
+			var scale = easeDelegate(startScale * 0.8f, startScale, EaseType.easeOutCirc);
 			var color = startColor;
-			color.a *= Easing.linear(1, 0, pos);
-
+			color.a = easeDelegate(1, 0, EaseType.linear);
+			
 			spriteRenderer.color = color;
 			goTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
 		}, () => {
@@ -115,41 +98,44 @@ public class ScreenEffectManager : MonoBehaviour {
 		var backSpriteRenderer = effectBackObject.GetComponent<SpriteRenderer>();
 		var textSpriteRenderer = timeupTextObject.GetComponent<SpriteRenderer>();
 
-		AnimateActionList.Add(SetAnimation(0.4f, pos => {
-			var backColor = backSpriteRenderer.color;
-			var backScale = effectBackObject.transform.localScale;
-			var backRot = effectBackObject.transform.localRotation;
+		tween.SeriesExecute(
+			tween.Animate(0.4f, easeDelegate => {
+				var backColor = backSpriteRenderer.color;
+				var backScale = effectBackObject.transform.localScale;
+				var backRot = effectBackObject.transform.localRotation;
+				
+				backColor.a = easeDelegate(0, 1, EaseType.easeOutQuint);
+				var rot = easeDelegate(60, 0, EaseType.linear);
+				var scale = easeDelegate(20, 1, EaseType.easeOutQuint);
+				
+				backSpriteRenderer.color = backColor;
+				timeupTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
+				effectBackObject.transform.localScale = new Vector3(600, scale, 0);
+				effectBackObject.transform.localRotation = Quaternion.Euler(rot, rot, 0);
+				timeupTextObject.transform.localRotation = Quaternion.Euler(rot, -rot / 1.5f, rot / 1.5f);
 
-			backColor.a = Easing.easeOutQuint(0, 1, pos);
-			var rot = Easing.linear(60, 0, pos);
-			var scale = Easing.easeOutQuint(20f, 1f, pos);
-			
-			backSpriteRenderer.color = backColor;
-			timeupTextObject.transform.localScale = new Vector3(scale, scale * 0.8f, scale);
-			effectBackObject.transform.localScale = new Vector3(600, scale, 0);
-			effectBackObject.transform.localRotation = Quaternion.Euler(rot, rot, 0);
-			timeupTextObject.transform.localRotation = Quaternion.Euler(rot, -rot / 1.5f, rot / 1.5f);
-		}));
+			}),
 
-		AnimateActionList.Add(SetAnimation(0.5f, pos => {}));
+			tween.Wait(0.5f),
 
-		AnimateActionList.Add(SetAnimation(1f, pos => {
-			var textColor = textSpriteRenderer.color;
-			var maskColor = maskSpriteRenderer.color;
-			var backScale = effectBackObject.transform.localScale;
-			var textScale = timeupTextObject.transform.localScale;
-
-			textColor.a = Easing.easeOutExpo(1, 0, pos);
-			maskColor.a = Easing.linear(0, 1, pos);
-			backScale.y = textColor.a;
-			textScale.x = Easing.easeOutExpo(1, 9, pos);
-
-			textSpriteRenderer.color = textColor;
-			effectBackObject.transform.localScale = backScale;
-			timeupTextObject.transform.localScale = textScale;
-			maskSpriteRenderer.color = maskColor;
-		}, () => {
-			callback();
-		}));
+			tween.Animate(1f, easeDelegate => {
+				var textColor = textSpriteRenderer.color;
+				var maskColor = maskSpriteRenderer.color;
+				var backScale = effectBackObject.transform.localScale;
+				var textScale = timeupTextObject.transform.localScale;
+				
+				textColor.a = easeDelegate(1, 0, EaseType.easeOutExpo);
+				maskColor.a = easeDelegate(0, 1, EaseType.linear);
+				backScale.y = textColor.a;
+				textScale.x = easeDelegate(1, 9, EaseType.easeOutExpo);
+				
+				textSpriteRenderer.color = textColor;
+				effectBackObject.transform.localScale = backScale;
+				timeupTextObject.transform.localScale = textScale;
+				maskSpriteRenderer.color = maskColor;
+			}, () => {
+				callback();
+			})
+		);
 	}
 }

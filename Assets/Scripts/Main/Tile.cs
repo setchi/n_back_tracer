@@ -70,7 +70,7 @@ public class Tile : MonoBehaviour {
 	public void EmitMarkEffect() {
 		var currentScale = transform.localScale.x;
 
-		SetAnimation (true, 1f, Easing.linear, position => {
+		SetAnimation (true, 1f, EaseType.linear, position => {
 			//*
 			var threshold = 0.35f;
 			if (position < threshold) {
@@ -86,14 +86,14 @@ public class Tile : MonoBehaviour {
 	public void EmitCorrectTouchEffect() {
 		// UpdateColor (Color.white, Color.cyan, 1);
 
-		SetAnimation (true, 0.4f, Easing.easeOutBounce, position => {
+		SetAnimation (true, 0.4f, EaseType.easeOutBounce, position => {
 			UpdateScale (1.3f, 1, position);
 			UpdateColor (Color.white, Color.cyan, position);
 		});
 	}
 
 	public void EmitPatternCorrectEffect() {
-		SetAnimation (false, 0.4f, Easing.linear, position => {
+		SetAnimation (false, 0.4f, EaseType.linear, position => {
 			UpdateColor (Color.cyan, defaultColor, position);
 		}, CompleteEffect);
 	}
@@ -101,14 +101,14 @@ public class Tile : MonoBehaviour {
 	public void EmitMissEffect() {
 		EraseLine();
 
-		SetAnimation (true, 0.6f, Easing.linear, position => {
+		SetAnimation (true, 0.6f, EaseType.linear, position => {
 			UpdateColor ((Color.white + Color.red * 2) / 2.5f, defaultColor, position);
 			UpdateScale (1.3f, 1, position);
 		}, CompleteEffect);
 	}
 
 	public void EmitHintEffect() {
-		SetAnimation (true, 0.6f, Easing.linear, position => {
+		SetAnimation (true, 0.6f, EaseType.linear, position => {
 			UpdateColor (Color.cyan, defaultColor, position);
 		}, CompleteEffect);
 	}

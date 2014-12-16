@@ -1,4 +1,4 @@
-﻿/*
+/*
 TERMS OF USE - EASING EQUATIONS
 Open source under the BSD License.
 Copyright (c)2001 Robert Penner
@@ -13,7 +13,7 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 using UnityEngine;
 using System.Collections;
 
-public class Easing {
+public class EaseType {
 	public static float linear(float start, float end, float value){
 		return Mathf.Lerp(start, end, value);
 	}
