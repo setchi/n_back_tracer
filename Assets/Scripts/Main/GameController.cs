@@ -32,6 +32,8 @@ public class GameController : MonoBehaviour {
 		patternTracer.PriorNRunEnded += () => {
 			gameState = GameState.Play;
 			timeKeeper.StartCountdown ();
+			screenEffectManager.AnimationStop();
+			screenEffectManager.EmitGoAnimation();
 		};
 
 		timeLimitText = GameObject.Find ("TimeLimit").GetComponent<Text>();
@@ -47,12 +49,13 @@ public class GameController : MonoBehaviour {
 	void Update () {
 		switch (gameState) {
 		case GameState.Standby:
+			patternTracer.StartPriorNRun();
+			screenEffectManager.EmitReadyAnimation();
 			gameState = GameState.PriorNRun;
 			break;
 		
 		case GameState.PriorNRun:
-			patternTracer.StartPriorNRun();
-			gameState = GameState.Wait;
+			gameState = GameState.PriorNRun;
 			break;
 		
 		case GameState.Wait:
