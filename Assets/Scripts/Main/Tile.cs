@@ -15,7 +15,6 @@ public class Tile : MonoBehaviour {
 	LineRenderer lineRenderer;
 	TweenExecutor tweenExecutor;
 
-	int updateCount = 0;
 	Vector3 defaultColor = Vector3.one * 0.2f;
 
 	void Awake() {
@@ -40,9 +39,7 @@ public class Tile : MonoBehaviour {
 	void EraseLine() { DrawLine (Vector3.zero); }
 
 	void CompleteEffect() {
-		updateCount--;
-		if (updateCount == 0)
-			EraseLine();
+		EraseLine();
 	}
 
 	void OnMouseEnter() {
@@ -50,8 +47,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitMarkEffect() {
-		updateCount++;
-		tweenExecutor.SeriesExecute(new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
+		tweenExecutor.Stop().SeriesExecute(new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
 		tweenExecutor.SeriesExecute(
 			new Tween(0.35f)
 				.ValueTo(Vector3.one, new Vector3(0, 1, 0), EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z))),
@@ -63,7 +59,6 @@ public class Tile : MonoBehaviour {
 
 	public void EmitCorrectTouchEffect() {
 		// UpdateColor (Color.white, Color.cyan, 1);
-		updateCount++;
 		tweenExecutor.Stop().SeriesExecute(
 			new Tween(0.4f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
@@ -73,7 +68,6 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitPatternCorrectEffect() {
-		updateCount++;
 		tweenExecutor.SeriesExecute(
 			new Tween(0.4f)
 				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
@@ -82,9 +76,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitMissEffect() {
-		updateCount++;
 		EraseLine();
-
 		tweenExecutor.Stop().SeriesExecute(
 			new Tween(0.6f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.linear)
@@ -94,7 +86,6 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitHintEffect() {
-		updateCount++;
 		tweenExecutor.SeriesExecute(
 			new Tween(0.6f)
 				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
