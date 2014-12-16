@@ -16,7 +16,7 @@ public class GameController : MonoBehaviour {
 		PriorNRun,
 		Wait,
 		Play,
-		FinishEffect,
+		Timeup,
 		Finish
 	};
 	GameState gameState = GameState.Standby;
@@ -27,7 +27,7 @@ public class GameController : MonoBehaviour {
 		screenEffectManager = GetComponent<ScreenEffectManager>();
 
 		timeKeeper.TimeUp += () => {
-			gameState = GameState.FinishEffect;
+			gameState = GameState.Timeup;
 		};
 		patternTracer.PriorNRunEnded += () => {
 			gameState = GameState.Play;
@@ -67,8 +67,8 @@ public class GameController : MonoBehaviour {
 			timeLimitText.text = "Limit: " + timeKeeper.GetRemainingTime().ToString ();
 			break;
 		
-		case GameState.FinishEffect:
-			screenEffectManager.EmitFinishAnimation(() => {
+		case GameState.Timeup:
+			screenEffectManager.EmitTimeupAnimation(() => {
 				gameState = GameState.Finish;
 			});
 			gameState = GameState.Wait;
