@@ -8,21 +8,14 @@ public class ScreenEffectManager : MonoBehaviour {
 	GameObject readyTextObject;
 	GameObject goTextObject;
 	SpriteRenderer maskSpriteRenderer;
-	TweenExecutor tweenExecutor;
 
-	// Use this for initialization
 	void Awake () {
 		effectBackObject = GameObject.Find("EffectBack");
 		timeupTextObject = GameObject.Find("TimeupText");
 		readyTextObject = GameObject.Find("ReadyText");
 		goTextObject = GameObject.Find("GoText");
 		maskSpriteRenderer = GameObject.Find("Mask").GetComponent<SpriteRenderer>();
-		tweenExecutor = new TweenExecutor();
 		HideAll();
-	}
-
-	void Update() {
-		tweenExecutor.Update();
 	}
 
 	void Show(params GameObject[] objects) {
@@ -45,14 +38,15 @@ public class ScreenEffectManager : MonoBehaviour {
 	}
 
 	public void CancelAllAnimate() {
-		tweenExecutor.CancelAll();
+		TweenExecutor.CancelAll(gameObject);
 		HideAll();
 	}
 
 	public void EmitReadyAnimation() {
 		Show (readyTextObject);
 
-		tweenExecutor.SeriesExecute(
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(0.65f)
 				.ScaleTo(readyTextObject, new Vector3(1.3f, 1.3f * 0.8f, 1.3f), EaseType.easeOutCirc),
 
@@ -66,8 +60,9 @@ public class ScreenEffectManager : MonoBehaviour {
 		Show(goTextObject);
 		var spriteRenderer = goTextObject.GetComponent<SpriteRenderer>();
 
-		tweenExecutor.CancelAll();
-		tweenExecutor.SeriesExecute(
+		TweenExecutor.CancelAll(gameObject);
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(0.7f)
 				.ScaleTo(goTextObject, new Vector3(1, 0.8f, 1), EaseType.easeOutCirc)
 				.FadeTo(spriteRenderer, 0, EaseType.linear)
@@ -79,7 +74,8 @@ public class ScreenEffectManager : MonoBehaviour {
 		Show (effectBackObject, timeupTextObject);
 		var textSpriteRenderer = timeupTextObject.GetComponent<SpriteRenderer>();
 
-		tweenExecutor.SeriesExecute(
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(0.4f)
 				.ScaleTo(timeupTextObject, Vector3.one * 20, new Vector3(1, 0.8f, 1), EaseType.easeOutQuint)
 				.ScaleTo(effectBackObject, new Vector3(600, 20, 0), new Vector3(600, 1, 0), EaseType.easeOutQuint)

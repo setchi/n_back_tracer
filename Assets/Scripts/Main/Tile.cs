@@ -13,7 +13,6 @@ public class Tile : MonoBehaviour {
 	SpriteRenderer spriteRenderer;
 	GameController gameController;
 	LineRenderer lineRenderer;
-	TweenExecutor tweenExecutor;
 
 	Vector3 defaultColor = Vector3.one * 0.2f;
 
@@ -24,12 +23,6 @@ public class Tile : MonoBehaviour {
 		lineRenderer.SetWidth (0.13f, 0.13f);
 		// 線のスタート位置は常にタイルの中心
 		lineRenderer.SetPosition(0, Vector3.zero);
-
-		tweenExecutor = new TweenExecutor();
-	}
-
-	void Update() {
-		tweenExecutor.Update();
 	}
 
 	public void DrawLine(Vector3 endPosition) {
@@ -47,8 +40,10 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitMarkEffect() {
-		tweenExecutor.CancelAll().SeriesExecute(new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
-		tweenExecutor.SeriesExecute(
+		TweenExecutor.CancelAll(gameObject);
+		TweenExecutor.SeriesExecute(gameObject, new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(1f)
 				.ValueTo(new Vector3(0, 1, 0), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)
@@ -56,7 +51,9 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitCorrectTouchEffect() {
-		tweenExecutor.CancelAll().SeriesExecute(
+		TweenExecutor.CancelAll(gameObject);
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(0.4f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
 				.ValueTo(Vector3.one, new Vector3(0, 1, 1), EaseType.easeOutBounce, value => UpdateColor(new Color(value.x, value.y, value.z)))
@@ -64,7 +61,8 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitPatternCorrectEffect() {
-		tweenExecutor.SeriesExecute(
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(0.4f)
 				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)
@@ -73,16 +71,19 @@ public class Tile : MonoBehaviour {
 
 	public void EmitMissEffect() {
 		EraseLine();
-		tweenExecutor.CancelAll().SeriesExecute(
+		TweenExecutor.CancelAll(gameObject);
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(0.6f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.linear)
-				.ValueTo(Vector3.one + new Vector3(1, 0, 0) * 2/ 2.5f, defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
+				.ValueTo(Vector3.one + new Vector3(1, 0, 0) * 2 / 2.5f, defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)
 		);
 	}
 
 	public void EmitHintEffect() {
-		tweenExecutor.SeriesExecute(
+		TweenExecutor.SeriesExecute(
+			gameObject,
 			new Tween(0.6f)
 				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)

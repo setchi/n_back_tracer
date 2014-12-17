@@ -3,12 +3,15 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class TweenExecutor {
-	List<List<Func<float, bool>>> UpdateActionLists = new List<List<Func<float, bool>>>();
-	List<List<Func<float, bool>>> UpdateActionListsAddRequests = new List<List<Func<float, bool>>>();
+public class TweenExecutor : MonoBehaviour {
+	static Dictionary<GameObject, List<List<Func<float, bool>>>> UpdateActionListsDic = new Dictionary<GameObject, List<List<Func<float, bool>>>>();
+	static Dictionary<GameObject, List<List<Func<float, bool>>>> UpdateActionListsAddRequestsDic = new Dictionary<GameObject, List<List<Func<float, bool>>>>();
 
-	public void Update () {
-		UpdateActionLists = UpdateActionLists.Where(updateActionList => {
+	void Update () {
+		if (!UpdateActionListsDic.ContainsKey(gameObject))
+			InitActionLists(UpdateActionListsDic, gameObject);
+
+		UpdateActionListsDic[gameObject] = UpdateActionListsDic[gameObject].Where(updateActionList => {
 			if (updateActionList.Count == 0)
 				return false;
 
@@ -16,17 +19,30 @@ public class TweenExecutor {
 				updateActionList.RemoveAt(0);
 
 			return true;
-		}).Union (UpdateActionListsAddRequests).ToList();
+		}).Union (UpdateActionListsAddRequestsDic[gameObject]).ToList();
+
+		UpdateActionListsAddRequestsDic[gameObject].Clear();
 	}
 
-	public void SeriesExecute(params Tween[] tweens) {
-		UpdateActionListsAddRequests.Add(tweens
+	static public void SeriesExecute(GameObject obj, params Tween[] tweens) {
+		if (!UpdateActionListsAddRequestsDic.ContainsKey(obj)) {
+			obj.AddComponent<TweenExecutor>();
+			InitActionLists(UpdateActionListsAddRequestsDic, obj);
+		}
+
+		UpdateActionListsAddRequestsDic[obj].Add(tweens
 			.Select(tween => tween.GetUpdateAction()).ToList());
 	}
 
-	public TweenExecutor CancelAll() {
-		UpdateActionLists.Clear();
-		UpdateActionListsAddRequests.Clear();
-		return this;
+	static public void CancelAll(GameObject obj) {
+		if(UpdateActionListsDic.ContainsKey(obj))
+			UpdateActionListsDic[obj].Clear();
+
+		if (UpdateActionListsAddRequestsDic.ContainsKey(obj))
+			UpdateActionListsAddRequestsDic[obj].Clear();
+	}
+
+	static void InitActionLists(Dictionary<GameObject, List<List<Func<float, bool>>>> dictionary, GameObject obj) {
+		dictionary.Add(obj, new List<List<Func<float, bool>>>());
 	}
 }
