@@ -18,7 +18,7 @@ public class ScreenEffectManager : MonoBehaviour {
 		goTextObject = GameObject.Find("GoText");
 		maskSpriteRenderer = GameObject.Find("Mask").GetComponent<SpriteRenderer>();
 		tweenExecutor = new TweenExecutor();
-		HidingAll();
+		HideAll();
 	}
 
 	void Update() {
@@ -37,16 +37,16 @@ public class ScreenEffectManager : MonoBehaviour {
 		}
 	}
 	
-	void HidingAll() {
+	void HideAll() {
 		effectBackObject.SetActive(false);
 		timeupTextObject.SetActive(false);
 		readyTextObject.SetActive(false);
 		goTextObject.SetActive(false);
 	}
 
-	public void AnimationStop() {
-		tweenExecutor.Stop();
-		HidingAll();
+	public void CancelAllAnimate() {
+		tweenExecutor.CancelAll();
+		HideAll();
 	}
 
 	public void EmitReadyAnimation() {
@@ -66,7 +66,7 @@ public class ScreenEffectManager : MonoBehaviour {
 		Show(goTextObject);
 		var spriteRenderer = goTextObject.GetComponent<SpriteRenderer>();
 
-		tweenExecutor.Stop();
+		tweenExecutor.CancelAll();
 		tweenExecutor.SeriesExecute(
 			new Tween(0.7f)
 				.ScaleTo(goTextObject, new Vector3(1, 0.8f, 1), EaseType.easeOutCirc)

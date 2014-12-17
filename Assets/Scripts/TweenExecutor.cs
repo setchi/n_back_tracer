@@ -4,15 +4,15 @@ using System.Linq;
 using System.Collections.Generic;
 
 public class TweenExecutor {
-	List<List<Func<bool>>> UpdateActionLists = new List<List<Func<bool>>>();
-	List<List<Func<bool>>> UpdateActionListsAddRequests = new List<List<Func<bool>>>();
+	List<List<Func<float, bool>>> UpdateActionLists = new List<List<Func<float, bool>>>();
+	List<List<Func<float, bool>>> UpdateActionListsAddRequests = new List<List<Func<float, bool>>>();
 
 	public void Update () {
 		UpdateActionLists = UpdateActionLists.Where(updateActionList => {
 			if (updateActionList.Count == 0)
 				return false;
 
-			if (!updateActionList[0]())
+			if (!updateActionList[0](Time.deltaTime * Time.timeScale))
 				updateActionList.RemoveAt(0);
 
 			return true;
@@ -24,7 +24,7 @@ public class TweenExecutor {
 			.Select(tween => tween.GetUpdateAction()).ToList());
 	}
 
-	public TweenExecutor Stop() {
+	public TweenExecutor CancelAll() {
 		UpdateActionLists.Clear();
 		UpdateActionListsAddRequests.Clear();
 		return this;

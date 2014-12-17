@@ -47,23 +47,19 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitMarkEffect() {
-		tweenExecutor.Stop().SeriesExecute(new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
+		tweenExecutor.CancelAll().SeriesExecute(new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
 		tweenExecutor.SeriesExecute(
-			new Tween(0.35f)
-				.ValueTo(Vector3.one, new Vector3(0, 1, 0), EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z))),
-			new Tween(0.65f)
+			new Tween(1f)
 				.ValueTo(new Vector3(0, 1, 0), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)
 		);
 	}
 
 	public void EmitCorrectTouchEffect() {
-		// UpdateColor (Color.white, Color.cyan, 1);
-		tweenExecutor.Stop().SeriesExecute(
+		tweenExecutor.CancelAll().SeriesExecute(
 			new Tween(0.4f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
 				.ValueTo(Vector3.one, new Vector3(0, 1, 1), EaseType.easeOutBounce, value => UpdateColor(new Color(value.x, value.y, value.z)))
-				.Complete(CompleteEffect)
 		);
 	}
 
@@ -77,7 +73,7 @@ public class Tile : MonoBehaviour {
 
 	public void EmitMissEffect() {
 		EraseLine();
-		tweenExecutor.Stop().SeriesExecute(
+		tweenExecutor.CancelAll().SeriesExecute(
 			new Tween(0.6f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.linear)
 				.ValueTo(Vector3.one + new Vector3(1, 0, 0) * 2/ 2.5f, defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))

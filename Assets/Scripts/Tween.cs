@@ -8,7 +8,7 @@ public class Tween {
 	float animateTime;
 	Action callback;
 
-	public Func<bool> GetUpdateAction() {
+	public Func<float, bool> GetUpdateAction() {
 		var runningTime = 0f;
 
 		Action<float> updateAll = percentage => {
@@ -16,10 +16,10 @@ public class Tween {
 				updateAction(percentage);
 		};
 		
-		return () => {
+		return deltaTime => {
 			if (runningTime < animateTime) {
 				updateAll(runningTime / animateTime);
-				runningTime += Time.deltaTime;
+				runningTime += deltaTime;
 				return true;
 			}
 			

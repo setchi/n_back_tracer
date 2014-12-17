@@ -32,7 +32,7 @@ public class GameController : MonoBehaviour {
 		patternTracer.PriorNRunEnded += () => {
 			gameState = GameState.Play;
 			timeKeeper.StartCountdown ();
-			screenEffectManager.AnimationStop();
+			screenEffectManager.CancelAllAnimate();
 			screenEffectManager.EmitGoAnimation();
 		};
 
