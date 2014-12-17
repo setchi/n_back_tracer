@@ -30,6 +30,8 @@ public class PatternTracer : MonoBehaviour {
 		patternGenerator = new PatternGenerator(4, 5);
 		ApplyStates (GameObject.Find ("StorageObject"));
 
+		GetComponent<TimeKeeper>().TimeUp += () => isFinished = true;
+
 		// パターン初期化
 		var ignoreIndexes = new List<int> ();
 		patterns = Enumerable.Range (0, backNum + 1)
@@ -59,6 +61,7 @@ public class PatternTracer : MonoBehaviour {
 	}
 	
 	bool isStandby = true;
+	bool isFinished = false;
 	float hintAnimationTriggerTimer = 0;
 	List<Predicate<int>> updateActions = new List<Predicate<int>> ();
 
@@ -97,6 +100,8 @@ public class PatternTracer : MonoBehaviour {
 	
 	float timer = 0;
 	void Update() {
+		if (isFinished) return;
+
 		updateActions = updateActions.Where (action => action (0)).ToList ();
 
 		// スタート時のnBarkRun

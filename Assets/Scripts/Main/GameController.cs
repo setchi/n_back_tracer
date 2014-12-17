@@ -71,6 +71,7 @@ public class GameController : MonoBehaviour {
 			break;
 		
 		case GameState.Timeup:
+			timeLimitText.text = "Limit: 0";
 			screenEffectManager.EmitTimeupAnimation(() => {
 				gameState = GameState.Finish;
 			});
