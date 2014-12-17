@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-public class Animate : MonoBehaviour {
+public class TweenPlayer : MonoBehaviour {
 	static Dictionary<GameObject, List<List<Func<float, bool>>>> UpdateActions = new Dictionary<GameObject, List<List<Func<float, bool>>>>();
 	static Dictionary<GameObject, List<List<Func<float, bool>>>> AdditionalUpdateActions = new Dictionary<GameObject, List<List<Func<float, bool>>>>();
 
@@ -26,7 +26,7 @@ public class Animate : MonoBehaviour {
 
 	static public void Play(GameObject obj, params Tween[] tweens) {
 		if (!AdditionalUpdateActions.ContainsKey(obj)) {
-			obj.AddComponent<Animate>();
+			obj.AddComponent<TweenPlayer>();
 			InitActionLists(AdditionalUpdateActions, obj);
 		}
 
