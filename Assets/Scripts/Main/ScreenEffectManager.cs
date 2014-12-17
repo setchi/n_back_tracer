@@ -45,8 +45,7 @@ public class ScreenEffectManager : MonoBehaviour {
 	public void EmitReadyAnimation() {
 		Show (readyTextObject);
 
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(0.65f)
 				.ScaleTo(readyTextObject, new Vector3(1.3f, 1.3f * 0.8f, 1.3f), EaseType.easeOutCirc),
 
@@ -61,8 +60,7 @@ public class ScreenEffectManager : MonoBehaviour {
 		var spriteRenderer = goTextObject.GetComponent<SpriteRenderer>();
 
 		Animate.CancelAll(gameObject);
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(0.7f)
 				.ScaleTo(goTextObject, new Vector3(1, 0.8f, 1), EaseType.easeOutCirc)
 				.FadeTo(spriteRenderer, 0, EaseType.linear)
@@ -74,8 +72,7 @@ public class ScreenEffectManager : MonoBehaviour {
 		Show (effectBackObject, timeupTextObject);
 		var textSpriteRenderer = timeupTextObject.GetComponent<SpriteRenderer>();
 
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(0.4f)
 				.ScaleTo(timeupTextObject, Vector3.one * 20, new Vector3(1, 0.8f, 1), EaseType.easeOutQuint)
 				.ScaleTo(effectBackObject, new Vector3(600, 20, 0), new Vector3(600, 1, 0), EaseType.easeOutQuint)

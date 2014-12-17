@@ -42,8 +42,7 @@ public class Tile : MonoBehaviour {
 	public void EmitMarkEffect() {
 		Animate.CancelAll(gameObject);
 		Animate.Play(gameObject, new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(1f)
 				.ValueTo(new Vector3(0, 1, 0), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)
@@ -52,8 +51,7 @@ public class Tile : MonoBehaviour {
 
 	public void EmitCorrectTouchEffect() {
 		Animate.CancelAll(gameObject);
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(0.4f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
 				.ValueTo(Vector3.one, new Vector3(0, 1, 1), EaseType.easeOutBounce, value => UpdateColor(new Color(value.x, value.y, value.z)))
@@ -61,8 +59,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitPatternCorrectEffect() {
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(0.4f)
 				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)
@@ -72,8 +69,7 @@ public class Tile : MonoBehaviour {
 	public void EmitMissEffect() {
 		EraseLine();
 		Animate.CancelAll(gameObject);
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(0.6f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.linear)
 				.ValueTo(Vector3.one + new Vector3(1, 0, 0) * 2 / 2.5f, defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
@@ -82,8 +78,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitHintEffect() {
-		Animate.Play(
-			gameObject,
+		Animate.Play(gameObject,
 			new Tween(0.6f)
 				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(new Color(value.x, value.y, value.z)))
 				.Complete(CompleteEffect)
