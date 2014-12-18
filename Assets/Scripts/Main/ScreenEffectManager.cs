@@ -51,7 +51,7 @@ public class ScreenEffectManager : MonoBehaviour {
 
 			new Tween(0.65f)
 				.ScaleTo(readyTextObject, new Vector3(1.3f, 1.3f * 0.8f, 1.3f), new Vector3(1, 0.8f, 1), EaseType.easeInCirc)
-				.Complete(() => EmitReadyAnimation())
+				.Complete(EmitReadyAnimation)
 		);
 	}
 
@@ -68,7 +68,7 @@ public class ScreenEffectManager : MonoBehaviour {
 		);
 	}
 
-	public void EmitTimeupAnimation(Action callback) {
+	public void EmitTimeupAnimation(Action onComplete) {
 		Show (effectBackObject, timeupTextObject);
 		var textSpriteRenderer = timeupTextObject.GetComponent<SpriteRenderer>();
 
@@ -86,7 +86,7 @@ public class ScreenEffectManager : MonoBehaviour {
 				.ScaleTo(timeupTextObject, Vector3.one * 9, EaseType.easeOutExpo)
 				.FadeTo(textSpriteRenderer, 0, EaseType.easeOutExpo)
 				.FadeTo(maskSpriteRenderer, 1, EaseType.linear)
-				.Complete(() => callback())
+				.Complete(onComplete)
 		);
 	}
 }
