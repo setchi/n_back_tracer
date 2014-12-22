@@ -26,6 +26,8 @@ public class ResultMain : MonoBehaviour {
 		DisplayScore();
 		
 		sendScoreButton = GameObject.Find("SendScoreButton");
+		sendScoreButton.SetActive(false);
+
 		registNameRegion = GameObject.Find("RegistNameRegion");
 		
 		JsonModel.PlayerInfo playerInfo = LocalStorage.Read<JsonModel.PlayerInfo>();
@@ -35,7 +37,7 @@ public class ResultMain : MonoBehaviour {
 			
 		} else {
 			// スコア更新していたらランキング登録ボタン表示
-			StartCoroutine(Server.CheckRecord(0, response => {
+			StartCoroutine(Server.CheckRecord(playerInfo, score, response => {
 				if (response.is_new_record) {
 					sendScoreButton.SetActive(true);
 				}

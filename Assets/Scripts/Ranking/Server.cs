@@ -7,10 +7,15 @@ using System.Collections.Generic;
 public class Server : MonoBehaviour {
 	static string hostName = "http://setchi.jp/unity/b/";
 
-	public static IEnumerator CheckRecord(int score, Action<JsonModel.CheckRecord> onSuccess) {
-		var www = new WWW(hostName + "home/check_record.json");
+	public static IEnumerator CheckRecord(JsonModel.PlayerInfo playerInfo, int score, Action<JsonModel.CheckRecord> onSuccess) {
+		var form = new WWWForm();
+		form.AddField("id", playerInfo.id);
+		form.AddField("score", score);
+
+		var www = new WWW(hostName + "home/check_record.json", form);
 		yield return www;
 
+		Debug.Log (www.text);
 		onSuccess(JsonMapper.ToObject<JsonModel.CheckRecord>(www.text));
 	}
 
@@ -35,7 +40,6 @@ public class Server : MonoBehaviour {
 		var www = new WWW(hostName + "home/rank_entry.json", form);
 		yield return www;
 
-		Debug.Log (www.text);
 		onSuccess();
 	}
 	/*

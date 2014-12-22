@@ -29,14 +29,14 @@ class Model_Ranking extends Model
 	}
 
 	public static function get_score($id) {
-		if (!exist($id))
+		if (!self::exist($id))
 			return 0;
 
 		$record = DB::select('score')->from(self::$prefix.'ranking')
 			->where('player_id', $id)
 			->execute()->as_array();
 
-		return $record["score"];
+		return $record[0]['score'];
 	}
 
 	public static function get() {

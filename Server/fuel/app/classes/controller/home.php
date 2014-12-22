@@ -46,16 +46,16 @@ class Controller_Home extends Controller_Rest
 		return $this->response(array('entry' => true));
 	}
 
-	public function get_check_record() {
-		return $this->response(array(
-			'is_new_record' => true
-		));
-
-
+	public function post_check_record() {
+		$id = Input::post('id');
+		$score = Input::post('score');
+		
 		$prev_score = Model_Ranking::get_score($id);
 
 		return $this->response(array(
-			'is_new_record' => $score > $prev_score
+			'is_new_record' => intval($score) > intval($prev_score),
+			'score' => $score,
+			'prev' => $prev_score
 		));
 	}
 }
