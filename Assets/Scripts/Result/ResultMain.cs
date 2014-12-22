@@ -6,12 +6,18 @@ public class ResultMain : MonoBehaviour {
 	Storage storage;
 	GameObject sendScoreButton;
 	GameObject registNameRegion;
+
+	public static int Score {
+		get { return score; }
+	}
+	static int score = 0;
 	
 	void DisplayScore() {
 		GameObject storageObject = GameObject.Find ("StorageObject");
 		storage = storageObject ? storageObject.GetComponent<Storage>() : null;
 		
 		if (storage && storage.Has ("Score")) {
+			score = storage.Get("Score");
 			GameObject.Find ("Score").GetComponent<Text>().text = "Score: " + storage.Get("Score").ToString();
 		}
 	}
