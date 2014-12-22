@@ -40,9 +40,9 @@ class Model_Ranking extends Model
 	}
 
 	public static function get() {
-		return DB::select(self::$prefix.'player.name', 'score')->from(self::$prefix.'ranking')
+		return DB::select('name', 'score')->from(self::$prefix.'ranking')
 			->join(self::$prefix.'player')
-			->on(self::$prefix.'ranking.player_id', '=', self::$prefix.'player.id')
+			->on('player_id', '=', 'id')
 			->order_by('score', 'desc')
 			->limit(10)
 			->execute()->as_array();
