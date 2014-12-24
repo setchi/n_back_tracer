@@ -37,11 +37,11 @@ public class ResultMain : MonoBehaviour {
 			
 		} else {
 			// スコア更新していたらランキング登録ボタン表示
-			StartCoroutine(Server.CheckRecord(playerInfo, score, response => {
+			API.CheckRecord(playerInfo, score, response => {
 				if (response.is_new_record) {
 					sendScoreButton.SetActive(true);
 				}
-			}));
+			});
 		}
 	}
 }

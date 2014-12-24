@@ -31,10 +31,10 @@ public class ResultSceneUIEventListener : MonoBehaviour {
 			sendScoreButton.SetActive(false);
 		} else {
 			// ランキング登録
-			StartCoroutine(Server.RankEntry(playerInfo, ResultMain.Score, () => {
+			API.RankEntry(playerInfo, ResultMain.Score, () => {
 				sendScoreButton.SetActive(false);
 				displayRankingButton.SetActive(true);
-			}));
+			});
 		}
 	}
 
@@ -52,15 +52,15 @@ public class ResultSceneUIEventListener : MonoBehaviour {
 			return;
 		}
 
-		StartCoroutine(Server.RequestNewPlayerId(response => {
+		API.RequestNewPlayerId(response => {
 			response.name = nameInput.text;
 			LocalStorage.Write<JsonModel.PlayerInfo>(response);
 
-			StartCoroutine(Server.RankEntry(response, ResultMain.Score, () => {
+			API.RankEntry(response, ResultMain.Score, () => {
 				registNameRegion.SetActive(false);
 				displayRankingButton.SetActive(true);
-			}));
-		}));
+			});
+		});
 	}
 
 	void OnClickRegistNameCancelButton() {
