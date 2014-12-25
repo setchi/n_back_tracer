@@ -12,7 +12,7 @@ public class API {
 		form.Add("id", playerInfo.id);
 		form.Add("score", score.ToString());
 
-		HTTP.POST(hostName + "home/check_record.json", form, response => {
+		HTTP.Post(hostName + "home/check_record.json", form, response => {
 			onSuccess(JsonMapper.ToObject<JsonModel.CheckRecord>(response));
 		});
 	}
@@ -23,7 +23,7 @@ public class API {
 	}
 	
 	public static void RequestNewPlayerId(Action<JsonModel.PlayerInfo> onSuccess) {
-		HTTP.GET(hostName + "home/create_player_id.json", response => {
+		HTTP.Get(hostName + "home/create_player_id.json", response => {
 			onSuccess(JsonMapper.ToObject<JsonModel.PlayerInfo>(response));
 		});
 	}
@@ -33,6 +33,6 @@ public class API {
 		form.Add("id", playerInfo.id);
 		form.Add("name", playerInfo.name);
 		form.Add("score", score.ToString());
-		HTTP.POST(hostName + "home/rank_entry.json", form, response => onSuccess());
+		HTTP.Post(hostName + "home/rank_entry.json", form, response => onSuccess());
 	}
 }

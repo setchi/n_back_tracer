@@ -6,9 +6,8 @@ using System.Collections.Generic;
 public class HTTP : MonoBehaviour {
 	private static HTTP instance;
 	
-	private HTTP () { // Private Constructor
-		Debug.Log("Create SampleSingleton GameObject instance.");
-	}
+	// Singleton
+	private HTTP () {}
 	
 	static HTTP Instance {
 		get {
@@ -20,17 +19,17 @@ public class HTTP : MonoBehaviour {
 		}
 	}
 
-	public static WWW GET(string url, Action<string> onSuccess, Action<string> onError = null) {
+	public static WWW Get(string url, Action<string> onSuccess, Action<string> onError = null) {
 		WWW www = new WWW (url);
 		Instance.StartCoroutine (Instance.WaitForRequest (www, onSuccess, onError));
 		return www;
 	}
 	
-	public static WWW POST(string url, Dictionary<string, string> post, Action<string> onSuccess, Action<string> onError = null) {
+	public static WWW Post(string url, Dictionary<string, string> postParams, Action<string> onSuccess, Action<string> onError = null) {
 		WWWForm form = new WWWForm();
 		
-		foreach (var post_arg in post) {
-			form.AddField(post_arg.Key, post_arg.Value);
+		foreach (var param in postParams) {
+			form.AddField(param.Key, param.Value);
 		}
 		
 		WWW www = new WWW(url, form);
