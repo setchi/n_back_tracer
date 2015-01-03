@@ -30,7 +30,7 @@ public class ResultMain : MonoBehaviour {
 
 		registNameRegion = GameObject.Find("RegistNameRegion");
 		
-		JsonModel.PlayerInfo playerInfo = LocalStorage.Read<JsonModel.PlayerInfo>();
+		var playerInfo = LocalStorage.Read<JsonModel.PlayerInfo>();
 
 		if (playerInfo == null) {
 			sendScoreButton.SetActive(true);

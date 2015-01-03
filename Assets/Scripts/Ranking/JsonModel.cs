@@ -10,7 +10,7 @@ public class JsonModel {
 	public class Record {
 		public string id;
 		public string name;
-		public int score;
+		public string score;
 	}
 
 

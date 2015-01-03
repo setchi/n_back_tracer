@@ -17,9 +17,10 @@ public class API {
 		});
 	}
 
-	public static IEnumerator FetchRanking() {
-		var www = new WWW(hostName);
-		yield return www;
+	public static void FetchRanking(Action<JsonModel.Record[]> onSuccess) {
+		HTTP.Get(hostName + "home/ranking.json", response => {
+			onSuccess(JsonMapper.ToObject<JsonModel.Record[]>(response));
+		});
 	}
 	
 	public static void RequestNewPlayerId(Action<JsonModel.PlayerInfo> onSuccess) {
