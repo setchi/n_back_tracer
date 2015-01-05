@@ -1,12 +1,21 @@
 ﻿using UnityEngine;
+using System.Linq;
 using System.Collections;
+using System.Collections.Generic;
 
 public class TitleSceneUIEventListener : MonoBehaviour {
 	Storage storage;
+	List<GameObject> BackNumButtons;
+	List<GameObject> LengthButtons;
 	
 	// Use this for initialization
 	void Awake () {
 		storage = GameObject.Find ("StorageObject").GetComponent<Storage>();
+
+		BackNumButtons = Enumerable.Range(1, 3).Select(i => GameObject.Find("Button" + i.ToString())).ToList();
+		LengthButtons = Enumerable.Range(4, 3).Select(i => GameObject.Find("Length" + i.ToString())).ToList();
+
+		Debug.Log (BackNumButtons.Count.ToString());
 	}
 	
 	void TransitionIfReady() {
@@ -17,12 +26,21 @@ public class TitleSceneUIEventListener : MonoBehaviour {
 	
 	void SetBackNum(int n) {
 		storage.Set ("BackNum", n);
-		TransitionIfReady ();
+		EmitButtonAnimate(BackNumButtons, n - 1);
 	}
 	
 	void SetLength(int length) {
 		storage.Set("Length", length);
-		TransitionIfReady ();
+		EmitButtonAnimate(LengthButtons, length - 4);
+	}
+
+	void EmitButtonAnimate(List<GameObject> buttonList, int index) {
+		foreach (var go in buttonList) {
+			TweenPlayer.Play(gameObject, new Tween(0.2f).ScaleTo(go, Vector3.one, EaseType.easeOutBack));
+		}
+		TweenPlayer.Play(gameObject, new Tween(0.2f)
+		                 .ScaleTo(buttonList[index], Vector3.one * 1.3f, EaseType.easeOutBack)
+		                 .Complete(() => TransitionIfReady()));
 	}
 	
 	void OnClickN1Button() { SetBackNum (1); }
