@@ -7,33 +7,30 @@ using System.Collections.Generic;
 public class API {
 	static string hostName = "http://setchi.jp/unity/b/";
 
-	public static void CheckRecord(JsonModel.PlayerInfo playerInfo, int score, Action<JsonModel.CheckRecord> onSuccess) {
-		var form = new Dictionary<string, string>();
-		form.Add("id", playerInfo.id);
-		form.Add("score", score.ToString());
-
-		HTTP.Post(hostName + "home/check_record.json", form, response => {
-			onSuccess(JsonMapper.ToObject<JsonModel.CheckRecord>(response));
-		});
-	}
-
 	public static void FetchRanking(Action<JsonModel.Record[]> onSuccess) {
 		HTTP.Get(hostName + "home/ranking.json", response => {
 			onSuccess(JsonMapper.ToObject<JsonModel.Record[]>(response));
 		});
 	}
 	
-	public static void RequestNewPlayerId(Action<JsonModel.PlayerInfo> onSuccess) {
-		HTTP.Get(hostName + "home/create_player_id.json", response => {
+	public static void RankFirstEntry(string name, int score, Action<JsonModel.PlayerInfo> onSuccess) {
+		var form = new Dictionary<string, string>();
+		form.Add("name", name ?? "");
+		form.Add("score", score.ToString());
+		
+		HTTP.Post(hostName + "home/rank_first_entry.json", form, response => {
 			onSuccess(JsonMapper.ToObject<JsonModel.PlayerInfo>(response));
 		});
 	}
-
-	public static void RankEntry(JsonModel.PlayerInfo playerInfo, int score, Action onSuccess) {
+	
+	public static void RankEntry(JsonModel.PlayerInfo playerInfo, int score, Action<JsonModel.CheckRecord> onSuccess) {
 		var form = new Dictionary<string, string>();
 		form.Add("id", playerInfo.id);
-		form.Add("name", playerInfo.name);
+		form.Add("name", playerInfo.name ?? "");
 		form.Add("score", score.ToString());
-		HTTP.Post(hostName + "home/rank_entry.json", form, response => onSuccess());
+		
+		HTTP.Post(hostName + "home/rank_entry.json", form, response => {
+			onSuccess(JsonMapper.ToObject<JsonModel.CheckRecord>(response));
+		});
 	}
 }

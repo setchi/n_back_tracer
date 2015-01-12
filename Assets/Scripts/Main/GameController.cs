@@ -9,7 +9,6 @@ public class GameController : MonoBehaviour {
 	public PatternTracer patternTracer;
 	public TimeKeeper timeKeeper;
 	public ScoreManager scoreManager;
-	public Text timeLimitText;
 
 	int cachedTouchTileId = -1;
 	int currentTouchTileId = -1;
@@ -36,8 +35,6 @@ public class GameController : MonoBehaviour {
 			screenEffectManager.CancelAllAnimate();
 			screenEffectManager.EmitGoAnimation();
 		};
-		
-		timeLimitText = GameObject.Find ("TimeLimit").GetComponent<Text>();
 	}
 
 	public void TouchedTile(int tileId) {
@@ -68,11 +65,9 @@ public class GameController : MonoBehaviour {
 				patternTracer.Touch(currentTouchTileId);
 				cachedTouchTileId = currentTouchTileId;
 			}
-			timeLimitText.text = "Limit: " + timeKeeper.GetRemainingTime().ToString ();
 			break;
 		
 		case GameState.Timeup:
-			timeLimitText.text = "Limit: 0";
 			screenEffectManager.EmitTimeupAnimation(() => {
 				gameState = GameState.Finish;
 			});

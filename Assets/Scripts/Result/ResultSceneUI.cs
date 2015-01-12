@@ -8,7 +8,11 @@ public class ResultSceneUI : MonoBehaviour {
 	public GameObject displayRankingButton;
 	public FadeManager fadeManager;
 	public Text nameInputPlaceholder;
-	public InputField nameInputField;
+	public GameObject nameInputField;
+	public GameObject entrySuccessText;
+	public GameObject registNameRegionDispRankingButton;
+	public GameObject registRecordButton;
+	public GameObject registRecordCancelButton;
 	Storage storage;
 
 	public static int Score {
@@ -29,16 +33,23 @@ public class ResultSceneUI : MonoBehaviour {
 	void Awake() {
 		fadeManager.FadeIn(0.4f, EaseType.easeInQuad);
 		DisplayScore();
-		var playerInfo = LocalStorage.Read<JsonModel.PlayerInfo>();
-
+		Debug.Log ("OnClickSendScoreButton");
+		
+		JsonModel.PlayerInfo playerInfo = LocalStorage.Read<JsonModel.PlayerInfo>();
+		Debug.Log (playerInfo);
+		
 		if (playerInfo == null) {
+			displayRankingButton.SetActive(false);
 			rankEntryButton.SetActive(true);
-			
+
 		} else {
-			// スコア更新していたらランキング登録ボタン表示
-			API.CheckRecord(playerInfo, score, response => {
+			// ランキング登録
+			API.RankEntry(playerInfo, ResultSceneUI.Score, response => {
+				rankEntryButton.SetActive(false);
+				displayRankingButton.SetActive(true);
+
 				if (response.is_new_record) {
-					rankEntryButton.SetActive(true);
+					// new record
 				}
 			});
 		}
@@ -48,43 +59,35 @@ public class ResultSceneUI : MonoBehaviour {
 		LoadLevel("Title");
 	}
 	
-	public void OnClickRankEntryButton() {
-		Debug.Log ("OnClickSendScoreButton");
-		
-		JsonModel.PlayerInfo playerInfo = LocalStorage.Read<JsonModel.PlayerInfo>();
-		Debug.Log (playerInfo);
-		
-		if (playerInfo == null) {
-			registNameRegion.SetActive(true);
-			rankEntryButton.SetActive(false);
-		} else {
-			// ランキング登録
-			API.RankEntry(playerInfo, ResultSceneUI.Score, () => {
-				rankEntryButton.SetActive(false);
-				displayRankingButton.SetActive(true);
-			});
-		}
-	}
-	
 	public void OnClickDisplayRankingButton() {
 		LoadLevel("Ranking");
 	}
-	
+
+	public void OnClickRankEntryButton() {
+		registNameRegion.SetActive(true);
+		rankEntryButton.SetActive(false);
+	}
+
+	// 初回更新時
 	public void OnClickRegistNameButton() {
+		var inputField = nameInputField.GetComponent<InputField>();
 		// スコア送信
-		if (nameInputField.text == "") {
+		if (inputField.text == "" || inputField.text.Length > 7) {
+			nameInputPlaceholder.text = "1~7文字以内で入力";
 			nameInputPlaceholder.color = new Color(1, 0, 0, 0.8f);
+			inputField.text = "";
 			return;
 		}
-		
-		API.RequestNewPlayerId(response => {
-			response.name = nameInputField.text;
+
+		registRecordButton.SetActive(false);
+		registRecordCancelButton.SetActive(false);
+
+		API.RankFirstEntry(inputField.text, Score, response => {
+			nameInputField.SetActive(false);
+			entrySuccessText.SetActive(true);
+			registNameRegionDispRankingButton.SetActive(true);
+
 			LocalStorage.Write<JsonModel.PlayerInfo>(response);
-			
-			API.RankEntry(response, ResultSceneUI.Score, () => {
-				registNameRegion.SetActive(false);
-				displayRankingButton.SetActive(true);
-			});
 		});
 	}
 	
