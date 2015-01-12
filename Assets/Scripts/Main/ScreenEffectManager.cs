@@ -3,18 +3,13 @@ using System;
 using System.Collections.Generic;
 
 public class ScreenEffectManager : MonoBehaviour {
-	GameObject effectBackObject;
-	GameObject timeupTextObject;
-	GameObject readyTextObject;
-	GameObject goTextObject;
-	SpriteRenderer maskSpriteRenderer;
+	public GameObject effectBackObject;
+	public GameObject timeupTextObject;
+	public GameObject readyTextObject;
+	public GameObject goTextObject;
+	public FadeManager fadeManager;
 
 	void Awake () {
-		effectBackObject = GameObject.Find("EffectBack");
-		timeupTextObject = GameObject.Find("TimeupText");
-		readyTextObject = GameObject.Find("ReadyText");
-		goTextObject = GameObject.Find("GoText");
-		maskSpriteRenderer = GameObject.Find("Mask").GetComponent<SpriteRenderer>();
 		HideAll();
 	}
 
@@ -79,13 +74,14 @@ public class ScreenEffectManager : MonoBehaviour {
 				.RotateTo(effectBackObject, new Vector3(60, 60, 0), new Vector3(0, 0, 0), EaseType.linear)
 				.RotateTo(timeupTextObject, new Vector3(60, -40, 40), new Vector3(0, 0, 0), EaseType.linear),
 
-			new Tween(0.5f).ScaleTo(timeupTextObject, new Vector3(0.95f, 0.76f, 0.5f), EaseType.linear),
+		    new Tween(0.5f).ScaleTo(timeupTextObject, new Vector3(0.95f, 0.76f, 0.5f), EaseType.linear).Complete(() => {
+				fadeManager.FadeOut(1, EaseType.easeInQuart);
+			}),
 
 			new Tween(1)
 				.ScaleTo(effectBackObject, new Vector3(600, 0, 0), EaseType.easeOutExpo)
 				.ScaleTo(timeupTextObject, Vector3.one * 9, EaseType.easeOutExpo)
 				.FadeTo(textSpriteRenderer, 0, EaseType.easeOutExpo)
-				.FadeTo(maskSpriteRenderer, 1, EaseType.linear)
 				.Complete(onComplete)
 		);
 	}

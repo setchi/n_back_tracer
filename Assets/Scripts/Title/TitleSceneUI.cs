@@ -3,24 +3,27 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-public class TitleSceneUIEventListener : MonoBehaviour {
+public class TitleSceneUI : MonoBehaviour {
+	public FadeManager fadeManager;
 	Storage storage;
 	List<GameObject> BackNumButtons;
 	List<GameObject> LengthButtons;
 	
 	// Use this for initialization
 	void Awake () {
+		fadeManager.FadeIn(0.4f, EaseType.easeInQuart);
+
 		storage = GameObject.Find ("StorageObject").GetComponent<Storage>();
 
-		BackNumButtons = Enumerable.Range(1, 3).Select(i => GameObject.Find("Button" + i.ToString())).ToList();
-		LengthButtons = Enumerable.Range(4, 3).Select(i => GameObject.Find("Length" + i.ToString())).ToList();
+		BackNumButtons = Enumerable.Range(1, 3).Select(i => GameObject.Find("BackNum" + i.ToString())).ToList();
+		LengthButtons = Enumerable.Range(4, 3).Select(i => GameObject.Find("Chain" + i.ToString())).ToList();
 
 		Debug.Log (BackNumButtons.Count.ToString());
 	}
 	
 	void TransitionIfReady() {
-		if (storage.Has("Length") && storage.Has("BackNum")) {
-			Application.LoadLevel ("Main");
+		if (storage.Has("Chain") && storage.Has("BackNum")) {
+			fadeManager.FadeOut(0.4f, EaseType.easeOutQuart, () => Application.LoadLevel ("Main"));
 		}
 	}
 	
@@ -29,8 +32,8 @@ public class TitleSceneUIEventListener : MonoBehaviour {
 		EmitButtonAnimate(BackNumButtons, n - 1);
 	}
 	
-	void SetLength(int length) {
-		storage.Set("Length", length);
+	void SetChain(int length) {
+		storage.Set("Chain", length);
 		EmitButtonAnimate(LengthButtons, length - 4);
 	}
 
@@ -42,12 +45,12 @@ public class TitleSceneUIEventListener : MonoBehaviour {
 		                 .ScaleTo(buttonList[index], Vector3.one * 1.3f, EaseType.easeOutBack)
 		                 .Complete(() => TransitionIfReady()));
 	}
-	
-	void OnClickN1Button() { SetBackNum (1); }
-	void OnClickN2Button() { SetBackNum (2); }
-	void OnClickN3Button() { SetBackNum (3); }
-	
-	void OnClickL4Button() { SetLength (4); }
-	void OnClickL5Button() { SetLength (5); }
-	void OnClickL6Button() { SetLength (6); }
+
+	public void OnClickNumButton(string n) {
+		SetBackNum(int.Parse(n));
+	}
+
+	public void OnClickChainButton(string chain) {
+		SetChain(int.Parse(chain));
+	}
 }

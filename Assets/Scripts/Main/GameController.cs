@@ -3,10 +3,13 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class GameController : MonoBehaviour {
-	PatternTracer patternTracer;
-	TimeKeeper timeKeeper;
-	Text timeLimitText;
-	ScreenEffectManager screenEffectManager;
+	public FadeManager fadeManager;
+	public ScreenEffectManager screenEffectManager;
+
+	public PatternTracer patternTracer;
+	public TimeKeeper timeKeeper;
+	public ScoreManager scoreManager;
+	public Text timeLimitText;
 
 	int cachedTouchTileId = -1;
 	int currentTouchTileId = -1;
@@ -19,13 +22,11 @@ public class GameController : MonoBehaviour {
 		Timeup,
 		Finish
 	};
-	GameState gameState = GameState.Standby;
+	GameState gameState = GameState.Wait;
 
 	void Awake() {
-		timeKeeper = GetComponent<TimeKeeper>();
-		patternTracer = GetComponent<PatternTracer> ();
-		screenEffectManager = GetComponent<ScreenEffectManager>();
-
+		fadeManager.FadeIn(0.3f, EaseType.easeInQuart, () => gameState = GameState.Standby);
+		
 		timeKeeper.TimeUp += () => {
 			gameState = GameState.Timeup;
 		};
@@ -35,7 +36,7 @@ public class GameController : MonoBehaviour {
 			screenEffectManager.CancelAllAnimate();
 			screenEffectManager.EmitGoAnimation();
 		};
-
+		
 		timeLimitText = GameObject.Find ("TimeLimit").GetComponent<Text>();
 	}
 
@@ -83,7 +84,7 @@ public class GameController : MonoBehaviour {
 			Storage storage = storageObject ? storageObject.GetComponent<Storage>() : null;
 
 			if (storage) {
-				storage.Set("Score", GetComponent<ScoreManager>().GetScore());
+				storage.Set("Score", scoreManager.GetScore());
 			}
 			Application.LoadLevel ("Result");
 			break;

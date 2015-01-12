@@ -17,7 +17,7 @@ public class Tile : MonoBehaviour {
 	Vector3 defaultColor = Vector3.one * 0.2f;
 
 	void Awake() {
-		gameController = GameObject.Find ("Tiles").GetComponent<GameController>();
+		gameController = GameObject.Find ("GameController").GetComponent<GameController>();
 		spriteRenderer = GetComponent<SpriteRenderer> ();
 		lineRenderer = GetComponentInChildren<LineRenderer>();
 		lineRenderer.SetWidth (0.13f, 0.13f);

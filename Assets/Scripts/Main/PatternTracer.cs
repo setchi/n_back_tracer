@@ -6,8 +6,9 @@ using System.Collections.Generic;
 
 public class PatternTracer : MonoBehaviour {
 	public event Action PriorNRunEnded;
+	public ScoreManager scoreManager;
+	public TimeKeeper timeKeeper;
 	PatternGenerator patternGenerator;
-	ScoreManager scoreManager;
 
 	const int tileNum = 4 * 5;
 	Tile[] tiles = new Tile[tileNum];
@@ -22,15 +23,14 @@ public class PatternTracer : MonoBehaviour {
 		Storage storage = storageObject ? storageObject.GetComponent<Storage> () : null;
 
 		backNum = storage ? storage.Get("BackNum") : 1 /* default N */;
-		patternGenerator.ChainLength = storage ? storage.Get ("Length") : 4 /* default Chain Num */;
+		patternGenerator.ChainLength = storage ? storage.Get ("Chain") : 4 /* default Chain Num */;
 	}
 
 	void Awake() {
-		scoreManager = GetComponent<ScoreManager>();
 		patternGenerator = new PatternGenerator(4, 5);
 		ApplyStates (GameObject.Find ("StorageObject"));
 
-		GetComponent<TimeKeeper>().TimeUp += () => isFinished = true;
+		timeKeeper.TimeUp += () => isStopping = true;
 
 		// パターン初期化
 		var ignoreIndexes = new List<int> ();
@@ -61,7 +61,7 @@ public class PatternTracer : MonoBehaviour {
 	}
 	
 	bool isStandby = true;
-	bool isFinished = false;
+	bool isStopping = true;
 	float hintAnimationTriggerTimer = 0;
 	List<Predicate<int>> updateActions = new List<Predicate<int>> ();
 
@@ -100,7 +100,7 @@ public class PatternTracer : MonoBehaviour {
 	
 	float timer = 0;
 	void Update() {
-		if (isFinished) return;
+		if (isStopping) return;
 
 		updateActions = updateActions.Where (action => action (0)).ToList ();
 
@@ -145,6 +145,8 @@ public class PatternTracer : MonoBehaviour {
 	}
 
 	public void StartPriorNRun() {
+		isStopping = false;
+
 		StartPatternTrace (
 			0.4f / patternGenerator.ChainLength,
 			currentPattern,
