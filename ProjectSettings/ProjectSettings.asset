@@ -24,8 +24,8 @@ PlayerSettings:
   m_ActiveColorSpace: 0
   m_MTRendering: 1
   m_MobileMTRendering: 0
+  m_UseDX11: 1
   m_Stereoscopic3D: 0
-  m_GraphicsAPI: 1
   iosShowActivityIndicatorOnLoading: -1
   androidShowActivityIndicatorOnLoading: 1
   iosAppInBackgroundBehavior: 0
@@ -43,7 +43,7 @@ PlayerSettings:
   captureSingleScreen: 0
   Override IPod Music: 0
   Prepare IOS For Recording: 0
-  enableCloudIntegration: 1
+  submitAnalytics: 1
   usePlayerLog: 1
   bakeCollisionMeshes: 0
   forceSingleInstance: 0
@@ -186,6 +186,7 @@ PlayerSettings:
   ps4BackgroundImagePath: 
   ps4StartupImagePath: 
   ps4BGMPath: 
+  ps4ShareFilePath: 
   ps4NPtitleDatPath: 
   ps4RemotePlayKeyAssignment: -1
   ps4EnterButtonAssignment: 1
@@ -198,6 +199,7 @@ PlayerSettings:
   ps4pnPresence: 1
   ps4pnFriends: 1
   ps4pnGameCustomData: 1
+  playerPrefsSupport: 0
   monoEnv: 
   psp2Splashimage: {fileID: 0}
   psp2NPTrophyPackPath: 
