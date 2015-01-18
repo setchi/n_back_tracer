@@ -10,12 +10,14 @@ public class GameController : MonoBehaviour {
 	public TimeKeeper timeKeeper;
 	public ScoreManager scoreManager;
 
+	public GameObject timeBar;
+
 	int cachedTouchTileId = -1;
 	int currentTouchTileId = -1;
 
 	enum GameState {
 		Standby,
-		PriorNRun,
+		Start,
 		Wait,
 		Play,
 		Timeup,
@@ -24,16 +26,16 @@ public class GameController : MonoBehaviour {
 	GameState gameState = GameState.Wait;
 
 	void Awake() {
-		fadeManager.FadeIn(0.3f, EaseType.easeInQuart, () => gameState = GameState.Standby);
-		
+		fadeManager.FadeIn(0.3f, EaseType.easeInQuart, () => {
+			gameState = GameState.Standby;
+		});
+
 		timeKeeper.TimeUp += () => {
 			gameState = GameState.Timeup;
 		};
+
 		patternTracer.PriorNRunEnded += () => {
-			gameState = GameState.Play;
-			timeKeeper.StartCountdown ();
-			screenEffectManager.CancelAllAnimate();
-			screenEffectManager.EmitGoAnimation();
+			gameState = GameState.Start;
 		};
 	}
 
@@ -49,11 +51,15 @@ public class GameController : MonoBehaviour {
 		case GameState.Standby:
 			patternTracer.StartPriorNRun();
 			screenEffectManager.EmitReadyAnimation();
-			gameState = GameState.PriorNRun;
+			gameState = GameState.Wait;
 			break;
 		
-		case GameState.PriorNRun:
-			gameState = GameState.PriorNRun;
+		case GameState.Start:
+			gameState = GameState.Play;
+			timeBar.SetActive(true);
+			timeKeeper.StartCountdown ();
+			screenEffectManager.CancelAllAnimate();
+			screenEffectManager.EmitGoAnimation();
 			break;
 		
 		case GameState.Wait:
