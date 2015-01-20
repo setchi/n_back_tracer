@@ -17,7 +17,8 @@ public class Tile : MonoBehaviour {
 	Vector3 defaultColor = Vector3.one * 0.2f;
 
 	void Awake() {
-		gameController = GameObject.Find ("GameController").GetComponent<GameController>();
+		var gc = GameObject.Find("GameController");
+		gameController = gc == null ? null : gc.GetComponent<GameController>();
 		spriteRenderer = GetComponent<SpriteRenderer> ();
 		lineRenderer = GetComponentInChildren<LineRenderer>();
 		lineRenderer.SetWidth (0.13f, 0.13f);
@@ -37,7 +38,8 @@ public class Tile : MonoBehaviour {
 	}
 
 	void OnMouseEnter() {
-		gameController.TouchedTile (tileId);
+		if (gameController != null)
+			gameController.TouchedTile (tileId);
 	}
 
 	public void EmitMarkEffect() {
