@@ -46,10 +46,10 @@ public class BackgroundTracer : MonoBehaviour {
 		};
 
 		for (;;) {
-			StartCoroutine(
-				Trace(patterns[UnityEngine.Random.Range(0, patterns.Count)],
-			      tileEffectEmitters[UnityEngine.Random.Range(0, tileEffectEmitters.Count)]
-			      ));
+			StartCoroutine(Trace(
+				patterns[UnityEngine.Random.Range(0, patterns.Count)],
+				tileEffectEmitters[UnityEngine.Random.Range(0, tileEffectEmitters.Count)]
+			));
 
 			yield return new WaitForSeconds(1f);
 		}
@@ -59,7 +59,7 @@ public class BackgroundTracer : MonoBehaviour {
 		for (int i = 0, l = pattern.Count; i < l; i++) {
 			DrawLine(pattern, i, 0);
 			emitTileEffect(tiles[pattern[i]]);
-			yield return new WaitForSeconds(0.08f);
+			yield return new WaitForSeconds(0.1f);
 		}
 	}
 	

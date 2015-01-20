@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
 
@@ -52,13 +53,13 @@ public class ScreenEffectManager : MonoBehaviour {
 
 	public void EmitGoAnimation() {
 		Show(goTextObject);
-		var spriteRenderer = goTextObject.GetComponent<SpriteRenderer>();
+		var goText = goTextObject.GetComponent<Text>();
 
 		TweenPlayer.CancelAll(gameObject);
 		TweenPlayer.Play(gameObject,
 			new Tween(0.7f)
 				.ScaleTo(goTextObject, new Vector3(1, 0.8f, 1), EaseType.easeOutCirc)
-				.FadeTo(spriteRenderer, 0, EaseType.linear)
+				.ValueTo(Vector3.one, Vector3.zero, EaseType.linear, pos => goText.color = new Color(1, 1, 1, pos.x))
 				.Complete(() => Hide(goTextObject))
 		);
 	}
@@ -66,22 +67,24 @@ public class ScreenEffectManager : MonoBehaviour {
 	public void EmitTimeupAnimation(Action onComplete) {
 		Show (effectBackObject, timeupTextObject);
 		var textSpriteRenderer = timeupTextObject.GetComponent<SpriteRenderer>();
+		var timeupText = timeupTextObject.GetComponent<Text>();
 
 		TweenPlayer.Play(gameObject,
 			new Tween(0.4f)
-				.ScaleTo(timeupTextObject, Vector3.one * 20, new Vector3(1, 0.8f, 1), EaseType.easeOutQuint)
+				.ScaleTo(timeupTextObject, Vector3.one * 20, new Vector3(1, 0.8f, 1) * 0.9f, EaseType.easeOutQuint)
 				.ScaleTo(effectBackObject, new Vector3(600, 20, 0), new Vector3(600, 1, 0), EaseType.easeOutQuint)
 				.RotateTo(effectBackObject, new Vector3(60, 60, 0), new Vector3(0, 0, 0), EaseType.linear)
 				.RotateTo(timeupTextObject, new Vector3(60, -40, 40), new Vector3(0, 0, 0), EaseType.linear),
 
-		    new Tween(0.5f).ScaleTo(timeupTextObject, new Vector3(0.95f, 0.76f, 0.5f), EaseType.linear).Complete(() => {
-				fadeManager.FadeOut(1, EaseType.easeInQuart);
+		    new Tween(0.5f).ScaleTo(timeupTextObject, new Vector3(0.95f, 0.76f, 0.5f) * 0.9f, EaseType.linear).Complete(() => {
+				fadeManager.FadeOut(1, EaseType.linear);
 			}),
 
 			new Tween(1)
 				.ScaleTo(effectBackObject, new Vector3(600, 0, 0), EaseType.easeOutExpo)
-				.ScaleTo(timeupTextObject, Vector3.one * 9, EaseType.easeOutExpo)
+				.ScaleTo(timeupTextObject, Vector3.one *11, EaseType.easeOutExpo)
 				.FadeTo(textSpriteRenderer, 0, EaseType.easeOutExpo)
+				.ValueTo(Vector3.one, Vector3.zero, EaseType.easeOutExpo, pos => timeupText.color = new Color(1, 1, 1, pos.x))
 				.Complete(onComplete)
 		);
 	}

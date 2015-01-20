@@ -13,7 +13,7 @@ public class BackgroundPattern : MonoBehaviour {
 		get {
 			if (pattern_ == null) {
 				patternGenerator.ChainLength = 30;
-				pattern_ = Enumerable.Repeat(0, 20).Select(i => patternGenerator.Generate(new List<int>())).ToList();
+				pattern_ = Enumerable.Repeat(0, 40).Select(i => patternGenerator.Generate(new List<int>())).ToList();
 			}
 			return pattern_;
 		}
