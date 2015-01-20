@@ -44,14 +44,15 @@ public class BackgroundTracer : MonoBehaviour {
 			tile => tile.EmitMarkEffect(),
 			tile => tile.EmitHintEffect()
 		};
+		int current = 0;
 
 		for (;;) {
 			StartCoroutine(Trace(
-				patterns[UnityEngine.Random.Range(0, patterns.Count)],
+				patterns[current = ++current % patterns.Count],
 				tileEffectEmitters[UnityEngine.Random.Range(0, tileEffectEmitters.Count)]
 			));
 
-			yield return new WaitForSeconds(1f);
+			yield return new WaitForSeconds(0.7f);
 		}
 	}
 
