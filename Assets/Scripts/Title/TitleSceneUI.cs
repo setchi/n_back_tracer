@@ -59,9 +59,9 @@ public class TitleSceneUI : MonoBehaviour {
 	
 	void EmitButtonAnimate(List<GameObject> buttonList, int index, Action onComplete = null) {
 		foreach (var go in buttonList) {
-			TweenPlayer.Play(gameObject, new Tween(0.2f).ScaleTo(go, Vector3.one, EaseType.easeOutBack));
+			TweenPlayer.Play(gameObject, new Tween(0.13f).ScaleTo(go, Vector3.one, EaseType.easeOutBack));
 		}
-		TweenPlayer.Play(gameObject, new Tween(0.2f)
+		TweenPlayer.Play(gameObject, new Tween(0.13f)
 		                 .ScaleTo(buttonList[index], Vector3.one * 1.3f, EaseType.easeOutBack)
 		                 .Complete(onComplete));
 	}
