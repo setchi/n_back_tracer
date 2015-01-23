@@ -53,15 +53,13 @@ public class Tween {
 				from = target.transform.localScale;
 				init = true;
 			}
-			target.transform.localScale = from - (from - to) * ease(0, 1, percentage);
+			target.transform.localScale = Vector3.Lerp(from, to, ease(0, 1, percentage));
 		});
 		return this;
 	}
 	
 	public Tween ScaleTo(GameObject target, Vector3 from, Vector3 to, Func<float, float, float, float> ease) {
-		UpdateActions.Add(percentage => {
-			target.transform.localScale = from - (from - to) * ease(0, 1, percentage);
-		});
+		UpdateActions.Add(percentage => target.transform.localScale = Vector3.Lerp(from, to, ease(0, 1, percentage)));
 		return this;
 	}
 	
@@ -73,22 +71,18 @@ public class Tween {
 				from = target.transform.position;
 				init = true;
 			}
-			target.transform.position = from - (from - to) * ease(0, 1, percentage);
+			target.transform.position = Vector3.Lerp(from, to, ease(0, 1, percentage));
 		});
 		return this;
 	}
 	
 	public Tween MoveTo(GameObject target, Vector3 from, Vector3 to, Func<float, float, float, float> ease) {
-		UpdateActions.Add(percentage => {
-			target.transform.position = from - (from - to) * ease(0, 1, percentage);
-		});
+		UpdateActions.Add(percentage => target.transform.position = Vector3.Lerp(from, to, ease(0, 1, percentage)));
 		return this;
 	}
 	
 	public Tween ColorTo(SpriteRenderer target, Color from, Color to, Func<float, float, float, float> ease) {
-		UpdateActions.Add(percentage => {
-			target.color = from - (from - to) * ease(0, 1, percentage);
-		});
+		UpdateActions.Add(percentage => target.color = Color.Lerp(from, to, ease(0, 1, percentage)));
 		return this;
 	}
 	
@@ -100,7 +94,7 @@ public class Tween {
 				from = target.color;
 				init = true;
 			}
-			target.color = from - (from - to) * ease(0, 1, percentage);
+			target.color = Color.Lerp(from, to, ease(0, 1, percentage));
 		});
 		return this;
 	}
@@ -115,7 +109,7 @@ public class Tween {
 				from = color.a;
 				init = true;
 			}
-			color.a = from - (from - to) * ease(0, 1, percentage);
+			color.a = from + (to - from) * ease(0, 1, percentage);
 			target.color = color;
 		});
 		return this;
@@ -129,7 +123,7 @@ public class Tween {
 				color = target.color;
 				init = true;
 			}
-			color.a = from - (from - to) * ease(0, 1, percentage);
+			color.a = from + (to - from) * ease(0, 1, percentage);
 			target.color = color;
 		});
 		return this;
@@ -144,7 +138,7 @@ public class Tween {
 				from = new Vector3(startVal.x, startVal.y, startVal.z);
 				init = true;
 			}
-			var euler = from - (from - to) * ease(0, 1, percentage);
+			var euler = Vector3.Lerp(from, to, ease(0, 1, percentage));
 			target.transform.localRotation = Quaternion.Euler(euler.x, euler.y, euler.z);
 		});
 		return this;
@@ -152,7 +146,7 @@ public class Tween {
 
 	public Tween RotateTo(GameObject target, Vector3 from, Vector3 to, Func<float, float, float, float> ease) {
 		UpdateActions.Add(percentage => {
-			var euler = from - (from - to) * ease(0, 1, percentage);
+			var euler = Vector3.Lerp(from, to, ease(0, 1, percentage));
 			target.transform.localRotation = Quaternion.Euler(euler.x, euler.y, euler.z);
 		});
 		return this;
