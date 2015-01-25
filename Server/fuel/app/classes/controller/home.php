@@ -26,6 +26,7 @@ class Controller_Home extends Controller_Rest
 		// 記録を登録する
 		$id = Input::post('id');
 		$name = Input::post('name');
+		$chain_n = Input::post('chainAndN');
 		$score = Input::post('score');
 
 		if (!Model_Player::exist($id)) {
@@ -42,7 +43,7 @@ class Controller_Home extends Controller_Rest
 		}
 
 		Model_Player::update_name($id, $name);
-		Model_Ranking::entry($id, $score);
+		Model_Ranking::entry($id, $chain_n, $score);
 
 		return $this->response(array(
 			'is_new_record' => intval($score) > intval($prev_score),
@@ -55,19 +56,20 @@ class Controller_Home extends Controller_Rest
 		// 記録を登録する
 		$id = self::create_player_id();
 		$name = Input::post('name');
+		$chain_n = Input::post('chainAndN');
 		$score = Input::post('score');
 
 		Model_Player::add($id, $name);
 
 		$prev_score = Model_Ranking::get_score($id);
-		Model_Ranking::entry($id, $score);
+		Model_Ranking::entry($id, $chain_n, $score);
 
 		return $this->response(array(
 			'is_new_record' => intval($score) > intval($prev_score),
 			'score' => $score,
 			'prev' => $prev_score,
 			'id' => $id,
-			'name' > $name
+			'name' => $name
 		));
 	}
 }

@@ -33,7 +33,7 @@ public class RankingSceneUI : MonoBehaviour {
 		row.transform.SetParent(rankingView.transform);
 		row.transform.localScale = Vector3.one;
 
-		row.GetComponent<RankRecord>().Set(rank, record.name, record.score, record.id == selfPlayerId);
+		row.GetComponent<RankRecord>().Set(rank, record, selfPlayerId);
 	}
 
 	public void OnClickReturnButton() {

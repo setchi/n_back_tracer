@@ -12,19 +12,19 @@ class Model_Ranking extends Model
 		return $exist != 0;
 	}
 
-	public static function entry($id, $score) {
+	public static function entry($id, $chain_n, $score) {
+		$data = array(
+			'player_id' => $id,
+			'chain_n' => $chain_n,
+			'score' => $score,
+			'time' => date('Y-m-d H:i:s')
+		);
+
 		if (self::exist($id)) {
-			DB::update(self::$prefix.'ranking')->set(array(
-				'score' => $score,
-				'time' => date('Y-m-d H:i:s')
-			))->where('player_id', $id)->execute();
+			DB::update(self::$prefix.'ranking')->set($data)->where('player_id', $id)->execute();
 
 		} else {
-			DB::insert(self::$prefix.'ranking')->set(array(
-				'player_id' => $id,
-				'score' => $score,
-				'time' => date('Y-m-d H:i:s')
-			))->execute();
+			DB::insert(self::$prefix.'ranking')->set($data)->execute();
 		}
 	}
 
@@ -40,7 +40,7 @@ class Model_Ranking extends Model
 	}
 
 	public static function get() {
-		return DB::select('id', 'name', 'score')->from(self::$prefix.'ranking')
+		return DB::select('id', 'name', 'chain_n', 'score')->from(self::$prefix.'ranking')
 			->join(self::$prefix.'player')
 			->on('player_id', '=', 'id')
 			->order_by('score', 'desc')

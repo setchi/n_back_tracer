@@ -33,10 +33,8 @@ public class ResultSceneUI : MonoBehaviour {
 	void Awake() {
 		fadeManager.FadeIn(0.4f, EaseType.easeInQuad);
 		DisplayScore();
-		Debug.Log ("OnClickSendScoreButton");
 		
 		JsonModel.PlayerInfo playerInfo = LocalStorage.Read<JsonModel.PlayerInfo>();
-		Debug.Log (playerInfo);
 		
 		if (playerInfo == null) {
 			displayRankingButton.SetActive(false);
@@ -44,7 +42,7 @@ public class ResultSceneUI : MonoBehaviour {
 
 		} else {
 			// ランキング登録
-			API.RankEntry(playerInfo, ResultSceneUI.Score, response => {
+			API.RankEntry(playerInfo, storage.Get("Chain") + "-" + storage.Get("BackNum"), Score, response => {
 				rankEntryButton.SetActive(false);
 				displayRankingButton.SetActive(true);
 
@@ -82,7 +80,7 @@ public class ResultSceneUI : MonoBehaviour {
 		registRecordButton.SetActive(false);
 		registRecordCancelButton.SetActive(false);
 
-		API.RankFirstEntry(inputField.text, Score, response => {
+		API.RankFirstEntry(inputField.text, storage.Get("Chain") + "-" + storage.Get("BackNum"), Score, response => {
 			nameInputField.SetActive(false);
 			entrySuccessText.SetActive(true);
 			registNameRegionDispRankingButton.SetActive(true);

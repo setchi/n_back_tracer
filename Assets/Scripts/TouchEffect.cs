@@ -6,8 +6,7 @@ using System.Collections;
 public class TouchEffect : MonoBehaviour {
 	public GameObject[] elements;
 	float animTime = 0.4f;
-	
-	// Use this for initialization
+
 	void Start () {
 		StartCoroutine(Emit());
 	}
@@ -17,7 +16,9 @@ public class TouchEffect : MonoBehaviour {
 			obj.transform.SetParent(gameObject.transform);
 			obj.transform.position = transform.position;
 			Animate(obj);
-			yield return new WaitForSeconds(0.1f);
+
+			foreach (var i in Enumerable.Range(0, 6))
+				yield return new WaitForEndOfFrame();
 		}
 		
 		yield return new WaitForSeconds(animTime);
@@ -31,7 +32,6 @@ public class TouchEffect : MonoBehaviour {
 		TweenPlayer.Play(gameObject, new Tween(animTime).ValueTo(from, to, EaseType.easeOutSine, pos => {
 			obj.transform.localScale = pos;
 			obj.GetComponent<Image>().color = new Color(1, 1, 1, (2 - pos.x) / 2f);
-
 		}));
 	}
 }

@@ -8,6 +8,7 @@ CREATE TABLE n_back_tracer_player (
 
 CREATE TABLE n_back_tracer_ranking (
 	player_id varchar(100) collate utf8_unicode_ci default NULL,
+	chain_n varchar (5),
 	score int default NULL,
 	time datetime default '0000-00-00 00:00:00',
 	PRIMARY KEY (player_id, time),
