@@ -30,7 +30,7 @@ public class RankingSceneUI : MonoBehaviour {
 
 	void DispRecord(int rank, JsonModel.Record record) {
 		var row = (GameObject) Instantiate(rankRecordPrefab);
-		row.transform.parent = rankingView.transform;
+		row.transform.SetParent(rankingView.transform);
 		row.transform.localScale = Vector3.one;
 
 		row.GetComponent<RankRecord>().Set(rank, record.name, record.score, record.id == selfPlayerId);

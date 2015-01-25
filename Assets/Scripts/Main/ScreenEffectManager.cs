@@ -66,7 +66,6 @@ public class ScreenEffectManager : MonoBehaviour {
 
 	public void EmitTimeupAnimation(Action onComplete) {
 		Show (effectBackObject, timeupTextObject);
-		var textSpriteRenderer = timeupTextObject.GetComponent<SpriteRenderer>();
 		var timeupText = timeupTextObject.GetComponent<Text>();
 
 		TweenPlayer.Play(gameObject,
