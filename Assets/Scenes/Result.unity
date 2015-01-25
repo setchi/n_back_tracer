@@ -1812,6 +1812,7 @@ GameObject:
   - 114: {fileID: 1634043347}
   - 114: {fileID: 1634043349}
   - 114: {fileID: 1634043350}
+  - 114: {fileID: 1634043351}
   m_Layer: 5
   m_Name: UI
   m_TagString: Untagged
@@ -1918,6 +1919,19 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
+--- !u!114 &1634043351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 1634043345}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d12f3c7ee9aea6048bd75d1a33e6e4f8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  effect: {fileID: 101906, guid: 2f7c16e97bebb3c41856abd57dc4a4e5, type: 2}
+  siblingIndex: 1
 --- !u!1 &1668024806
 GameObject:
   m_ObjectHideFlags: 0
