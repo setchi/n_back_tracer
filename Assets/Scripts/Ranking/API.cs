@@ -8,8 +8,8 @@ public class API {
 	static string hostName = "http://setchi.jp/unity/b/";
 
 	public static void FetchRanking(Action<JsonModel.Record[]> onSuccess) {
-		HTTP.Get(hostName + "home/ranking.json", response => {
-			onSuccess(JsonMapper.ToObject<JsonModel.Record[]>(response));
+		HTTP.Get(hostName + "home/ranking.json", www => {
+			onSuccess(JsonMapper.ToObject<JsonModel.Record[]>(www.text));
 		});
 	}
 	
@@ -19,8 +19,8 @@ public class API {
 		form.Add("chainAndN", chainAndN);
 		form.Add("score", score.ToString());
 		
-		HTTP.Post(hostName + "home/rank_first_entry.json", form, response => {
-			onSuccess(JsonMapper.ToObject<JsonModel.PlayerInfo>(response));
+		HTTP.Post(hostName + "home/rank_first_entry.json", form, www => {
+			onSuccess(JsonMapper.ToObject<JsonModel.PlayerInfo>(www.text));
 		});
 	}
 	
@@ -31,8 +31,8 @@ public class API {
 		form.Add("chainAndN", chainAndN);
 		form.Add("score", score.ToString());
 		
-		HTTP.Post(hostName + "home/rank_entry.json", form, response => {
-			onSuccess(JsonMapper.ToObject<JsonModel.CheckRecord>(response));
+		HTTP.Post(hostName + "home/rank_entry.json", form, www => {
+			onSuccess(JsonMapper.ToObject<JsonModel.CheckRecord>(www.text));
 		});
 	}
 }

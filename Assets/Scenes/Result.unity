@@ -207,7 +207,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: .195999995, g: .195999995, b: .195999995, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FontData:
     m_Font: {fileID: 12800000, guid: 7c1fdcf6e5844f540b80aefd1ebac659, type: 3}
     m_FontSize: 80
@@ -387,7 +387,7 @@ RectTransform:
   m_RootOrder: 3
   m_AnchorMin: {x: .5, y: .5}
   m_AnchorMax: {x: .5, y: .5}
-  m_AnchoredPosition: {x: 0, y: -226}
+  m_AnchoredPosition: {x: 0, y: -180}
   m_SizeDelta: {x: 700, y: 150}
   m_Pivot: {x: .5, y: .5}
 --- !u!114 &93122122
@@ -456,7 +456,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: .588}
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 21300000, guid: ec70e84cf1644d6469b1f4b4f6c909f3, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -687,8 +687,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: .588}
+  m_Sprite: {fileID: 21300000, guid: ec70e84cf1644d6469b1f4b4f6c909f3, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1146,8 +1146,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: .588}
+  m_Sprite: {fileID: 21300000, guid: ec70e84cf1644d6469b1f4b4f6c909f3, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1172,7 +1172,7 @@ GameObject:
   - 222: {fileID: 644497229}
   - 114: {fileID: 644497228}
   - 114: {fileID: 644497227}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: DispRankingButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1323,7 +1323,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: .195999995, g: .195999995, b: .195999995, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FontData:
     m_Font: {fileID: 12800000, guid: 7c1fdcf6e5844f540b80aefd1ebac659, type: 3}
     m_FontSize: 80
@@ -1392,7 +1392,7 @@ MonoBehaviour:
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FontData:
     m_Font: {fileID: 12800000, guid: 7c1fdcf6e5844f540b80aefd1ebac659, type: 3}
-    m_FontSize: 140
+    m_FontSize: 100
     m_FontStyle: 0
     m_BestFit: 0
     m_MinSize: 10
@@ -1500,7 +1500,7 @@ GameObject:
   - 224: {fileID: 1185989345}
   - 222: {fileID: 1185989347}
   - 114: {fileID: 1185989346}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1635,6 +1635,14 @@ Prefab:
       propertyPath: m_Pivot.y
       value: .5
       objectReference: {fileID: 0}
+    - target: {fileID: 168848, guid: b6be37afb36655249b4bada39e642fbb, type: 2}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 176108, guid: b6be37afb36655249b4bada39e642fbb, type: 2}
+      propertyPath: m_Layer
+      value: 5
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: b6be37afb36655249b4bada39e642fbb, type: 2}
   m_IsPrefabParent: 0
@@ -1659,7 +1667,7 @@ GameObject:
   - 224: {fileID: 1286173358}
   - 222: {fileID: 1286173360}
   - 114: {fileID: 1286173359}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: RegistNameRegion
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1814,7 +1822,7 @@ GameObject:
   - 114: {fileID: 1634043350}
   - 114: {fileID: 1634043351}
   m_Layer: 5
-  m_Name: UI
+  m_Name: GUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2242,9 +2250,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: .195999995, g: .195999995, b: .195999995, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FontData:
-    m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
+    m_Font: {fileID: 12800000, guid: 7c1fdcf6e5844f540b80aefd1ebac659, type: 3}
     m_FontSize: 70
     m_FontStyle: 0
     m_BestFit: 0
@@ -2255,7 +2263,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: "\u30E9\u30F3\u30AD\u30F3\u30B0\u767B\u9332"
+  m_Text: Regist
 --- !u!222 &1981456610
 CanvasRenderer:
   m_ObjectHideFlags: 0

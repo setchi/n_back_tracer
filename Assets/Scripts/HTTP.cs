@@ -18,14 +18,14 @@ public class HTTP : MonoBehaviour {
 			return instance;
 		}
 	}
-
-	public static WWW Get(string url, Action<string> onSuccess, Action<string> onError = null) {
+	
+	public static WWW Get(string url, Action<WWW> onSuccess, Action<WWW> onError = null) {
 		WWW www = new WWW (url);
 		Instance.StartCoroutine (Instance.WaitForRequest (www, onSuccess, onError));
 		return www;
 	}
 	
-	public static WWW Post(string url, Dictionary<string, string> postParams, Action<string> onSuccess, Action<string> onError = null) {
+	public static WWW Post(string url, Dictionary<string, string> postParams, Action<WWW> onSuccess, Action<WWW> onError = null) {
 		WWWForm form = new WWWForm();
 		
 		foreach (var param in postParams) {
@@ -37,17 +37,18 @@ public class HTTP : MonoBehaviour {
 		return www;
 	}
 	
-	IEnumerator WaitForRequest(WWW www, Action<string> onSuccess, Action<string> onError) {
+	IEnumerator WaitForRequest(WWW www, Action<WWW> onSuccess, Action<WWW> onError) {
 		yield return www;
-
+		
 		// check for errors
-		if (www.error == null) {
+		if (string.IsNullOrEmpty(www.error)) {
 			Debug.Log("WWW Ok!: " + www.text);
-			onSuccess(www.text);
+			onSuccess(www);
+			
 		} else {
 			Debug.Log("WWW Error: "+ www.error);
 			if (onError != null)
-				onError(www.error);
+				onError(www);
 		}
 	}
 }

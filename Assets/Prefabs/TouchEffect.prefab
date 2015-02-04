@@ -9,7 +9,7 @@ GameObject:
   m_Component:
   - 224: {fileID: 22400840}
   - 114: {fileID: 11484828}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: TouchEffect
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -26,7 +26,7 @@ GameObject:
   - 224: {fileID: 22490226}
   - 222: {fileID: 22293428}
   - 114: {fileID: 11435136}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: TapEffectElement 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -43,7 +43,7 @@ GameObject:
   - 224: {fileID: 22410306}
   - 222: {fileID: 22212030}
   - 114: {fileID: 11419282}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: TapEffectElement
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -60,7 +60,7 @@ GameObject:
   - 224: {fileID: 22435950}
   - 222: {fileID: 22238920}
   - 114: {fileID: 11424038}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: TapEffectElement 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -79,7 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_Sprite: {fileID: 21300000, guid: 952c6595e7fa1bd47932cb3448765a0d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -100,7 +100,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_Sprite: {fileID: 21300000, guid: 952c6595e7fa1bd47932cb3448765a0d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
@@ -121,7 +121,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 1, b: 1, a: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
   m_Sprite: {fileID: 21300000, guid: 952c6595e7fa1bd47932cb3448765a0d, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
