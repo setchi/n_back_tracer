@@ -16,20 +16,18 @@ public class PatternTracer : MonoBehaviour {
 	List<List<int>> patterns;
 	int currentPattern = 0;
 	int currentIndex = 0;
-	bool isStandby = true;
+	bool isStopping = true;
 	float timer = 0;
 
-	void SetStatus(GameObject obj) {
-		Storage storage = obj ? obj.GetComponent<Storage> () : null;
-
+	void SetStatus() {
 		backNum = int.Parse(Storage.Get("BackNum") ?? "1") /* default N */;
 		patternGenerator.ChainLength = int.Parse(Storage.Get("Chain") ?? "4") /* default Chain Num */;
 	}
 
 	void Awake() {
 		patternGenerator = new PatternGenerator(4, 5);
-		SetStatus (GameObject.Find ("StorageObject"));
-		timeKeeper.TimeUp += () => isStandby = true;
+		SetStatus ();
+		timeKeeper.TimeUp += () => isStopping = true;
 
 		// パターン初期化
 		var ignoreIndexes = new List<int> ();
@@ -56,7 +54,7 @@ public class PatternTracer : MonoBehaviour {
 			yield return new WaitForSeconds(1.3f);
 		}
 		PriorNRunEnded();
-		isStandby = false;
+		isStopping = false;
 	}
 
 	void StartTrace(float time, int patternIndex, int startIndex, bool drawLine, Action<Tile> tileEffectEmitter) {
@@ -140,7 +138,7 @@ public class PatternTracer : MonoBehaviour {
 	}
 
 	void Update() {
-		if (isStandby) return;
+		if (isStopping) return;
 		
 		timer += Time.deltaTime;
 		if (timer < 2f) {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
-public class BackgroundTracer : MonoBehaviour {
+public class BackgroundPatternTracer : MonoBehaviour {
 	public GameObject Tile;
 	public int col;
 	public int row;
@@ -12,19 +12,8 @@ public class BackgroundTracer : MonoBehaviour {
 	List<Tile> tiles = new List<Tile>();
 	List<List<int>> patterns;
 
-	List<List<int>> GetPattern() {
-		var obj = GameObject.Find("BackgroundPattern");
-
-		if (obj == null) {
-			obj = new GameObject("BackgroundPattern");
-			obj.AddComponent<BackgroundPattern>();
-		}
-
-		return obj.GetComponent<BackgroundPattern>().Pattern;
-	}
-
 	void Awake () {
-		patterns = GetPattern();
+		patterns = BackgroundPatternStore.GetPatterns();
 		gameObject.transform.localPosition = new Vector3(-col * 1.7f / 2, -row * 1.7f / 2, 10);
 
 		for (int y = 0; y < row; y++) {

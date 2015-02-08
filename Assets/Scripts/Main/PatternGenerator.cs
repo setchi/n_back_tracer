@@ -57,13 +57,7 @@ public class PatternGenerator {
 		var fieldSize = y * x + x;
 
 		var wallIndexes = Enumerable.Range (0, fieldSize).Where (isWall)
-			.Union (
-				ignoreIndexes
-					// 六角形のはみ出てる部分を除外(仮)
-					//  .Union (Enumerable.Range (0, col * row) .Where (i => i % (col * 2) == col - 1))
-					// work配列座標に変換
-			        .Select (i => Mathf.FloorToInt (i / col + 1) * x + (i % col + 1)
-			));
+			.Union (ignoreIndexes.Select (i => Mathf.FloorToInt (i / col + 1) * x + (i % col + 1)));
 
 		return Enumerable.Repeat (0, fieldSize)
 			.Select ((v, i) => wallIndexes.Contains (i) ? 1 : 0).ToArray ();
