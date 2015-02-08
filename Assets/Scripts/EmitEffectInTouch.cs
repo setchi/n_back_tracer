@@ -10,7 +10,6 @@ public class EmitEffectInTouch : MonoBehaviour {
 	public int siblingIndex;
 
 	void Update() {
-		/**
 		for (int i = 0, l = Input.touchCount; i < l; i++) {
 			var touch = Input.GetTouch(i);
 			
@@ -18,12 +17,10 @@ public class EmitEffectInTouch : MonoBehaviour {
 				Emit(touch.position);
 			}
 		}
-		/*/
 
 		if (Input.GetMouseButtonDown(0)) {
 			Emit(Input.mousePosition);
 		}
-		/**/
 	}
 
 	void Emit(Vector3 pos) {

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 
 public class TitleSceneUI : MonoBehaviour {
 	public FadeManager fadeManager;
+	public GameObject leftArrow;
 	public GameObject buttonArea;
 	public GameObject textArea;
 	public GameObject[] buttonElements;
@@ -19,8 +20,7 @@ public class TitleSceneUI : MonoBehaviour {
 	Text[][] screenButtonTexts;
 	Text[] screenTexts;
 	int currentScreen = 0;
-	
-	// Use this for initialization
+
 	void Awake () {
 		fadeManager.FadeIn(0.4f, EaseType.easeInQuart);
 
@@ -31,11 +31,9 @@ public class TitleSceneUI : MonoBehaviour {
 		screenButtonImages = buttonElements.Select(obj => obj.GetComponentsInChildren<Image>()).ToArray();
 		screenButtonTexts = buttonElements.Select(obj => obj.GetComponentsInChildren<Text>()).ToArray();
 		screenTexts = textElements.Select(obj => obj.GetComponent<Text>()).ToArray();
-
-		Debug.Log (BackNumButtons.Count.ToString());
 	}
 	
-	void TransitionIfReady() {
+	void TransSceneIfReady() {
 		if (Storage.Contains("Chain") && Storage.Contains("BackNum")) {
 			fadeManager.FadeOut(0.5f, EaseType.easeInQuad, () => Application.LoadLevel ("Main"));
 		}
@@ -43,40 +41,49 @@ public class TitleSceneUI : MonoBehaviour {
 	
 	void SetBackNum(int n) {
 		Storage.Set ("BackNum", n.ToString());
-		EmitButtonAnimate(BackNumButtons, n - 2, () => {
-			MoveScreen(3);
-			TransitionIfReady();
+		AnimateButtonScale(BackNumButtons, n - 2, () => {
+			SlideMenu(3);
+			TransSceneIfReady();
 		});
 	}
 	
 	void SetChain(int length) {
 		Storage.Set("Chain", length.ToString());
-		EmitButtonAnimate(LengthButtons, length - 4, () => MoveScreen(2));
+		AnimateButtonScale(LengthButtons, length - 4, () => SlideMenu(2));
+	}
+
+	void ResetButtonScale(List<GameObject> buttonList) {
+		buttonList.ForEach(go => go.transform.localScale = Vector3.one);
 	}
 	
-	void EmitButtonAnimate(List<GameObject> buttonList, int index, Action onComplete = null) {
-		foreach (var go in buttonList) {
-			TweenPlayer.Play(gameObject, new Tween(0.13f).ScaleTo(go, Vector3.one, EaseType.easeOutBack));
-		}
+	void AnimateButtonScale(List<GameObject> buttonList, int index, Action onComplete = null) {
+		ResetButtonScale(buttonList);
 		TweenPlayer.Play(gameObject, new Tween(0.13f)
 		                 .ScaleTo(buttonList[index], Vector3.one * 1.3f, EaseType.easeOutBack)
 		                 .Complete(onComplete));
 	}
 
 	bool isMoving = false;
-	void MoveScreen(int screen) {
+	void SlideMenu(int screen) {
 		if (isMoving) return;
 		isMoving = true;
 
+		if (screen > 0) {
+			leftArrow.SetActive(true);
+
+		} else {
+			leftArrow.SetActive(false);
+		}
+
 		var buttonAreaTransform = buttonArea.GetComponent<RectTransform>();
 		var textAreaTransform = textArea.GetComponent<RectTransform>();
-		var startPos = buttonAreaTransform.localPosition;
 		var textAreaPos = textAreaTransform.localPosition;
-		var endPos = startPos;
-		endPos.x = screen * -1200;
+		var fromPosition = buttonAreaTransform.localPosition;
+		var toPosition = fromPosition;
+		toPosition.x = screen * -1200;
 
 		TweenPlayer.Play(gameObject, new Tween(0.5f)
-		                 .ValueTo(startPos, endPos, EaseType.easeInOutExpo, pos => {
+		                 .ValueTo(fromPosition, toPosition, EaseType.easeInOutExpo, pos => {
 			buttonAreaTransform.localPosition = pos;
 			textAreaPos.x = -pos.x;
 			textAreaTransform.localPosition = textAreaPos;
@@ -106,11 +113,18 @@ public class TitleSceneUI : MonoBehaviour {
 	}
 	
 	public void OnClickStartButton() {
-		EmitButtonAnimate(MenuButtons, 0, () => MoveScreen(1));
+		AnimateButtonScale(MenuButtons, 0, () => SlideMenu(1));
 	}
 	
 	public void OnClickRankingButton() {
-		EmitButtonAnimate(MenuButtons, 1, () => fadeManager.FadeOut(0.4f, EaseType.easeOutQuart, () => Application.LoadLevel ("Ranking")));
+		AnimateButtonScale(MenuButtons, 1, () => fadeManager.FadeOut(0.4f, EaseType.easeOutQuart, () => Application.LoadLevel ("Ranking")));
+	}
+	
+	public void OnClickLeftArrow() {
+		ResetButtonScale(BackNumButtons);
+		ResetButtonScale(LengthButtons);
+		ResetButtonScale(MenuButtons);
+		SlideMenu(currentScreen - 1);
 	}
 	
 	public void OnClickNumButton(string n) {

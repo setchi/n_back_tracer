@@ -115,8 +115,8 @@ PlayerSettings:
     rgba: 0
   AndroidTargetDevice: 3
   AndroidSplashScreenScale: 0
-  AndroidKeystoreName: 
-  AndroidKeyaliasName: 
+  AndroidKeystoreName: C:/Users/15012/Desktop/n_back_tracer.keystore
+  AndroidKeyaliasName: n_back_tracer
   AndroidTVCompatibility: 1
   AndroidIsGame: 1
   androidEnableBanner: 1
