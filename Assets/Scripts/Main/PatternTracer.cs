@@ -22,8 +22,8 @@ public class PatternTracer : MonoBehaviour {
 	void SetStatus(GameObject obj) {
 		Storage storage = obj ? obj.GetComponent<Storage> () : null;
 
-		backNum = storage ? storage.Get("BackNum") : 1 /* default N */;
-		patternGenerator.ChainLength = storage ? storage.Get ("Chain") : 4 /* default Chain Num */;
+		backNum = int.Parse(Storage.Get("BackNum") ?? "1") /* default N */;
+		patternGenerator.ChainLength = int.Parse(Storage.Get("Chain") ?? "4") /* default Chain Num */;
 	}
 
 	void Awake() {

@@ -12,7 +12,6 @@ public class TitleSceneUI : MonoBehaviour {
 	public GameObject[] buttonElements;
 	public GameObject[] textElements;
 
-	Storage storage;
 	List<GameObject> BackNumButtons;
 	List<GameObject> LengthButtons;
 	List<GameObject> MenuButtons;
@@ -24,8 +23,6 @@ public class TitleSceneUI : MonoBehaviour {
 	// Use this for initialization
 	void Awake () {
 		fadeManager.FadeIn(0.4f, EaseType.easeInQuart);
-
-		storage = GameObject.Find ("StorageObject").GetComponent<Storage>();
 
 		BackNumButtons = Enumerable.Range(2, 3).Select(i => GameObject.Find("BackNum" + i.ToString())).ToList();
 		LengthButtons = Enumerable.Range(4, 3).Select(i => GameObject.Find("Chain" + i.ToString())).ToList();
@@ -39,13 +36,13 @@ public class TitleSceneUI : MonoBehaviour {
 	}
 	
 	void TransitionIfReady() {
-		if (storage.Has("Chain") && storage.Has("BackNum")) {
+		if (Storage.Contains("Chain") && Storage.Contains("BackNum")) {
 			fadeManager.FadeOut(0.5f, EaseType.easeInQuad, () => Application.LoadLevel ("Main"));
 		}
 	}
 	
 	void SetBackNum(int n) {
-		storage.Set ("BackNum", n);
+		Storage.Set ("BackNum", n.ToString());
 		EmitButtonAnimate(BackNumButtons, n - 2, () => {
 			MoveScreen(3);
 			TransitionIfReady();
@@ -53,7 +50,7 @@ public class TitleSceneUI : MonoBehaviour {
 	}
 	
 	void SetChain(int length) {
-		storage.Set("Chain", length);
+		Storage.Set("Chain", length.ToString());
 		EmitButtonAnimate(LengthButtons, length - 4, () => MoveScreen(2));
 	}
 	

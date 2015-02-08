@@ -1,5 +1,10 @@
 ﻿
 public class JsonModel {
+	
+	public class LocalData {
+		public string bestScore;
+		public PlayerInfo playerInfo;
+	}
 
 	public class PlayerInfo {
 		public string name;

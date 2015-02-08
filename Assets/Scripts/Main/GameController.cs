@@ -81,12 +81,7 @@ public class GameController : MonoBehaviour {
 			break;
 		
 		case GameState.Finish:
-			GameObject storageObject = GameObject.Find ("StorageObject");
-			Storage storage = storageObject ? storageObject.GetComponent<Storage>() : null;
-
-			if (storage) {
-				storage.Set("Score", scoreManager.GetScore());
-			}
+			Storage.Set("Score", scoreManager.GetScore().ToString());
 			Application.LoadLevel ("Result");
 			break;
 

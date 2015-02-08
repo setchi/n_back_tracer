@@ -10,7 +10,7 @@ public class EmitEffectInTouch : MonoBehaviour {
 	public int siblingIndex;
 
 	void Update() {
-		/**/
+		/**
 		for (int i = 0, l = Input.touchCount; i < l; i++) {
 			var touch = Input.GetTouch(i);
 			
