@@ -39,12 +39,12 @@ class Model_Ranking extends Model
 		return $record[0]['score'];
 	}
 
-	public static function get() {
+	public static function get($limit = 100) {
 		return DB::select('id', 'name', 'chain_n', 'score')->from(self::$prefix.'ranking')
 			->join(self::$prefix.'player')
 			->on('player_id', '=', 'id')
 			->order_by('score', 'desc')
-			->limit(10)
+			->limit($limit)
 			->execute()->as_array();
 	}
 }

@@ -14,7 +14,7 @@ class Controller_Home extends Controller_Rest
 
 	public function get_ranking() {
 		// ランキングをJSONで返す。最新N件
-		return $this->response(Model_Ranking::get());
+		return $this->response(Model_Ranking::get(100));
 	}
 
 	public function get_create_player_id() {
@@ -53,25 +53,4 @@ class Controller_Home extends Controller_Rest
 
 		return $this->response(array());
 	}
-/*
-	public function post_rank_first_entry() {
-		// 記録を登録する
-		$id = self::create_player_id();
-		$name = Input::post('name');
-		$chain_n = Input::post('chainAndN');
-		$score = Input::post('score');
-
-		Model_Player::add($id, $name);
-
-		$prev_score = Model_Ranking::get_score($id);
-		Model_Ranking::entry($id, $chain_n, $score);
-
-		return $this->response(array(
-			'is_new_record' => intval($score) > intval($prev_score),
-			'score' => $score,
-			'prev' => $prev_score,
-			'id' => $id,
-			'name' => $name
-		));
-	}*/
 }

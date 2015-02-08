@@ -36,9 +36,6 @@ public class ResultSceneUI : MonoBehaviour {
 	}
 
 	public void OnClickReturnButton() {
-		fadeManager.FadeOut(0.4f, EaseType.easeInQuad, () => {
-			Destroy (GameObject.Find ("StorageObject"));
-			Application.LoadLevel ("Title");
-		});
+		fadeManager.FadeOut(0.4f, EaseType.easeInQuad, () => Application.LoadLevel ("Title"));
 	}
 }

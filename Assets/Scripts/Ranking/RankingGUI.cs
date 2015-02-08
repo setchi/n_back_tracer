@@ -72,20 +72,17 @@ public class RankingGUI : MonoBehaviour {
 		nameInputField.text = LocalData.Read().playerInfo.name;
 		messageText.text = "";
 
-		rankingPanel.transform.localPosition = Vector3.one;
-		rankingPanel.transform.localScale = Vector3.one / 2;
-		TweenPlayer.Play(gameObject, new Tween(0.3f).ValueTo(Vector3.one / 2, Vector3.one, EaseType.easeOutBack, pos => {
-			rankingPanel.transform.localScale = pos;
-		}));
+		TweenPlayer.Play(gameObject, new Tween(1f)
+		                 .ValueTo(new Vector3(0, -1700, 0), Vector3.zero, EaseType.easeOutExpo, pos => rankingPanel.transform.localPosition = pos));
 	}
 
 	public void Hide() {
 		if (isHiding) return;
 		isHiding = true;
 
-		TweenPlayer.Play(gameObject, new Tween(0.3f).ValueTo(Vector3.one, Vector3.one / 2, EaseType.easeInBack, pos => {
-			rankingPanel.transform.localScale = pos;
-		}).Complete(() => rankingPanel.transform.localPosition = new Vector3(0, -100000, 0)));
+		TweenPlayer.Play(gameObject, new Tween(1f)
+		                 .ValueTo(Vector3.zero, new Vector3(0, 1700, 0), EaseType.easeOutExpo, pos => rankingPanel.transform.localPosition = pos)
+		                 .Complete(() => rankingPanel.transform.localPosition = new Vector3(0, -100000, 0)));
 	}
 
 	public void OnClickNameChangeButton() {
