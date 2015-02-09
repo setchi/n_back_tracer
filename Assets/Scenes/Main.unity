@@ -1494,7 +1494,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8b92ad37eed55884b8ecd6dc7f126f38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timeLimit: 10
+  timeLimit: 20
   slider: {fileID: 1028140619}
 --- !u!1 &1120926745
 GameObject:

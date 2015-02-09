@@ -6,6 +6,7 @@ using System.Collections;
 public class ResultSceneUI : MonoBehaviour {
 	public FadeManager fadeManager;
 	public Text scoreText;
+	public Text bestText;
 
 	void Retry(float waitTime, Action action) { StartCoroutine(StartRetry(waitTime, action)); }
 	IEnumerator StartRetry(float waitTime, Action action) {
@@ -14,14 +15,21 @@ public class ResultSceneUI : MonoBehaviour {
 	}
 	
 	void DisplayScore(string score) {
-		scoreText.text = "Score: " + score;
 	}
 	
 	void Awake() {
-		var score = Storage.Get("Score") ?? "1";
-		fadeManager.FadeIn(0.4f, EaseType.easeInQuad);
-		DisplayScore(score);
+		var score = Storage.Get("Score") ?? "0";
 		ScoreRegistIfNewRecord(score);
+
+		var localData = LocalData.Read();
+		if (int.Parse(localData.bestScore ?? "0") < int.Parse(score)) {
+			localData.bestScore = score;
+			LocalData.Write(localData);
+		}
+		bestText.text = "Best: " + (localData.bestScore ?? "0");
+		scoreText.text = "Score: " + score;
+
+		fadeManager.FadeIn(0.4f, EaseType.easeInQuad);
 	}
 
 	void ScoreRegistIfNewRecord(string score) {
