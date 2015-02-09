@@ -32,6 +32,15 @@ public class TitleSceneUI : MonoBehaviour {
 		screenButtonTexts = buttonElements.Select(obj => obj.GetComponentsInChildren<Text>()).ToArray();
 		screenTexts = textElements.Select(obj => obj.GetComponent<Text>()).ToArray();
 	}
+
+	void Update() {
+		if (Input.GetKey(KeyCode.Escape)) {
+			if (currentScreen > 0) {
+				ResetAllButtonScale();
+				SlideMenu(currentScreen - 1);
+			}
+		}
+	}
 	
 	void TransSceneIfReady() {
 		if (Storage.Contains("Chain") && Storage.Contains("BackNum")) {
@@ -54,6 +63,12 @@ public class TitleSceneUI : MonoBehaviour {
 
 	void ResetButtonScale(List<GameObject> buttonList) {
 		buttonList.ForEach(go => go.transform.localScale = Vector3.one);
+	}
+
+	void ResetAllButtonScale() {
+		ResetButtonScale(BackNumButtons);
+		ResetButtonScale(LengthButtons);
+		ResetButtonScale(MenuButtons);
 	}
 	
 	void AnimateButtonScale(List<GameObject> buttonList, int index, Action onComplete = null) {
@@ -121,9 +136,7 @@ public class TitleSceneUI : MonoBehaviour {
 	}
 	
 	public void OnClickLeftArrow() {
-		ResetButtonScale(BackNumButtons);
-		ResetButtonScale(LengthButtons);
-		ResetButtonScale(MenuButtons);
+		ResetAllButtonScale();
 		SlideMenu(currentScreen - 1);
 	}
 	

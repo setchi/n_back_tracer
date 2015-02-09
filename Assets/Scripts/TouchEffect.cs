@@ -28,10 +28,11 @@ public class TouchEffect : MonoBehaviour {
 	void Animate(GameObject obj) {
 		var from = Vector3.zero;
 		var to = Vector3.one * 2f;
+		var image = obj.GetComponent<Image>();
 
 		TweenPlayer.Play(gameObject, new Tween(animTime).ValueTo(from, to, EaseType.easeOutSine, pos => {
 			obj.transform.localScale = pos;
-			obj.GetComponent<Image>().color = new Color(1, 1, 1, (2 - pos.x) / 2f);
+			image.color = new Color(1, 1, 1, (2 - pos.x) / 2f);
 		}));
 	}
 }
