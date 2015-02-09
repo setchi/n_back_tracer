@@ -3,18 +3,25 @@ using System.Collections;
 
 public class ScoreManager : MonoBehaviour {
 	float score = 0;
+	int chain;
+	int backNum;
+
+	void Awake() {
+		chain = int.Parse(Storage.Get("Chain") ?? "4");
+		backNum = int.Parse(Storage.Get("BackNum") ?? "2");
+	}
 
 	public void CorrectPattern() {
-		score += 10; // てきとう
+		score += chain * Mathf.Pow(backNum, 1.5f);
 	}
 
 	public void CorrectTouch() {
-		score += 1; // てきとう
+		score += backNum;
 	}
 
 	public void MissTouch() {
 		// miss
-		score *= 0.95f; // てきとう
+		score *= 0.99f;
 	}
 
 	public int GetScore() {

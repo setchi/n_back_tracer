@@ -60,7 +60,7 @@ public class Tile : MonoBehaviour {
 		TweenPlayer.Play(gameObject,
 			new Tween(0.4f)
 				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
-				.ValueTo(Vector3.one, new Vector3(0, 1, 1), EaseType.easeOutBounce, value => UpdateColor(value.x, value.y, value.z))
+				.ValueTo(Vector3.one, new Vector3(1, 0, 1), EaseType.easeOutBounce, value => UpdateColor(value.x, value.y, value.z))
 		);
 	}
 
