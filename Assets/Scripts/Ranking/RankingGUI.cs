@@ -24,6 +24,12 @@ public class RankingGUI : MonoBehaviour {
 			FetchPlayerId();
 		}
 	}
+
+	void Update() {
+		if (Input.GetKey(KeyCode.Escape)) {
+			Hide();
+		}
+	}
 	
 	void Retry(float waitTime, Action action) { StartCoroutine(StartRetry(waitTime, action)); }
 	IEnumerator StartRetry(float waitTime, Action action) {
