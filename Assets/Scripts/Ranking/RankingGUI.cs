@@ -16,11 +16,11 @@ public class RankingGUI : MonoBehaviour {
 	bool isHiding = true;
 
 	void Awake () {
+		FetchRanking();
 		rankingPanel.transform.localPosition = new Vector3(0, -100000, 0);
 
-		var localData = LocalData.Read();
 		// ローカルにユーザ情報が無ければ新規ID取得
-		if (localData.playerInfo == null) {
+		if (LocalData.Read().playerInfo == null) {
 			FetchPlayerId();
 		}
 	}
@@ -39,9 +39,10 @@ public class RankingGUI : MonoBehaviour {
 
 	void FetchPlayerId() {
 		API.CreatePlayerId(playerInfo => {
-			var localData = LocalData.Read();
-			localData.playerInfo = playerInfo;
-			LocalData.Write(localData);
+			LocalData.Rewrite(localData => {
+				localData.playerInfo = playerInfo;
+				return localData;
+			});
 
 		}, www => Retry(3f, FetchPlayerId));
 	}
@@ -49,7 +50,7 @@ public class RankingGUI : MonoBehaviour {
 	void FetchRanking() {
 		API.FetchRanking(records => {
 			// テーブルの内容をリセット
-			rankingTableContents.ForEach(obj => DestroyObject(obj));
+			rankingTableContents.ForEach(DestroyObject);
 			rankingTableContents.Clear();
 
 			DispRanking(records);
@@ -112,12 +113,13 @@ public class RankingGUI : MonoBehaviour {
 	
 	void UpdatePlayerName(JsonModel.PlayerInfo playerInfo) {
 		API.UpdatePlayerName(playerInfo, () => {
+
+			LocalData.Rewrite(localData => {
+				localData.playerInfo = playerInfo;
+				return localData;
+			});
 			messageText.text = "名前を変更しました";
 			
-			var localData = LocalData.Read();
-			localData.playerInfo = playerInfo;
-			LocalData.Write(localData);
-
 			// ランキングテーブル再取得
 			FetchRanking();
 			

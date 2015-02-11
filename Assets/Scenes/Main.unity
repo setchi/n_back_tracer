@@ -723,7 +723,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scoreManager: {fileID: 1192036647}
-  timeKeeper: {fileID: 1109362649}
 --- !u!1001 &749440371
 Prefab:
   m_ObjectHideFlags: 0
