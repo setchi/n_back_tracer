@@ -26,7 +26,7 @@ public class GameController : MonoBehaviour {
 	GameState gameState = GameState.Wait;
 
 	void Awake() {
-		fadeManager.FadeIn(0.3f, EaseType.easeInQuart, () => {
+		fadeManager.FadeIn(0.3f, DG.Tweening.Ease.InQuart, () => {
 			gameState = GameState.Standby;
 		});
 

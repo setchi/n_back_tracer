@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class Tile : MonoBehaviour {
 	public int TileId {
@@ -14,7 +15,7 @@ public class Tile : MonoBehaviour {
 	GameController gameController;
 	LineRenderer lineRenderer;
 
-	Vector3 defaultColor = Vector3.one * 0.2f;
+	Color defaultColor = new Color(0.2f, 0.2f, 0.2f, 1);
 
 	void Awake() {
 		var gc = GameObject.Find("GameController");
@@ -22,7 +23,6 @@ public class Tile : MonoBehaviour {
 		spriteRenderer = GetComponent<SpriteRenderer> ();
 		lineRenderer = GetComponentInChildren<LineRenderer>();
 		lineRenderer.SetWidth (0.13f, 0.13f);
-		// lineRenderer.SetWidth (0.06f, 0.06f);
 		// 線のスタート位置は常にタイルの中心
 		lineRenderer.SetPosition(0, Vector3.zero);
 	}
@@ -43,57 +43,34 @@ public class Tile : MonoBehaviour {
 	}
 
 	public void EmitMarkEffect() {
-		TweenPlayer.CancelAll(gameObject);
-		TweenPlayer.Play(gameObject, new Tween(1f).ScaleTo(gameObject, Vector3.one, EaseType.linear));
-		// TweenPlayer.Play(gameObject, new Tween(0.4f).ScaleTo(gameObject, Vector3.one * 1.2f, Vector3.one, EaseType.easeOutBounce));
-		TweenPlayer.Play(gameObject,
-		    //new Tween(0.3f)
-		    //	.ValueTo(Vector3.one, new Vector3(0, 1, 0), EaseType.linear, value => UpdateColor(value.x, value.y, value.z)),
-			new Tween(1f)
-				.ValueTo(new Vector3(0, 1, 0), defaultColor, EaseType.linear, value => UpdateColor(value.x, value.y, value.z))
-				.Complete(CompleteEffect)
-		);
+		DOTween.Kill(gameObject);
+		DOTween.To(() => Color.green, UpdateColor, defaultColor, 1f).SetId(gameObject).OnComplete(CompleteEffect);
 	}
 
 	public void EmitCorrectTouchEffect() {
-		TweenPlayer.CancelAll(gameObject);
-		TweenPlayer.Play(gameObject,
-			new Tween(0.4f)
-				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.easeOutBounce)
-				.ValueTo(Vector3.one, new Vector3(0, 1, 1), EaseType.easeOutBounce, value => UpdateColor(value.x, value.y, value.z))
-		);
+		DOTween.Kill(gameObject);
+		DOTween.To(() => Color.white, UpdateColor, Color.cyan, 0.4f).SetEase(Ease.OutBounce).SetId(gameObject);
+		DOTween.To(() => Vector3.one * 1.3f, scale => transform.localScale = scale, Vector3.one, 0.4f)
+			.SetEase(Ease.OutBounce).SetId(gameObject);
 	}
 
 	public void EmitPatternCorrectEffect() {
-		TweenPlayer.Play(gameObject,
-			new Tween(0.4f)
-				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(value.x, value.y, value.z))
-				.Complete(CompleteEffect)
-		);
+		DOTween.To(() => Color.cyan, UpdateColor, defaultColor, 0.4f).OnComplete(CompleteEffect).SetId(gameObject);
 	}
 
 	public void EmitMissEffect() {
 		EraseLine();
-		TweenPlayer.CancelAll(gameObject);
-		TweenPlayer.Play(gameObject,
-			new Tween(0.6f)
-				.ScaleTo(gameObject, Vector3.one * 1.3f, Vector3.one, EaseType.linear)
-				.ValueTo(Vector3.one + new Vector3(1, 0, 0) * 2 / 2.5f, defaultColor, EaseType.linear, value => UpdateColor(value.x, value.y, value.z))
-				.Complete(CompleteEffect)
-		);
+		DOTween.Kill(gameObject);
+		DOTween.To(() => Color.white + Color.red * 2 / 2.5f, UpdateColor, defaultColor, 0.4f).SetId(gameObject);
+		DOTween.To(() => Vector3.one * 1.3f, scale => transform.localScale = scale, Vector3.one, 0.4f)
+			.SetId(gameObject).OnComplete(CompleteEffect);
 	}
 
 	public void EmitHintEffect() {
-		TweenPlayer.Play(gameObject,
-			new Tween(0.6f)
-				.ValueTo(new Vector3(0, 1, 1), defaultColor, EaseType.linear, value => UpdateColor(value.x, value.y, value.z))
-				.Complete(CompleteEffect)
-		);
+		DOTween.To(() => Color.cyan, UpdateColor, defaultColor, 0.6f).SetId(gameObject).OnComplete(CompleteEffect);
 	}
 
-	void UpdateColor(float r, float g, float b, float a = 1) {
-		var color = new Color(r, g, b, a);
-		spriteRenderer.color = color;
-		lineRenderer.material.color = color;
+	void UpdateColor(Color color) {
+		lineRenderer.material.color = spriteRenderer.color = color;
 	}
 }

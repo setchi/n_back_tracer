@@ -1,7 +1,9 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class ScreenEffectManager : MonoBehaviour {
 	public GameObject effectBackObject;
@@ -27,63 +29,49 @@ public class ScreenEffectManager : MonoBehaviour {
 	}
 	
 	void HideAll() {
-		effectBackObject.SetActive(false);
-		timeupTextObject.SetActive(false);
-		readyTextObject.SetActive(false);
-		goTextObject.SetActive(false);
+		Hide(effectBackObject, timeupTextObject, readyTextObject, goTextObject);
 	}
 
 	public void CancelAllAnimate() {
-		TweenPlayer.CancelAll(gameObject);
+		DOTween.Kill(gameObject);
 		HideAll();
 	}
 
 	public void EmitReadyAnimation() {
 		Show (readyTextObject);
-
-		TweenPlayer.Play(gameObject,
-			new Tween(0.65f)
-				.ScaleTo(readyTextObject, new Vector3(1.3f, 1.3f * 0.8f, 1.3f), EaseType.easeOutCirc),
-
-			new Tween(0.65f)
-				.ScaleTo(readyTextObject, new Vector3(1.3f, 1.3f * 0.8f, 1.3f), new Vector3(1, 0.8f, 1), EaseType.easeInCirc)
-				.Complete(EmitReadyAnimation)
-		);
+		var time = 0.65f;
+		DOTween.Sequence()
+			.Append(readyTextObject.transform.DOScale(new Vector3(1.3f, 1.3f * 0.8f, 1.3f), time).SetEase(Ease.OutCirc))
+			.Append(readyTextObject.transform.DOScale(new Vector3(1, 0.8f, 1), time).SetEase(Ease.InCirc))
+			.OnComplete(EmitReadyAnimation).SetId(gameObject);
 	}
 
 	public void EmitGoAnimation() {
 		Show(goTextObject);
-		var goText = goTextObject.GetComponent<Text>();
-
-		TweenPlayer.CancelAll(gameObject);
-		TweenPlayer.Play(gameObject,
-			new Tween(0.7f)
-				.ScaleTo(goTextObject, new Vector3(1, 0.8f, 1), EaseType.easeOutCirc)
-				.ValueTo(Vector3.one, Vector3.zero, EaseType.linear, pos => goText.color = new Color(1, 1, 1, pos.x))
-				.Complete(() => Hide(goTextObject))
-		);
+		goTextObject.transform.DOScale(new Vector3(1, 0.8f, 1), 0.7f).SetEase(Ease.OutCubic);
+		goTextObject.GetComponent<Text>().DOFade(0, 0.7f).OnComplete(() => Hide(goTextObject));
 	}
 
 	public void EmitTimeupAnimation(Action onComplete) {
+		StartCoroutine(StartTimeupAnimation(onComplete));
+	}
+
+	IEnumerator StartTimeupAnimation(Action onComplete) {
 		Show (effectBackObject, timeupTextObject);
 		var timeupText = timeupTextObject.GetComponent<Text>();
 
-		TweenPlayer.Play(gameObject,
-			new Tween(0.4f)
-				.ScaleTo(timeupTextObject, Vector3.one * 20, new Vector3(1, 0.8f, 1) * 0.8f, EaseType.easeOutQuint)
-				.ScaleTo(effectBackObject, new Vector3(600, 40, 0), new Vector3(600, 1, 0), EaseType.easeOutQuint)
-				.RotateTo(effectBackObject, new Vector3(60, 60, 0), new Vector3(0, 0, 0), EaseType.linear)
-				.RotateTo(timeupTextObject, new Vector3(60, -40, 40), new Vector3(0, 0, 0), EaseType.linear),
+		timeupTextObject.transform.DOScale(new Vector3(1, 0.8f, 1) * 0.8f, 0.4f).SetEase(Ease.OutQuint);
+		effectBackObject.transform.DOScale(new Vector3(600, 1, 0), 0.4f).SetEase(Ease.OutQuint);
+		effectBackObject.transform.DORotate(Vector3.zero, 0.4f);
+		yield return timeupTextObject.transform.DORotate(Vector3.zero, 0.4f).WaitForCompletion();
 
-		    new Tween(0.5f).ScaleTo(timeupTextObject, new Vector3(0.95f, 0.76f, 0.5f) * 0.8f, EaseType.linear).Complete(() => {
-				fadeManager.FadeOut(1, EaseType.linear);
-			}),
+		yield return timeupTextObject.transform.DOScale(new Vector3(0.95f, 0.76f, 0.5f) * 0.8f, 0.5f).WaitForCompletion();
+		
+		fadeManager.FadeOut(1, DG.Tweening.Ease.Linear);
+		effectBackObject.transform.DOScale(new Vector3(600, 0, 0), 1f).SetEase(Ease.OutExpo);
+		timeupTextObject.transform.DOScale(Vector3.one * 11, 1f).SetEase(Ease.OutExpo);
+		yield return timeupText.DOFade(0, 1f).SetEase(Ease.OutExpo).WaitForCompletion();
 
-			new Tween(1)
-				.ScaleTo(effectBackObject, new Vector3(600, 0, 0), EaseType.easeOutExpo)
-				.ScaleTo(timeupTextObject, Vector3.one * 11, EaseType.easeOutExpo)
-				.ValueTo(Vector3.one, Vector3.zero, EaseType.easeOutExpo, pos => timeupText.color = new Color(1, 1, 1, pos.x))
-				.Complete(onComplete)
-		);
+		onComplete();
 	}
 }

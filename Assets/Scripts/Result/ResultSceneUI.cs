@@ -29,7 +29,7 @@ public class ResultSceneUI : MonoBehaviour {
 		bestText.text = "Best: " + (localData.bestScore ?? "0");
 		scoreText.text = "Score: " + score;
 
-		fadeManager.FadeIn(0.4f, EaseType.easeInQuad);
+		fadeManager.FadeIn(0.4f, DG.Tweening.Ease.InQuad);
 	}
 
 	void ScoreRegistIfNewRecord(string score) {
@@ -44,6 +44,6 @@ public class ResultSceneUI : MonoBehaviour {
 	}
 
 	public void OnClickReturnButton() {
-		fadeManager.FadeOut(0.4f, EaseType.easeInQuad, () => Application.LoadLevel ("Title"));
+		fadeManager.FadeOut(0.4f, DG.Tweening.Ease.InQuad, () => Application.LoadLevel ("Title"));
 	}
 }

@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class RankingGUI : MonoBehaviour {
 	public GameObject rankingPanel;
@@ -72,24 +73,26 @@ public class RankingGUI : MonoBehaviour {
 	}
 
 	public void Show() {
-		if (!isHiding)return;
+		if (!isHiding)
+			return;
 		isHiding = false;
 
 		FetchRanking();
 		nameInputField.text = LocalData.Read().playerInfo.name;
 		messageText.text = "";
 
-		TweenPlayer.Play(gameObject, new Tween(1f)
-		                 .ValueTo(new Vector3(0, -1700, 0), Vector3.zero, EaseType.easeOutExpo, pos => rankingPanel.transform.localPosition = pos));
+		rankingPanel.SetActive(true);
+		DOTween.Kill(gameObject);
+		DOTween.To(() => new Vector3(0, -1700, 0), pos => rankingPanel.transform.localPosition = pos, Vector3.zero, 1f).SetEase(Ease.OutExpo).SetId(gameObject);
 	}
 
 	public void Hide() {
-		if (isHiding) return;
+		if (isHiding)
+			return;
 		isHiding = true;
 
-		TweenPlayer.Play(gameObject, new Tween(1f)
-		                 .ValueTo(Vector3.zero, new Vector3(0, 1700, 0), EaseType.easeOutExpo, pos => rankingPanel.transform.localPosition = pos)
-		                 .Complete(() => rankingPanel.transform.localPosition = new Vector3(0, -100000, 0)));
+		DOTween.Kill(gameObject);
+		DOTween.To(() => Vector3.zero, pos => rankingPanel.transform.localPosition = pos, new Vector3(0, 1700, 0), 1f).SetEase(Ease.OutExpo).SetId(gameObject).OnComplete(() => rankingPanel.SetActive(false));
 	}
 
 	public void OnClickNameChangeButton() {

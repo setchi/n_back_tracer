@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 
 public class TitleSceneUI : MonoBehaviour {
 	public FadeManager fadeManager;
@@ -22,7 +23,7 @@ public class TitleSceneUI : MonoBehaviour {
 	int currentScreen = 0;
 
 	void Awake () {
-		fadeManager.FadeIn(0.4f, EaseType.easeInQuart);
+		fadeManager.FadeIn(0.4f, Ease.InQuart);
 
 		BackNumButtons = Enumerable.Range(2, 3).Select(i => GameObject.Find("BackNum" + i.ToString())).ToList();
 		LengthButtons = Enumerable.Range(4, 3).Select(i => GameObject.Find("Chain" + i.ToString())).ToList();
@@ -44,7 +45,7 @@ public class TitleSceneUI : MonoBehaviour {
 	
 	void TransSceneIfReady() {
 		if (Storage.Contains("Chain") && Storage.Contains("BackNum")) {
-			fadeManager.FadeOut(0.5f, EaseType.easeInQuad, () => Application.LoadLevel ("Main"));
+			fadeManager.FadeOut(0.5f, Ease.InQuad, () => Application.LoadLevel ("Main"));
 		}
 	}
 	
@@ -73,9 +74,10 @@ public class TitleSceneUI : MonoBehaviour {
 	
 	void AnimateButtonScale(List<GameObject> buttonList, int index, Action onComplete = null) {
 		ResetButtonScale(buttonList);
-		TweenPlayer.Play(gameObject, new Tween(0.13f)
-		                 .ScaleTo(buttonList[index], Vector3.one * 1.3f, EaseType.easeOutBack)
-		                 .Complete(onComplete));
+		buttonList[index].transform.DOScale(Vector3.one * 1.3f, 0.13f).SetEase(Ease.InOutBack).OnComplete(() => {
+			if (onComplete != null)
+				onComplete();
+		});
 	}
 
 	bool isMoving = false;
@@ -97,34 +99,29 @@ public class TitleSceneUI : MonoBehaviour {
 		var toPosition = fromPosition;
 		toPosition.x = screen * -1200;
 
-		TweenPlayer.Play(gameObject, new Tween(0.5f)
-		                 .ValueTo(fromPosition, toPosition, EaseType.easeInOutExpo, pos => {
+		var animateTime = 0.5f;
+		DOTween.To(() => fromPosition, pos => {
 			buttonAreaTransform.localPosition = pos;
 			textAreaPos.x = -pos.x;
 			textAreaTransform.localPosition = textAreaPos;
-
-		}).ValueTo(Vector3.zero, Vector3.one, EaseType.linear, pos => {
-			var fadeIn = new Color(1, 1, 1, EaseType.easeInCubic(0, 1, pos.x));
-			var fadeOut = new Color(1, 1, 1, EaseType.easeOutCubic(1, 0, pos.x));
-
-			for (int i = 0, l = screenButtonImages[currentScreen].Length; i < l; i++) {
-				screenButtonImages[currentScreen][i].color = fadeOut;
-				screenButtonTexts[currentScreen][i].color = fadeOut;
-			}
-			screenTexts[currentScreen].color = fadeOut;
-			
-			if (screen == 3) return;
-
-			for (int i = 0, l = screenButtonImages[screen].Length; i < l; i++) {
-				screenButtonImages[screen][i].color = fadeIn;
-				screenButtonTexts[screen][i].color = fadeIn;
-			}
-			screenTexts[screen].color = fadeIn;
-
-		}).Complete(() => {
+		}, toPosition, animateTime).SetEase(Ease.InOutExpo).OnComplete(() => {
 			isMoving = false;
 			currentScreen = screen;
-		}));
+		});
+
+		for (int i = 0, l = screenButtonImages[currentScreen].Length; i < l; i++) {
+			screenButtonImages[currentScreen][i].DOFade(0, animateTime);
+			screenButtonTexts[currentScreen][i].DOFade(0, animateTime);
+		}
+		screenTexts[currentScreen].DOFade(0, animateTime);
+
+		if (screen == 3) return;
+		
+		for (int i = 0, l = screenButtonImages[screen].Length; i < l; i++) {
+			screenButtonImages[screen][i].DOFade(1, animateTime);
+			screenButtonTexts[screen][i].DOFade(1, animateTime);
+		}
+		screenTexts[screen].DOFade(1, animateTime);
 	}
 	
 	public void OnClickStartButton() {
@@ -132,7 +129,7 @@ public class TitleSceneUI : MonoBehaviour {
 	}
 	
 	public void OnClickRankingButton() {
-		AnimateButtonScale(MenuButtons, 1, () => fadeManager.FadeOut(0.4f, EaseType.easeOutQuart, () => Application.LoadLevel ("Ranking")));
+		AnimateButtonScale(MenuButtons, 1, () => fadeManager.FadeOut(0.4f, Ease.OutQuart, () => Application.LoadLevel ("Ranking")));
 	}
 	
 	public void OnClickLeftArrow() {

@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using System.Linq;
 using System.Collections;
+using DG.Tweening;
 
 public class TouchEffect : MonoBehaviour {
 	public GameObject[] elements;
@@ -30,9 +31,7 @@ public class TouchEffect : MonoBehaviour {
 		var to = Vector3.one * 2f;
 		var image = obj.GetComponent<Image>();
 
-		TweenPlayer.Play(gameObject, new Tween(animTime).ValueTo(from, to, EaseType.easeOutSine, pos => {
-			obj.transform.localScale = pos;
-			image.color = new Color(1, 1, 1, (2 - pos.x) / 2f);
-		}));
+		DOTween.To(() => from, scale => obj.transform.localScale = scale, to, animTime);
+		DOTween.To(() => Color.white, color => image.color = color, new Color(1, 1, 1, 0), animTime);
 	}
 }
