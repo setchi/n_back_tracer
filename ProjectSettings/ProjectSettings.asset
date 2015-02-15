@@ -79,8 +79,8 @@ PlayerSettings:
   xboxOneDisableKinectGpuReservation: 0
   productGUID: 40bf9181f371d0e41a5dec5845902d89
   iPhoneBundleVersion: 1.0
-  AndroidBundleVersionCode: 13
-  AndroidMinSdkVersion: 16
+  AndroidBundleVersionCode: 14
+  AndroidMinSdkVersion: 9
   AndroidPreferredInstallLocation: 1
   aotOptions: 
   apiCompatibilityLevel: 2
