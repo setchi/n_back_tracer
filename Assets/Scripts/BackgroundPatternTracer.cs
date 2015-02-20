@@ -18,7 +18,7 @@ public class BackgroundPatternTracer : MonoBehaviour {
 
 		for (int y = 0; y < row; y++) {
 			for (int x = 0; x < col; x++) {
-				var obj = (GameObject)Instantiate(Tile, Vector3.zero, transform.rotation);
+				var obj = Instantiate(Tile, Vector3.zero, transform.rotation) as GameObject;
 				obj.transform.SetParent(gameObject.transform);
 				obj.transform.localPosition = new Vector3(x * 1.7f, y * 1.7f);
 				tiles.Add(obj.GetComponent<Tile>());

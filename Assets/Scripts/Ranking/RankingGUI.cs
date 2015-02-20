@@ -64,7 +64,7 @@ public class RankingGUI : MonoBehaviour {
 		var selfPlayerId = playerInfo == null ? "" : playerInfo.id;
 
 		foreach (var elem in records.Select((record, index) => new {record, index})) {
-			var record = (GameObject) Instantiate(rankRecordPrefab);
+			var record = Instantiate(rankRecordPrefab) as GameObject;
 			record.transform.SetParent(rankingTable.transform);
 			record.transform.localScale = Vector3.one;
 			record.GetComponent<RankRecord>().Set(elem.index + 1, elem.record, selfPlayerId);
