@@ -14,7 +14,7 @@ public class TouchEffect : MonoBehaviour {
 	
 	IEnumerator Emit() {
 		foreach (var obj in elements) {
-			obj.transform.SetParent(gameObject.transform);
+			obj.transform.SetParent(transform);
 			obj.transform.position = transform.position;
 			Animate(obj);
 

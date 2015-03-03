@@ -24,8 +24,8 @@ public class EmitEffectInTouch : MonoBehaviour {
 	}
 
 	void Emit(Vector3 pos) {
-		var obj = (GameObject) Instantiate(effect, Vector3.zero, Quaternion.identity);
-		obj.transform.SetParent(gameObject.transform);
+		var obj = Instantiate(effect) as GameObject;
+		obj.transform.SetParent(transform);
 		obj.transform.position = pos;
 		obj.transform.SetSiblingIndex(siblingIndex);
 	}

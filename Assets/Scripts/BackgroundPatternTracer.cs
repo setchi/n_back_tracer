@@ -14,12 +14,12 @@ public class BackgroundPatternTracer : MonoBehaviour {
 
 	void Awake () {
 		patterns = BackgroundPatternStore.GetPatterns();
-		gameObject.transform.localPosition = new Vector3(-col * 1.7f / 2, -row * 1.7f / 2, 10);
+		transform.localPosition = new Vector3(-col * 1.7f / 2, -row * 1.7f / 2, 10);
 
 		for (int y = 0; y < row; y++) {
 			for (int x = 0; x < col; x++) {
-				var obj = Instantiate(Tile, Vector3.zero, transform.rotation) as GameObject;
-				obj.transform.SetParent(gameObject.transform);
+				var obj = Instantiate(Tile) as GameObject;
+				obj.transform.SetParent(transform);
 				obj.transform.localPosition = new Vector3(x * 1.7f, y * 1.7f);
 				tiles.Add(obj.GetComponent<Tile>());
 			}
