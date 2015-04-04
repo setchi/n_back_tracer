@@ -13,6 +13,7 @@ PlayerSettings:
   accelerometerFrequency: 60
   companyName: jp.setchi
   productName: n-back tracer
+  cloudProjectId: 
   defaultCursor: {fileID: 0}
   cursorHotspot: {x: 0, y: 0}
   defaultScreenWidth: 1024
@@ -58,6 +59,7 @@ PlayerSettings:
   visibleInBackground: 0
   macFullscreenMode: 2
   d3d9FullscreenMode: 1
+  d3d11FullscreenMode: 1
   xboxSpeechDB: 0
   xboxEnableHeadOrientation: 0
   xboxEnableGuest: 0
@@ -72,13 +74,13 @@ PlayerSettings:
     16:10: 1
     16:9: 1
     Others: 1
-  iPhoneBundleIdentifier: jp.setchi.n_back_tracer
+  bundleIdentifier: jp.setchi.n_back_tracer
+  bundleVersion: 1.0
   preloadedAssets: []
   metroEnableIndependentInputSource: 0
   metroEnableLowLatencyPresentationAPI: 0
   xboxOneDisableKinectGpuReservation: 0
   productGUID: 40bf9181f371d0e41a5dec5845902d89
-  iPhoneBundleVersion: 1.0
   AndroidBundleVersionCode: 14
   AndroidMinSdkVersion: 9
   AndroidPreferredInstallLocation: 1
@@ -109,10 +111,14 @@ PlayerSettings:
   iPadHighResPortraitSplashScreen: {fileID: 0}
   iPadLandscapeSplashScreen: {fileID: 0}
   iPadHighResLandscapeSplashScreen: {fileID: 0}
-  iOSLaunchScreenImage: {fileID: 0}
+  iOSLaunchScreenType: 0
+  iOSLaunchScreenPortrait: {fileID: 0}
+  iOSLaunchScreenLandscape: {fileID: 0}
   iOSLaunchScreenBackgroundColor:
     serializedVersion: 2
     rgba: 0
+  iOSLaunchScreenFillPct: 1
+  iOSLaunchScreenCustomXibPath: 
   AndroidTargetDevice: 3
   AndroidSplashScreenScale: 0
   AndroidKeystoreName: C:/Users/15012/Desktop/n_back_tracer.keystore
@@ -199,6 +205,7 @@ PlayerSettings:
   ps4PronunciationSIGPath: 
   ps4BackgroundImagePath: 
   ps4StartupImagePath: 
+  ps4SaveDataImagePath: 
   ps4BGMPath: 
   ps4ShareFilePath: 
   ps4NPtitleDatPath: 
@@ -413,5 +420,7 @@ PlayerSettings:
   WebGL::dataCaching: 0
   stringPropertyNames:
   - WebGL::emscriptenArgs
+  - WebGL::template
   WebGL::emscriptenArgs: 
+  WebGL::template: APPLICATION:Default
   firstStreamedLevelWithResources: 0
