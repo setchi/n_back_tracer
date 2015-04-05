@@ -4,22 +4,20 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using UniRx;
 
 public class Tile : MonoBehaviour {
-	public int TileId {
-		set { tileId = value; }
-	}
+	public Subject<int> onTouchEnter = new Subject<int>();
+
+	public int TileId { set { tileId = value; } }
 	int tileId;
 
 	SpriteRenderer spriteRenderer;
-	GameController gameController;
 	LineRenderer lineRenderer;
 
 	Color defaultColor = new Color(0.2f, 0.2f, 0.2f, 1);
 
 	void Awake() {
-		var gc = GameObject.Find("GameController");
-		gameController = gc == null ? null : gc.GetComponent<GameController>();
 		spriteRenderer = GetComponent<SpriteRenderer> ();
 		lineRenderer = GetComponentInChildren<LineRenderer>();
 		lineRenderer.SetWidth (0.13f, 0.13f);
@@ -38,8 +36,7 @@ public class Tile : MonoBehaviour {
 	}
 
 	void OnMouseEnter() {
-		if (gameController != null)
-			gameController.TouchedTile (tileId);
+		onTouchEnter.OnNext (tileId);
 	}
 
 	public void EmitMarkEffect() {
