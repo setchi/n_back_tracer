@@ -17,8 +17,8 @@ public class TitleSceneUI : MonoBehaviour {
 	List<GameObject> BackNumButtons;
 	List<GameObject> LengthButtons;
 	List<GameObject> MenuButtons;
-	Image[][] screenButtonImages;
-	Text[][] screenButtonTexts;
+	List<List<Image>> screenButtonImages;
+	List<List<Text>> screenButtonTexts;
 	Text[] screenTexts;
 	int currentScreen = 0;
 
@@ -29,8 +29,8 @@ public class TitleSceneUI : MonoBehaviour {
 		LengthButtons = Enumerable.Range(4, 3).Select(i => GameObject.Find("Chain" + i.ToString())).ToList();
 		MenuButtons = new List<GameObject> { GameObject.Find("Start"), GameObject.Find("Ranking") };
 		
-		screenButtonImages = buttonElements.Select(obj => obj.GetComponentsInChildren<Image>()).ToArray();
-		screenButtonTexts = buttonElements.Select(obj => obj.GetComponentsInChildren<Text>()).ToArray();
+		screenButtonImages = buttonElements.Select(obj => obj.GetComponentsInChildren<Image>().ToList()).ToList();
+		screenButtonTexts = buttonElements.Select(obj => obj.GetComponentsInChildren<Text>().ToList()).ToList();
 		screenTexts = textElements.Select(obj => obj.GetComponent<Text>()).ToArray();
 	}
 
@@ -109,18 +109,13 @@ public class TitleSceneUI : MonoBehaviour {
 			currentScreen = screen;
 		});
 
-		for (int i = 0, l = screenButtonImages[currentScreen].Length; i < l; i++) {
-			screenButtonImages[currentScreen][i].DOFade(0, animateTime);
-			screenButtonTexts[currentScreen][i].DOFade(0, animateTime);
-		}
+		screenButtonImages [currentScreen].ForEach (image => image.DOFade(0, animateTime));
+		screenButtonTexts [currentScreen].ForEach (text => text.DOFade(0, animateTime));
 		screenTexts[currentScreen].DOFade(0, animateTime);
 
 		if (screen == 3) return;
-		
-		for (int i = 0, l = screenButtonImages[screen].Length; i < l; i++) {
-			screenButtonImages[screen][i].DOFade(1, animateTime);
-			screenButtonTexts[screen][i].DOFade(1, animateTime);
-		}
+		screenButtonImages[screen].ForEach(image => image.DOFade(1, animateTime));
+		screenButtonTexts[screen].ForEach(text => text.DOFade(1, animateTime));
 		screenTexts[screen].DOFade(1, animateTime);
 	}
 	
