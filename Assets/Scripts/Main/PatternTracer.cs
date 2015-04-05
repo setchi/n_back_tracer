@@ -44,35 +44,33 @@ public class PatternTracer : MonoBehaviour {
 			.Repeat ().Subscribe (__ => StartTrace (0.4f, patternQueue.Peek (), currentIndex, false, tile => tile.EmitHintEffect ())))
 			.Scan ((a, b) => { a.Dispose (); return b; }).Subscribe ();
 
-		// Miss touch
-		touchStream.Where(id => !patternQueue.Peek().Where((_, i) => i <= currentIndex).Contains(id))
-			.Subscribe (id => {
-				scoreManager.MissTouch ();
-				tiles[id].EmitMissEffect();
-			});
+		var missTouchStream = touchStream.Where (id => !patternQueue.Peek ().Where ((_, i) => i <= currentIndex).Contains (id));
+		missTouchStream.Subscribe (id => {
+			scoreManager.MissTouch ();
+			tiles[id].EmitMissEffect();
+		});
 
-		// Correct touch
-		touchStream.Where (id => patternQueue.Peek () [currentIndex] == id)
-			.Subscribe(_ => {
-				var currentPattern = patternQueue.Peek ();
+		var correctTouchStream = touchStream.Where (id => patternQueue.Peek () [currentIndex] == id);
+		correctTouchStream.Subscribe(_ => {
+			var currentPattern = patternQueue.Peek ();
 
-				scoreManager.CorrectTouch();
-				tiles[currentPattern[currentIndex]].EmitCorrectTouchEffect();
-				DrawLine(currentPattern, currentIndex, 0);
+			scoreManager.CorrectTouch();
+			tiles[currentPattern[currentIndex]].EmitCorrectTouchEffect();
+			DrawLine(currentPattern, currentIndex, 0);
 
-				currentIndex = ++currentIndex % currentPattern.Count;
+			currentIndex = ++currentIndex % currentPattern.Count;
 
-				if (currentIndex == 1) {
-					EnqueueNewPattern();
-					StartTrace(0.4f, patternQueue.Last(), 0, true, tile => tile.EmitMarkEffect());
-				}
+			if (currentIndex == 1) {
+				EnqueueNewPattern();
+				StartTrace(0.4f, patternQueue.Last(), 0, true, tile => tile.EmitMarkEffect());
+			}
 
-				// Correct Pattern
-				if (currentIndex == 0) {
-					StartTrace(0.0f, patternQueue.Dequeue(), 0, true, tile => tile.EmitPatternCorrectEffect());
-					scoreManager.CorrectPattern();
-				}
-			});
+			// Correct Pattern
+			if (currentIndex == 0) {
+				StartTrace(0.0f, patternQueue.Dequeue(), 0, true, tile => tile.EmitPatternCorrectEffect());
+				scoreManager.CorrectPattern();
+			}
+		});
 	}
 
 	void StartTrace(float time, List<int> pattern, int startIndex, bool drawLine, Action<Tile> tileEffectEmitter) {
