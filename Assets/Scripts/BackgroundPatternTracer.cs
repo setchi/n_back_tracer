@@ -30,16 +30,19 @@ public class BackgroundPatternTracer : MonoBehaviour {
 			tile => tile.EmitHintEffect()
 		};
 
-		TickStream (0.7f).Select(i => i % patterns.Count).Subscribe(pi =>
-			TickStream (0.1f).Take (patterns[pi].Count).Subscribe (ti => {
-					DrawLine(patterns[pi], ti, 0);
-					tileEffectEmitters[pi % tileEffectEmitters.Count](tiles[patterns[pi][ti]]);
-			}));
-	}
-
-	IObservable<int> TickStream(float time) {
-		return Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (time))
-			.Select (_ => 1).Scan ((a, b) => a + b).Select (i => i - 1);
+		Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (0.7f))
+			.Select(i => Mathf.FloorToInt(i) % patterns.Count)
+				.Subscribe(pi => {
+		
+			Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (0.1f))
+				.Select(i => Mathf.FloorToInt(i))
+					.Take (patterns[pi].Count)
+					.Subscribe (ti => {
+			
+				DrawLine(patterns[pi], ti, 0);
+				tileEffectEmitters[pi % tileEffectEmitters.Count](tiles[patterns[pi][ti]]);
+			});
+		});
 	}
 
 	void DrawLine(List<int> targetPattern, int index, int currentIndex) {

@@ -39,10 +39,10 @@ public class PatternTracer : MonoBehaviour {
 				.DistinctUntilChanged()
 				.Where (_ => gameController.gameState == GameController.GameState.Play);
 
-		// Hint trace
-		touchStream.Select (_ => Observable.Timer (TimeSpan.FromSeconds (2f))
-			.Repeat ().Subscribe (__ => StartTrace (0.4f, patternQueue.Peek (), currentIndex, false, tile => tile.EmitHintEffect ())))
-			.Scan ((a, b) => { a.Dispose (); return b; }).Subscribe ();
+		var showHintStream = touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat();
+		showHintStream.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
+			.TakeUntil(touchStream)
+			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), currentIndex, false, tile => tile.EmitHintEffect ())));
 
 		var missTouchStream = touchStream.Where (id => !patternQueue.Peek ().Where ((_, i) => i <= currentIndex).Contains (id));
 		missTouchStream.Subscribe (id => {
@@ -74,22 +74,22 @@ public class PatternTracer : MonoBehaviour {
 	}
 
 	void StartTrace(float time, List<int> pattern, int startIndex, bool drawLine, Action<Tile> tileEffectEmitter) {
-		var tickStream = TickStream(time / patternGenerator.ChainLength).Take (pattern.Count - startIndex);
-		tickStream.Subscribe (i => tileEffectEmitter(tiles[pattern[i]]));
+		var tickStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (time / patternGenerator.ChainLength))
+			.Select (i => startIndex + Mathf.FloorToInt (i))
+				.Take (pattern.Count - startIndex);
+
+		tickStream.Subscribe (i => tileEffectEmitter (tiles [pattern [i]]));
 		tickStream.Where (i => drawLine)
-			.Subscribe (i => DrawLine(pattern, i, startIndex));
+				.Subscribe (i => DrawLine (pattern, i, startIndex));
 	}
 
 	public void StartPriorNRun() {
-		TickStream(1.3f).Take(patternQueue.Count)
-			.Subscribe(
-				i => StartTrace (0.4f, patternQueue.ElementAt(i), 0, true, tile => tile.EmitMarkEffect())
-				, () => Observable.Timer(TimeSpan.FromSeconds(1.3f)).Subscribe(_ => PriorNRunEnded()));
-	}
-
-	IObservable<int> TickStream(float time) {
-		return Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (time))
-			.Select (_ => 1).Scan ((a, b) => a + b).Select (i => i - 1);
+		Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (1.3f))
+			.Select (i => Mathf.FloorToInt (i))
+				.Take (patternQueue.Count)
+				.Subscribe (
+					i => StartTrace (0.4f, patternQueue.ElementAt (i), 0, true, tile => tile.EmitMarkEffect ())
+					, () => Observable.Timer(TimeSpan.FromSeconds(1.3f)).Subscribe(_ => PriorNRunEnded ()));
 	}
 
 	void EnqueueNewPattern() {
