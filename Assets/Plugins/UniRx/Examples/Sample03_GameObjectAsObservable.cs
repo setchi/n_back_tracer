@@ -1,0 +1,25 @@
+﻿#if !(UNITY_IPHONE || UNITY_ANDROID)
+
+using UnityEngine;
+using UniRx.Triggers; // for enable gameObject.EventAsObservbale()
+
+namespace UniRx.Examples
+{
+    public class Sample03_GameObjectAsObservable : MonoBehaviour
+    {
+        void Start()
+        {
+            // All events can subscribe by ***AsObservable if enables UniRx.Triggers
+            this.OnMouseDownAsObservable()
+                .SelectMany(_ => this.gameObject.UpdateAsObservable())
+                .TakeUntil(this.gameObject.OnMouseUpAsObservable())
+                .Select(_ => Input.mousePosition)
+                .RepeatSafe()
+                .Subscribe(x => Debug.Log(x), ()=> Debug.Log("!!!" + "complete"));
+
+            Destroy(this.gameObject, 3f);
+        }
+    }
+}
+
+#endif

@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UniRx
 {
-    public interface IReadOnlyReactiveProperty<T> : IObservable<T>, IDisposable
+    public interface IReadOnlyReactiveProperty<T> : IObservable<T>
     {
         T Value { get; }
     }
@@ -18,7 +18,7 @@ namespace UniRx
     /// Lightweight property broker.
     /// </summary>
     [Serializable]
-    public class ReactiveProperty<T> : IReactiveProperty<T>
+    public class ReactiveProperty<T> : IReactiveProperty<T>, IDisposable
     {
         [NonSerialized]
         bool isDisposed = false;
@@ -44,12 +44,12 @@ namespace UniRx
                 {
                     if (this.value != null)
                     {
-                        this.value = value;
+                        SetValue(value);
 
                         if (isDisposed) return; // don't notify but set value 
                         if (publisher != null)
                         {
-                            publisher.OnNext(value);
+                            publisher.OnNext(this.value);
                         }
                     }
                 }
@@ -57,12 +57,12 @@ namespace UniRx
                 {
                     if (this.value == null || !this.value.Equals(value)) // don't use EqualityComparer<T>.Default
                     {
-                        this.value = value;
+                        SetValue(value);
 
                         if (isDisposed) return;
                         if (publisher != null)
                         {
-                            publisher.OnNext(value);
+                            publisher.OnNext(this.value);
                         }
                     }
                 }
@@ -83,26 +83,34 @@ namespace UniRx
             publisher = new Subject<T>();
             sourceConnection = source.Subscribe(x =>
             {
-                value = x;
-                publisher.OnNext(x);
+                Value = x;
             }, publisher.OnError, publisher.OnCompleted);
         }
 
         public ReactiveProperty(IObservable<T> source, T initialValue)
         {
+            Value = initialValue;
             publisher = new Subject<T>();
-            sourceConnection = source.Subscribe(publisher);
-            value = initialValue;
+            sourceConnection = source.Subscribe(x =>
+            {
+                Value = x;
+            }, publisher.OnError, publisher.OnCompleted);
+        }
+
+        protected virtual void SetValue(T value)
+        {
+            this.value = value;
         }
 
         public void SetValueAndForceNotify(T value)
         {
-            this.value = value;
+            SetValue(value);
+
             if (isDisposed) return;
 
             if (publisher != null)
             {
-                publisher.OnNext(value);
+                publisher.OnNext(this.value);
             }
         }
 
@@ -149,12 +157,17 @@ namespace UniRx
                 }
             }
         }
+
+        public override string ToString()
+        {
+            return (value == null) ? "null" : value.ToString();
+        }
     }
 
     /// <summary>
     /// Lightweight property broker.
     /// </summary>
-    public class ReadOnlyReactiveProperty<T> : IReadOnlyReactiveProperty<T>
+    public class ReadOnlyReactiveProperty<T> : IReadOnlyReactiveProperty<T>, IDisposable
     {
         bool isDisposed = false;
 
@@ -184,9 +197,13 @@ namespace UniRx
 
         public ReadOnlyReactiveProperty(IObservable<T> source, T initialValue)
         {
-            publisher = new Subject<T>();
-            sourceConnection = source.Subscribe(publisher);
             value = initialValue;
+            publisher = new Subject<T>();
+            sourceConnection = source.Subscribe(x =>
+            {
+                value = x;
+                publisher.OnNext(x);
+            }, publisher.OnError, publisher.OnCompleted);
         }
 
         public IDisposable Subscribe(IObserver<T> observer)
@@ -231,6 +248,11 @@ namespace UniRx
                     }
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return (value == null) ? "null" : value.ToString();
         }
     }
 

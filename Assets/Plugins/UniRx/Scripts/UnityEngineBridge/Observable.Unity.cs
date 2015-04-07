@@ -1,4 +1,5 @@
 ﻿using System;
+using UniRx.Triggers;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -418,7 +419,8 @@ namespace UniRx
                 var isCompleted = false;
                 var gate = new object();
 
-                var scheduling = Observable.IntervalFrame(frameCount, frameCountType)
+                var scheduling = new SingleAssignmentDisposable();
+                scheduling.Disposable = Observable.IntervalFrame(frameCount, frameCountType)
                     .Subscribe(_ =>
                     {
                         lock (gate)
@@ -427,11 +429,19 @@ namespace UniRx
                             {
                                 var value = latestValue;
                                 isUpdated = false;
-                                observer.OnNext(value);
+                                try
+                                {
+                                    observer.OnNext(value);
+                                }
+                                catch
+                                {
+                                    scheduling.Dispose();
+                                }
                             }
                             if (isCompleted)
                             {
                                 observer.OnCompleted();
+                                scheduling.Dispose();
                             }
                         }
                     });
@@ -458,7 +468,6 @@ namespace UniRx
                     {
                         isCompleted = true;
                         sourceSubscription.Dispose();
-                        scheduling.Dispose();
                     }
                 });
 
@@ -488,7 +497,7 @@ namespace UniRx
                         }
                         var d = new SingleAssignmentDisposable();
                         cancelable.Disposable = d;
-                        d.Disposable = Observable.IntervalFrame(frameCount, frameCountType)
+                        d.Disposable = Observable.TimerFrame(frameCount, frameCountType)
                             .Subscribe(_ =>
                             {
                                 lock (gate)
@@ -532,22 +541,71 @@ namespace UniRx
         {
             return Observable.Create<T>(observer =>
             {
-                Func<IDisposable> runTimer = () => Observable.TimerFrame(frameCount, frameCountType)
-                    .Subscribe(_ =>
-                    {
-                        observer.OnError(new TimeoutException());
-                    });
+                object gate = new object();
+                var objectId = 0ul;
+                var isTimeout = false;
+
+                Func<ulong, IDisposable> runTimer = (timerId) =>
+                {
+                    return Observable.TimerFrame(frameCount, frameCountType)
+                        .Subscribe(_ =>
+                        {
+                            lock (gate)
+                            {
+                                if (objectId == timerId)
+                                {
+                                    isTimeout = true;
+                                }
+                            }
+                            if (isTimeout)
+                            {
+                                observer.OnError(new TimeoutException());
+                            }
+                        });
+                };
 
                 var timerDisposable = new SerialDisposable();
-                timerDisposable.Disposable = runTimer();
+                timerDisposable.Disposable = runTimer(objectId);
 
                 var sourceSubscription = new SingleAssignmentDisposable();
                 sourceSubscription.Disposable = source.Subscribe(x =>
                 {
-                    timerDisposable.Disposable = Disposable.Empty; // Cancel Old Timer
+                    bool timeout;
+                    lock (gate)
+                    {
+                        timeout = isTimeout;
+                        objectId++;
+                    }
+                    if (timeout) return;
+
+                    timerDisposable.Disposable = Disposable.Empty; // cancel old timer
                     observer.OnNext(x);
-                    timerDisposable.Disposable = runTimer();
-                }, observer.OnError, observer.OnCompleted);
+                    timerDisposable.Disposable = runTimer(objectId);
+                }, ex =>
+                {
+                    bool timeout;
+                    lock (gate)
+                    {
+                        timeout = isTimeout;
+                        objectId++;
+                    }
+                    if (timeout) return;
+
+                    timerDisposable.Dispose();
+                    observer.OnError(ex);
+                }, () =>
+                {
+                    bool timeout;
+                    lock (gate)
+                    {
+                        timeout = isTimeout;
+                        objectId++;
+                    }
+                    if (timeout) return;
+
+                    timerDisposable.Dispose();
+                    observer.OnCompleted();
+                });
 
                 return new CompositeDisposable { timerDisposable, sourceSubscription };
             });
@@ -660,6 +718,153 @@ namespace UniRx
         public static IObservable<Unit> OnceApplicationQuit()
         {
             return MainThreadDispatcher.OnApplicationQuitAsObservable().Take(1);
+        }
+
+        public static IObservable<T> TakeUntilDestroy<T>(this IObservable<T> source, Component target)
+        {
+            return source.TakeUntil(target.OnDestroyAsObservable());
+        }
+
+        public static IObservable<T> TakeUntilDestroy<T>(this IObservable<T> source, GameObject target)
+        {
+            return source.TakeUntil(target.OnDestroyAsObservable());
+        }
+
+        public static IObservable<T> TakeUntilDisable<T>(this IObservable<T> source, Component target)
+        {
+            return source.TakeUntil(target.OnDisableAsObservable());
+        }
+
+
+        public static IObservable<T> TakeUntilDisable<T>(this IObservable<T> source, GameObject target)
+        {
+            return source.TakeUntil(target.OnDisableAsObservable());
+        }
+
+        public static IObservable<T> RepeatUntilDestroy<T>(this IObservable<T> source, GameObject target)
+        {
+            return RepeatUntilCore(RepeatInfinite(source), target.OnDestroyAsObservable(), target);
+        }
+
+        public static IObservable<T> RepeatUntilDestroy<T>(this IObservable<T> source, Component target)
+        {
+            return RepeatUntilCore(RepeatInfinite(source), target.OnDestroyAsObservable(), (target != null) ? target.gameObject : null);
+        }
+
+        public static IObservable<T> RepeatUntilDisable<T>(this IObservable<T> source, GameObject target)
+        {
+            return RepeatUntilCore(RepeatInfinite(source), target.OnDisableAsObservable(), target);
+        }
+
+        public static IObservable<T> RepeatUntilDisable<T>(this IObservable<T> source, Component target)
+        {
+            return RepeatUntilCore(RepeatInfinite(source), target.OnDisableAsObservable(), (target != null) ? target.gameObject : null);
+        }
+
+        static IObservable<T> RepeatUntilCore<T>(this IEnumerable<IObservable<T>> sources, IObservable<Unit> trigger, GameObject lifeTimeChecker)
+        {
+            return Observable.Create<T>(observer =>
+            {
+                var isFirstSubscribe = true;
+                var isDisposed = false;
+                var isStopped = false;
+                var e = sources.AsSafeEnumerable().GetEnumerator();
+                var subscription = new SerialDisposable();
+                var schedule = new SingleAssignmentDisposable();
+                var gate = new object();
+
+                var stopper = trigger.Subscribe(_ =>
+                {
+                    lock (gate)
+                    {
+                        isStopped = true;
+                        e.Dispose();
+                        subscription.Dispose();
+                        schedule.Dispose();
+                        observer.OnCompleted();
+                    }
+                }, observer.OnError);
+
+                schedule.Disposable = Scheduler.CurrentThread.Schedule(self =>
+                {
+                    lock (gate)
+                    {
+                        if (isDisposed) return;
+                        if (isStopped) return;
+
+                        var current = default(IObservable<T>);
+                        var hasNext = false;
+                        var ex = default(Exception);
+
+                        try
+                        {
+                            hasNext = e.MoveNext();
+                            if (hasNext)
+                            {
+                                current = e.Current;
+                                if (current == null) throw new InvalidOperationException("sequence is null.");
+                            }
+                            else
+                            {
+                                e.Dispose();
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            ex = exception;
+                            e.Dispose();
+                        }
+
+                        if (ex != null)
+                        {
+                            stopper.Dispose();
+                            observer.OnError(ex);
+                            return;
+                        }
+
+                        if (!hasNext)
+                        {
+                            stopper.Dispose();
+                            observer.OnCompleted();
+                            return;
+                        }
+
+                        var source = e.Current;
+                        var d = new SingleAssignmentDisposable();
+                        subscription.Disposable = d;
+
+                        var repeatObserver = Observer.Create<T>(observer.OnNext, observer.OnError, self);
+
+                        if (isFirstSubscribe)
+                        {
+                            isFirstSubscribe = false;
+                            d.Disposable = source.Subscribe(repeatObserver);
+                        }
+                        else
+                        {
+                            MainThreadDispatcher.SendStartCoroutine(SubscribeAfterEndOfFrame(d, source, repeatObserver, lifeTimeChecker));
+                        }
+                    }
+                });
+
+                return new CompositeDisposable(schedule, subscription, stopper, Disposable.Create(() =>
+                {
+                    lock (gate)
+                    {
+                        isDisposed = true;
+                        e.Dispose();
+                    }
+                }));
+            });
+        }
+
+        static IEnumerator SubscribeAfterEndOfFrame<T>(SingleAssignmentDisposable d, IObservable<T> source, IObserver<T> observer, GameObject lifeTimeChecker)
+        {
+            yield return new WaitForEndOfFrame();
+            if (!d.IsDisposed && lifeTimeChecker != null)
+            {
+                d.Disposable = source.Subscribe(observer);
+            }
         }
     }
 }
