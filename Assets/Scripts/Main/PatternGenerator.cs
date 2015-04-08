@@ -19,7 +19,7 @@ public class PatternGenerator {
 		this.row = row;
 	}
 	
-	public List<int> Generate(List<int> ignoreIndexes) {
+	public Stack<int> Generate(List<int> ignoreIndexes) {
 		var workX = col + 2;
 		var workY = row + 2;
 
@@ -50,7 +50,7 @@ public class PatternGenerator {
 			}
 		};
 
-		return patternStack.ToList();
+		return patternStack;
 	}
 	
 	int[] InitField(int x, int y, IEnumerable<int> ignoreIndexes, Func<int, bool> isWall) {

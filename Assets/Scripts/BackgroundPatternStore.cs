@@ -8,15 +8,15 @@ public class BackgroundPatternStore : SingletonGameObject<BackgroundPatternStore
 	static int row = 16;
 	int max = 30;
 	PatternGenerator patternGenerator = new PatternGenerator(col, row);
-	List<List<int>> patternList;
-	List<List<int>> ignoreList = new List<List<int>>();
+	List<Stack<int>> patternList;
+	List<Stack<int>> ignoreList = new List<Stack<int>>();
 	
 	void Awake() {
 		DontDestroyOnLoad(this);
 	}
 
-	List<List<int>> SetupPatternList() {
-		patternList = new List<List<int>>();
+	List<Stack<int>> SetupPatternList() {
+		patternList = new List<Stack<int>>();
 		patternGenerator.ChainLength = 20;
 		
 		foreach (var i in Enumerable.Range(0, max)) {
@@ -45,7 +45,7 @@ public class BackgroundPatternStore : SingletonGameObject<BackgroundPatternStore
 		return list;
 	}
 	
-	public static List<List<int>> GetPatterns() {
+	public static List<Stack<int>> GetPatterns() {
 		return Instance.patternList ?? Instance.SetupPatternList();
 	}
 }

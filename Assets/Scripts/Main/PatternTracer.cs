@@ -12,7 +12,7 @@ public class PatternTracer : MonoBehaviour {
 
 	List<Tile> tiles;
 	PatternGenerator patternGenerator;
-	Queue<List<int>> patternQueue;
+	Queue<Stack<int>> patternQueue;
 	int currentIndex = 0;
 
 	void Awake() {
@@ -24,7 +24,7 @@ public class PatternTracer : MonoBehaviour {
 
 		// Init pattern queue
 		var ignoreIndexes = new List<int>();
-		patternQueue = new Queue<List<int>>(Enumerable.Range(0, backNum)
+		patternQueue = new Queue<Stack<int>>(Enumerable.Range(0, backNum)
 		    .Select(i => patternGenerator.Generate(ignoreIndexes))
 		    	.Select(p => { ignoreIndexes.AddRange(p); return p; }));
 
@@ -42,45 +42,73 @@ public class PatternTracer : MonoBehaviour {
 		var showHintStream = touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat();
 		showHintStream.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
 			.TakeUntil(touchStream)
-			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), currentIndex, false, tile => tile.EmitHintEffect ())));
+			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), 0, false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
+		.AddTo(gameObject);
 
-		var missTouchStream = touchStream.Where (id => !patternQueue.Peek ().Where ((_, i) => i <= currentIndex).Contains (id));
+		var missTouchStream = touchStream.Where (id => !patternQueue.Peek ().Where ((_, i) => i <= 0).Contains (id));
 		missTouchStream.Subscribe (id => {
 			scoreManager.MissTouch ();
 			tiles[id].EmitMissEffect();
 		});
 
-		var correctTouchStream = touchStream.Where (id => patternQueue.Peek () [currentIndex] == id);
+		var correctTouchStream = touchStream.Where (id => patternQueue.Peek () .First() == id);
+		//*
+		correctTouchStream.Zip(
+				correctTouchStream.Skip(1),
+				(current, next) => new { current = tiles[current], next = tiles[next] }
+			).Subscribe(t => t.next.DrawLine(0.8f * (t.current.gameObject.transform.position - t.next.gameObject.transform.position)));
+		//*/
+
+
+		var correctPatternStream = correctTouchStream.Buffer(patternGenerator.ChainLength);
+		correctPatternStream.Do(_ => scoreManager.CorrectPattern())
+			.Subscribe(_ => StartTrace(0, new Stack<int>(_), 0, true, tile => tile.EmitPatternCorrectEffect()));
+
 		correctTouchStream.Subscribe(_ => {
 			var currentPattern = patternQueue.Peek ();
-
 			scoreManager.CorrectTouch();
-			tiles[currentPattern[currentIndex]].EmitCorrectTouchEffect();
-			DrawLine(currentPattern, currentIndex, 0);
+			tiles[currentPattern.Peek()].EmitCorrectTouchEffect();
+			// DrawLine(currentPattern, 0, 0);
 
-			currentIndex = ++currentIndex % currentPattern.Count;
+			currentIndex = currentIndex % patternGenerator.ChainLength;
+			currentPattern.Pop();
 
-			if (currentIndex == 1) {
+			// if (currentIndex == 1) {
+			if (currentPattern.Count == patternGenerator.ChainLength - 1) {
 				EnqueueNewPattern();
 				StartTrace(0.4f, patternQueue.Last(), 0, true, tile => tile.EmitMarkEffect());
 			}
 
 			// Correct Pattern
-			if (currentIndex == 0) {
-				StartTrace(0.0f, patternQueue.Dequeue(), 0, true, tile => tile.EmitPatternCorrectEffect());
-				scoreManager.CorrectPattern();
+			//*
+			if (currentPattern.Count == 0) {
+				patternQueue.Dequeue();
+
+				// StartTrace(0.0f, patternQueue.Dequeue(), 0, true, tile => tile.EmitPatternCorrectEffect());
 			}
+			//*/
 		});
+
+		// Observable.EveryUpdate().Where(_ => Input.GetMouseButtonDown(0)).Take(3).Repeat().Subscribe(_ => Debug.Log(_));
+
+		/* Correct Touch の Buffer
+		Observable.EveryUpdate()
+			.Where(_ => Input.GetMouseButtonDown(0))
+				.Buffer(5)
+				.Subscribe(_ => _.ToList().ForEach(i => Debug.Log(i)));
+		*/
 	}
 
-	void StartTrace(float time, List<int> pattern, int startIndex, bool drawLine, Action<Tile> tileEffectEmitter) {
+	void StartTrace(float time, Stack<int> pattern, int startIndex, bool drawLine, Action<Tile> tileEffectEmitter) {
 		var tickStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (time / patternGenerator.ChainLength))
-			.Select (i => startIndex + Mathf.FloorToInt (i))
-				.Take (pattern.Count - startIndex);
+			.Select (i => Mathf.FloorToInt (i))
+				.Take (pattern.Count);
 
-		tickStream.Subscribe (i => tileEffectEmitter (tiles [pattern [i]]));
-		tickStream.Where (i => drawLine)
-				.Subscribe (i => DrawLine (pattern, i, startIndex));
+		tickStream.Subscribe (i => tileEffectEmitter (tiles [pattern.ElementAt(i)]));
+
+		var drawLineStream = tickStream.Where (i => drawLine);
+		drawLineStream.Zip(drawLineStream.Skip(1), (current, next) => new { current = tiles[pattern.ElementAt(current)], next = tiles[pattern.ElementAt(next)] })
+			.Subscribe(t => t.next.DrawLine(0.8f * (t.current.gameObject.transform.position - t.next.gameObject.transform.position)));
 	}
 
 	public void StartPriorNRun() {
@@ -99,9 +127,9 @@ public class PatternTracer : MonoBehaviour {
 		patternQueue.Enqueue(patternGenerator.Generate (ignoreIndexes));
 	}
 
-	void DrawLine(List<int> targetPattern, int index, int startIndex) {
-		Tile currentTile = tiles[targetPattern[index]];
-		Tile prevTile = tiles[targetPattern[index == 0 ? index : startIndex != 0 && index == startIndex ? index : index - 1]];
+	void DrawLine(Stack<int> targetPattern, int index, int startIndex) {
+		Tile currentTile = tiles[targetPattern.ElementAt(index)];
+		Tile prevTile = tiles[targetPattern.ElementAt(index == 0 ? index : startIndex != 0 && index == startIndex ? index : index - 1)];
 
 		currentTile.DrawLine(
 			0.8f * /* ← 反対側に飛び出るのを防ぐ暫定対応 */
