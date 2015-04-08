@@ -29,12 +29,12 @@ public class BackgroundPatternTracer : MonoBehaviour {
 		Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (0.7f))
 			.Zip(patterns.ToObservable(), (a, b) => b).Repeat().Subscribe(pattern => {
 
-			var tileStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (0.1f))
+			var traceStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (0.1f))
 				.Zip(pattern.ToObservable(), (a, b) => tiles[b]);
 
-			tileStream
+			traceStream
 				.Do(tile => tileEffectEmitters[pattern.Peek() % 2](tile))
-				.Zip(tileStream.Skip(1), (prev, current) => new { prev, current })
+				.Zip(traceStream.Skip(1), (prev, current) => new { prev, current })
 				.Subscribe(tile => tile.current.DrawLine(0.8f * (tile.prev.gameObject.transform.position - tile.current.gameObject.transform.position)))
 				.AddTo(gameObject);
 		
