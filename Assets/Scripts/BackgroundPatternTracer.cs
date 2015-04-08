@@ -6,9 +6,9 @@ using System.Collections.Generic;
 using UniRx;
 
 public class BackgroundPatternTracer : MonoBehaviour {
-	public GameObject Tile;
-	public int col;
-	public int row;
+	[SerializeField] GameObject Tile;
+	[SerializeField] int col;
+	[SerializeField] int row;
 
 	void Awake () {
 		transform.localPosition = new Vector3(-col * 1.7f / 2, -row * 1.7f / 2, 10);
