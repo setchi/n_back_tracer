@@ -56,7 +56,7 @@ public class PatternTracer : MonoBehaviour {
 		correctTouchStream.Zip(
 				correctTouchStream.Skip(1),
 				(current, next) => new { current = tiles[current], next = tiles[next] }
-			).Subscribe(t => t.next.DrawLine(0.8f * (t.current.gameObject.transform.position - t.next.gameObject.transform.position)));
+		).Subscribe(t => t.next.DrawLine(t.current.gameObject.transform.position));
 		//*/
 
 
@@ -108,7 +108,7 @@ public class PatternTracer : MonoBehaviour {
 
 		var drawLineStream = tickStream.Where (i => drawLine);
 		drawLineStream.Zip(drawLineStream.Skip(1), (current, next) => new { current = tiles[pattern.ElementAt(current)], next = tiles[pattern.ElementAt(next)] })
-			.Subscribe(t => t.next.DrawLine(0.8f * (t.current.gameObject.transform.position - t.next.gameObject.transform.position)));
+			.Subscribe(t => t.next.DrawLine(t.current.gameObject.transform.position));
 	}
 
 	public void StartPriorNRun() {
@@ -131,9 +131,6 @@ public class PatternTracer : MonoBehaviour {
 		Tile currentTile = tiles[targetPattern.ElementAt(index)];
 		Tile prevTile = tiles[targetPattern.ElementAt(index == 0 ? index : startIndex != 0 && index == startIndex ? index : index - 1)];
 
-		currentTile.DrawLine(
-			0.8f * /* ← 反対側に飛び出るのを防ぐ暫定対応 */
-			(prevTile.gameObject.transform.position - currentTile.gameObject.transform.position)
-		);
+		currentTile.DrawLine(prevTile.gameObject.transform.position);
 	}
 }

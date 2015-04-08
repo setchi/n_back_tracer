@@ -35,7 +35,7 @@ public class BackgroundPatternTracer : MonoBehaviour {
 			traceStream
 				.Do(tile => tileEffectEmitters[pattern.Peek() % 2](tile))
 				.Zip(traceStream.Skip(1), (prev, current) => new { prev, current })
-				.Subscribe(tile => tile.current.DrawLine(0.8f * (tile.prev.gameObject.transform.position - tile.current.gameObject.transform.position)))
+				.Subscribe(tile => tile.current.DrawLine(tile.prev.gameObject.transform.position))
 				.AddTo(gameObject);
 		
 		}).AddTo(gameObject);

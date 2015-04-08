@@ -25,11 +25,12 @@ public class Tile : MonoBehaviour {
 		lineRenderer.SetPosition(0, Vector3.zero);
 	}
 
-	public void DrawLine(Vector3 endPosition) {
+	public void DrawLine(Vector3 targetPosition) {
+		var endPosition = 0.8f * (targetPosition - transform.position);
 		lineRenderer.SetPosition(1, endPosition);
 	}
 	
-	void EraseLine() { DrawLine (Vector3.zero); }
+	void EraseLine() { DrawLine (transform.position); }
 
 	void CompleteEffect() {
 		EraseLine();
