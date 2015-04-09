@@ -13,7 +13,7 @@ public class TimeKeeper : MonoBehaviour {
 		Observable.EveryUpdate()
 			.TakeUntil(Observable.Timer(TimeSpan.FromSeconds(timeLimit)))
 				.Select(_ => Time.deltaTime)
-				.Scan((total, current) => total + current)
+				.Scan((total, delta) => total + delta)
 				.Subscribe(elapsedTime => slider.value = (timeLimit - elapsedTime) / timeLimit, TimeUp);
 	}
 }
