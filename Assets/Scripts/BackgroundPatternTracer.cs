@@ -26,10 +26,10 @@ public class BackgroundPatternTracer : MonoBehaviour {
 			tile => tile.EmitHintEffect()
 		};
 
-		Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (0.7f))
+		Observable.Interval (TimeSpan.FromMilliseconds (700))
 			.Zip(patterns.ToObservable(), (_, p) => p).Repeat().Subscribe(pattern => {
 
-			var traceStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (0.1f))
+			var traceStream = Observable.Interval (TimeSpan.FromMilliseconds (100))
 				.Zip(pattern.ToObservable(), (_, i) => tiles[i]);
 
 			traceStream
