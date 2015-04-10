@@ -29,13 +29,12 @@ public class BackgroundPatternTracer : MonoBehaviour {
 		Observable.Interval (TimeSpan.FromMilliseconds (700))
 			.Zip(patterns.ToObservable(), (_, p) => p).Repeat().Subscribe(pattern => {
 
-			var traceStream = Observable.Interval (TimeSpan.FromMilliseconds (100))
-				.Zip(pattern.ToObservable(), (_, i) => tiles[i]);
-
-			traceStream.Do(tileEffectEmitters[pattern.Peek() % 2])
-				.Zip(traceStream.Skip(1), (prev, current) => new { prev, current })
-				.Subscribe(tile => tile.current.DrawLine(tile.prev.gameObject.transform.position))
-				.AddTo(gameObject);
+			Observable.Interval (TimeSpan.FromMilliseconds (100))
+				.Zip(pattern.ToObservable(), (_, i) => tiles[i])
+				.Do(tileEffectEmitters[pattern.Peek() % 2])
+				.Buffer(2, 1).Where(b => b.Count > 1)
+					.Subscribe(b => b[0].DrawLine(b[1].gameObject.transform.position))
+					.AddTo(gameObject);
 		
 		}).AddTo(gameObject);
 	}
