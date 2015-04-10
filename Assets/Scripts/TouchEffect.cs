@@ -12,7 +12,7 @@ public class TouchEffect : MonoBehaviour {
 
 	void Start () {
 		Observable.Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(100))
-			.Zip(elements.ToObservable(), (_, elem) => elem)
+			.Zip(elements.ToObservable(), (_, obj) => obj)
 				.Do(obj => obj.transform.SetParent(transform))
 				.Do(obj => obj.transform.position = transform.position)
 				.Subscribe(obj => Animate(obj), () => Observable.Timer(TimeSpan.FromSeconds(animTime)).Subscribe(_ => DestroyObject(gameObject)));
