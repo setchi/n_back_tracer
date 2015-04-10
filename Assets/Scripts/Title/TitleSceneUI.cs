@@ -5,6 +5,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using UniRx;
 
 public class TitleSceneUI : MonoBehaviour {
 	public FadeManager fadeManager;
@@ -32,15 +33,13 @@ public class TitleSceneUI : MonoBehaviour {
 		screenButtonImages = buttonElements.Select(obj => obj.GetComponentsInChildren<Image>().ToList()).ToList();
 		screenButtonTexts = buttonElements.Select(obj => obj.GetComponentsInChildren<Text>().ToList()).ToList();
 		screenTexts = textElements.Select(obj => obj.GetComponent<Text>()).ToArray();
-	}
 
-	void Update() {
-		if (Input.GetKey(KeyCode.Escape)) {
-			if (currentScreen > 0) {
-				ResetAllButtonScale();
-				SlideMenu(currentScreen - 1);
-			}
-		}
+		Observable.EveryUpdate()
+			.Where(_ => Input.GetKey(KeyCode.Escape))
+				.Where(_ => currentScreen > 0)
+				.Subscribe(_ => {
+					ResetAllButtonScale();
+					SlideMenu(currentScreen - 1); });
 	}
 	
 	void TransSceneIfReady() {

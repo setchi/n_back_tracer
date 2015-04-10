@@ -864,6 +864,7 @@ MonoBehaviour:
   rankRecordPrefab: {fileID: 184898, guid: f2b618bbf3e62c74f9bb6221c635c26f, type: 2}
   nameInputField: {fileID: 11458956}
   messageText: {fileID: 11461688}
+  nameChangeButton: {fileID: 11444646}
 --- !u!114 &11458956
 MonoBehaviour:
   m_ObjectHideFlags: 1
