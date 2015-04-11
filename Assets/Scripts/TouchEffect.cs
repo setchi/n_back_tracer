@@ -15,7 +15,10 @@ public class TouchEffect : MonoBehaviour {
 			.Zip(elements.ToObservable(), (_, obj) => obj)
 				.Do(obj => obj.transform.SetParent(transform))
 				.Do(obj => obj.transform.position = transform.position)
-				.Subscribe(obj => Animate(obj), () => Observable.Timer(TimeSpan.FromSeconds(animTime)).Subscribe(_ => DestroyObject(gameObject)));
+				.Subscribe(obj => Animate(obj), () => Observable.Timer(TimeSpan.FromSeconds(animTime))
+				           .Subscribe(_ => DestroyObject(gameObject))
+				           .AddTo(gameObject))
+				.AddTo(gameObject);
 	}
 	
 	void Animate(GameObject obj) {

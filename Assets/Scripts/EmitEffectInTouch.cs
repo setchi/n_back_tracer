@@ -22,6 +22,6 @@ public class EmitEffectInTouch : MonoBehaviour {
 				obj.transform.SetParent(transform);
 				obj.transform.position = pos;
 				obj.transform.SetSiblingIndex(siblingIndex);
-			});
+			}).AddTo(gameObject);
 	}
 }
