@@ -40,8 +40,8 @@ public class PatternTracer : MonoBehaviour {
 
 		var showHintStream = touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat();
 		showHintStream.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
-	        .TakeUntil(touchStream)
-	        .Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
+			.TakeUntil(touchStream)
+			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
 		.AddTo(gameObject);
 
 		var incorrectTouchStream = touchStream.Where (id => !patternCache.Peek().Where((_, i) => i <= patternGenerator.ChainLength - patternQueue.Peek().Count).Contains(id));
