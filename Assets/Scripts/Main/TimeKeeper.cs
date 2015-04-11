@@ -6,8 +6,8 @@ using UniRx;
 
 public class TimeKeeper : MonoBehaviour {
 	public event Action TimeUp;
-	public float timeLimit;
-	public Slider slider;
+	[SerializeField] float timeLimit;
+	[SerializeField] Slider slider;
 
 	public void StartCountdown() {
 		Observable.EveryUpdate()
