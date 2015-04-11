@@ -52,7 +52,7 @@ public class PatternTracer : MonoBehaviour {
 
 		var correctTouchStream = touchStream.Where (id => patternQueue.Peek () .First() == id)
 			.Select(id => tiles[id])
-			.Do(_ => _.EmitCorrectTouchEffect())
+			.Do(tile => tile.EmitCorrectTouchEffect())
 			.Do(_ => scoreManager.CorrectTouch());
 
 		// DrawLineStream
@@ -80,7 +80,7 @@ public class PatternTracer : MonoBehaviour {
 		var traceStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (time / patternGenerator.ChainLength))
 			.Zip(pattern.ToObservable(), (_, p) => tiles[p]);
 
-		traceStream.Do(tile => tileEffectEmitter (tile))
+		traceStream.Do(tileEffectEmitter)
 			// Drawing ilne
 			.Where (i => drawLine)
 			.Buffer(2, 1).Where(b => b.Count > 1)
