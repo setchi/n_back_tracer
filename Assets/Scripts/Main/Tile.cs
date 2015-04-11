@@ -56,7 +56,7 @@ public class Tile : MonoBehaviour {
 		DOTween.To(() => Color.cyan, UpdateColor, defaultColor, 0.4f).OnComplete(CompleteEffect).SetId(gameObject);
 	}
 
-	public void EmitMissEffect() {
+	public void EmitIncorrectTouchEffect() {
 		EraseLine();
 		DOTween.Kill(gameObject);
 		DOTween.To(() => Color.white + Color.red * 2 / 2.5f, UpdateColor, defaultColor, 0.4f).SetId(gameObject);

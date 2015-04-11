@@ -24,8 +24,8 @@ public class PatternTracer : MonoBehaviour {
 		// Init pattern queue
 		var patternCache = new Queue<List<int>>();
 		patternQueue = new Queue<Stack<int>>(Enumerable.Range(0, backNum)
-		    .Select(i => patternGenerator.Generate(patternCache.SelectMany(stack => stack).ToList()))
-		    	.Select(p => { patternCache.Enqueue(p.ToList()); return p; }));
+	    	.Select(i => patternGenerator.Generate(patternCache.SelectMany(stack => stack).ToList()))
+	    		.Select(p => { patternCache.Enqueue(p.ToList()); return p; }));
 
 		// Init tile
 		tiles = Enumerable.Range (0, tileNum)
@@ -40,40 +40,41 @@ public class PatternTracer : MonoBehaviour {
 
 		var showHintStream = touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat();
 		showHintStream.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
-			.TakeUntil(touchStream)
-			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
+	        .TakeUntil(touchStream)
+	        .Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
 		.AddTo(gameObject);
 
-		var missTouchStream = touchStream.Where (id => !patternQueue.Peek ().Where ((_, i) => i > 0).Contains (id));
-		missTouchStream.Subscribe (id => {
-			scoreManager.MissTouch ();
-			tiles[id].EmitMissEffect();
+		var incorrectTouchStream = touchStream.Where (id => !patternCache.Peek().Where((_, i) => i <= patternGenerator.ChainLength - patternQueue.Peek().Count).Contains(id));
+		incorrectTouchStream.Subscribe (id => {
+			scoreManager.IncorrectTouch ();
+			tiles[id].EmitIncorrectTouchEffect();
 		});
 
-		var correctTouchStream = touchStream.Where (id => patternQueue.Peek () .First() == id)
+		var correctTouchStream = touchStream.Where (id => patternQueue.Peek ().Peek() == id)
 			.Select(id => tiles[id])
 			.Do(tile => tile.EmitCorrectTouchEffect())
 			.Do(_ => scoreManager.CorrectTouch());
 
 		// DrawLineStream
 		correctTouchStream.Buffer(2, 1).Take(patternGenerator.ChainLength - 1).Repeat()
-				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
+			.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
 
 		var correctPatternStream = correctTouchStream.Buffer(patternGenerator.ChainLength);
 		correctPatternStream.Select(b => b.Select(tile => tile.TileId))
-				.Do(_ => scoreManager.CorrectPattern())
-				.Do(_ => patternQueue.Dequeue())
-				.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
+			.Do(_ => scoreManager.CorrectPattern())
+			.Do(_ => patternQueue.Dequeue())
+			.Do(_ => patternCache.Dequeue())
+			.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
 
 		correctTouchStream.Do(_ => patternQueue.Peek().Pop())
 			.Where(_ => patternQueue.Peek ().Count == patternGenerator.ChainLength - 1)
 				.Subscribe(_ => {
-			var ignoreIndexes = patternCache.Dequeue().Concat(patternCache.Last()).ToList();
-			var pattern = patternGenerator.Generate (ignoreIndexes);
-			patternQueue.Enqueue(pattern);
-			patternCache.Enqueue(pattern.ToList());
-			StartTrace(0.4f, pattern, true, tile => tile.EmitMarkEffect());
-		});
+					var ignoreIndexes = patternCache.Peek().Concat(patternCache.Last()).ToList();
+					var pattern = patternGenerator.Generate (ignoreIndexes);
+					patternQueue.Enqueue(pattern);
+					patternCache.Enqueue(pattern.ToList());
+					StartTrace(0.4f, pattern, true, tile => tile.EmitMarkEffect());
+				});
 	}
 
 	void StartTrace(float time, Stack<int> pattern, bool drawLine, Action<Tile> tileEffectEmitter) {
@@ -83,8 +84,8 @@ public class PatternTracer : MonoBehaviour {
 		traceStream.Do(tileEffectEmitter)
 			// Drawing ilne
 			.Where (i => drawLine)
-			.Buffer(2, 1).Where(b => b.Count > 1)
-			.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
+				.Buffer(2, 1).Where(b => b.Count > 1)
+				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
 	}
 
 	public void StartPriorNRun() {
