@@ -22,10 +22,10 @@ public class PatternTracer : MonoBehaviour {
 		var backNum = int.Parse(Storage.Get("BackNum") ?? "2") /* default N */;
 
 		// Init pattern queue
-		var ignoreIndexes = new List<int>();
+		var patternCache = new Queue<List<int>>();
 		patternQueue = new Queue<Stack<int>>(Enumerable.Range(0, backNum)
-		    .Select(i => patternGenerator.Generate(ignoreIndexes))
-		    	.Select(p => { ignoreIndexes.AddRange(p); return p; }));
+		    .Select(i => patternGenerator.Generate(patternCache.SelectMany(stack => stack).ToList()))
+		    	.Select(p => { patternCache.Enqueue(p.ToList()); return p; }));
 
 		// Init tile
 		tiles = Enumerable.Range (0, tileNum)
@@ -59,20 +59,20 @@ public class PatternTracer : MonoBehaviour {
 		correctTouchStream.Buffer(2, 1).Take(patternGenerator.ChainLength - 1).Repeat()
 				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
 
-		// パターン入力完了後のエフェクト
 		var correctPatternStream = correctTouchStream.Buffer(patternGenerator.ChainLength);
 		correctPatternStream.Select(b => b.Select(tile => tile.TileId))
 				.Do(_ => scoreManager.CorrectPattern())
 				.Do(_ => patternQueue.Dequeue())
 				.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
 
-		correctTouchStream.Subscribe(_ => {
-			patternQueue.Peek ().Pop();
-
-			if (patternQueue.Peek ().Count == patternGenerator.ChainLength - 1) {
-				EnqueueNewPattern();
-				StartTrace(0.4f, patternQueue.Last(), true, tile => tile.EmitMarkEffect());
-			}
+		correctTouchStream.Do(_ => patternQueue.Peek().Pop())
+			.Where(_ => patternQueue.Peek ().Count == patternGenerator.ChainLength - 1)
+				.Subscribe(_ => {
+			var ignoreIndexes = patternCache.Dequeue().Concat(patternCache.Last()).ToList();
+			var pattern = patternGenerator.Generate (ignoreIndexes);
+			patternQueue.Enqueue(pattern);
+			patternCache.Enqueue(pattern.ToList());
+			StartTrace(0.4f, pattern, true, tile => tile.EmitMarkEffect());
 		});
 	}
 
@@ -94,12 +94,5 @@ public class PatternTracer : MonoBehaviour {
 				.Subscribe (
 					pattern => StartTrace (0.4f, pattern, true, tile => tile.EmitMarkEffect ())
 					, () => Observable.Timer(TimeSpan.FromSeconds(1.3f)).Subscribe(_ => PriorNRunEnded ()));
-	}
-
-	void EnqueueNewPattern() {
-		var ignoreIndexes = new List<int>();
-		ignoreIndexes.AddRange(patternQueue.Peek());
-		ignoreIndexes.AddRange(patternQueue.Last());
-		patternQueue.Enqueue(patternGenerator.Generate (ignoreIndexes));
 	}
 }
