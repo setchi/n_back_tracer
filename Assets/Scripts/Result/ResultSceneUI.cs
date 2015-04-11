@@ -5,9 +5,9 @@ using System.Collections;
 using UniRx;
 
 public class ResultSceneUI : MonoBehaviour {
-	public FadeManager fadeManager;
-	public Text scoreText;
-	public Text bestText;
+	[SerializeField] FadeManager fadeManager;
+	[SerializeField] Text scoreText;
+	[SerializeField] Text bestText;
 
 	void Awake() {
 		var score = Storage.Get("Score") ?? "0";

@@ -3,14 +3,14 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class GameController : MonoBehaviour {
-	public FadeManager fadeManager;
-	public ScreenEffectManager screenEffectManager;
+	[SerializeField] FadeManager fadeManager;
+	[SerializeField] ScreenEffectManager screenEffectManager;
 
-	public PatternTracer patternTracer;
-	public TimeKeeper timeKeeper;
-	public ScoreManager scoreManager;
+	[SerializeField] PatternTracer patternTracer;
+	[SerializeField] TimeKeeper timeKeeper;
+	[SerializeField] ScoreManager scoreManager;
 
-	public GameObject timeBar;
+	[SerializeField] GameObject timeBar;
 
 	public enum GameState {
 		Standby,

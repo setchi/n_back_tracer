@@ -7,7 +7,7 @@ using DG.Tweening;
 using UniRx;
 
 public class TouchEffect : MonoBehaviour {
-	public GameObject[] elements;
+	[SerializeField] GameObject[] elements;
 	float animTime = 0.4f;
 
 	void Start () {

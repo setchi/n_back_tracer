@@ -7,8 +7,8 @@ using UniRx;
 
 public class PatternTracer : MonoBehaviour {
 	public event Action PriorNRunEnded;
-	public ScoreManager scoreManager;
-	public GameController gameController;
+	[SerializeField] ScoreManager scoreManager;
+	[SerializeField] GameController gameController;
 
 	List<Tile> tiles;
 	PatternGenerator patternGenerator;

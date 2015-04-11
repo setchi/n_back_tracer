@@ -3,11 +3,10 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class SliderUIController : MonoBehaviour {
-	public Text numberUI;
-	public Slider sliderUI;
-	public string prefix;
-
-	public Image fill;
+	[SerializeField] Text numberUI;
+	[SerializeField] Slider sliderUI;
+	[SerializeField] string prefix;
+	[SerializeField] Image fill;
 
 	[HideInInspector]
 	public int max = 1;

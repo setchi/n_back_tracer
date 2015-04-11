@@ -3,10 +3,10 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class RankRecord : MonoBehaviour {
-	public Text rankTextUI;
-	public Text nameTextUI;
-	public Text chainAndNUI;
-	public Text socreTextUI;
+	[SerializeField] Text rankTextUI;
+	[SerializeField] Text nameTextUI;
+	[SerializeField] Text chainAndNUI;
+	[SerializeField] Text socreTextUI;
 
 	public void Set(int rank, JsonModel.Record record, string selfPlayerId) {
 		rankTextUI.text = rank.ToString();

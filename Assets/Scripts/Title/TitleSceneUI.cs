@@ -8,12 +8,12 @@ using DG.Tweening;
 using UniRx;
 
 public class TitleSceneUI : MonoBehaviour {
-	public FadeManager fadeManager;
-	public GameObject leftArrow;
-	public GameObject buttonArea;
-	public GameObject textArea;
-	public GameObject[] buttonElements;
-	public GameObject[] textElements;
+	[SerializeField] FadeManager fadeManager;
+	[SerializeField] GameObject leftArrow;
+	[SerializeField] GameObject buttonArea;
+	[SerializeField] GameObject textArea;
+	[SerializeField] GameObject[] buttonElements;
+	[SerializeField] GameObject[] textElements;
 
 	List<GameObject> BackNumButtons;
 	List<GameObject> LengthButtons;

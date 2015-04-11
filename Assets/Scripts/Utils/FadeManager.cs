@@ -5,7 +5,7 @@ using System.Collections;
 using DG.Tweening;
 
 public class FadeManager : MonoBehaviour {
-	public GameObject fadeMask;
+	[SerializeField] GameObject fadeMask;
 
 	Color maskColor_ = Color.black;
 	public Color MaskColor {
