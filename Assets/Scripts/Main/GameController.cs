@@ -12,10 +12,7 @@ public class GameController : MonoBehaviour {
 
 	public GameObject timeBar;
 
-	int cachedTouchTileId = -1;
-	int currentTouchTileId = -1;
-
-	enum GameState {
+	public enum GameState {
 		Standby,
 		Start,
 		Wait,
@@ -23,7 +20,7 @@ public class GameController : MonoBehaviour {
 		Timeup,
 		Finish
 	};
-	GameState gameState = GameState.Wait;
+	public GameState gameState = GameState.Wait;
 
 	void Awake() {
 		fadeManager.FadeIn(0.3f, DG.Tweening.Ease.InQuart, () => {
@@ -37,13 +34,6 @@ public class GameController : MonoBehaviour {
 		patternTracer.PriorNRunEnded += () => {
 			gameState = GameState.Start;
 		};
-	}
-
-	public void TouchedTile(int tileId) {
-		if (gameState != GameState.Play)
-			return;
-
-		currentTouchTileId = tileId;
 	}
 
 	void Update () {
@@ -67,10 +57,6 @@ public class GameController : MonoBehaviour {
 			break;
 		
 		case GameState.Play:
-			if (cachedTouchTileId != currentTouchTileId) {
-				patternTracer.Touch(currentTouchTileId);
-				cachedTouchTileId = currentTouchTileId;
-			}
 			break;
 		
 		case GameState.Timeup:

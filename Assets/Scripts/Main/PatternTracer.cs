@@ -3,115 +3,97 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 
 public class PatternTracer : MonoBehaviour {
 	public event Action PriorNRunEnded;
 	public ScoreManager scoreManager;
+	public GameController gameController;
 
-	const int tileNum = 4 * 5;
 	List<Tile> tiles;
 	PatternGenerator patternGenerator;
-	Queue<List<int>> patternQueue;
-	int currentIndex = 0;
-	IEnumerator hintTraceInterval;
+	Queue<Stack<int>> patternQueue;
 
 	void Awake() {
-		patternGenerator = new PatternGenerator(4, 5);
+		int hNum = 4, vNum = 5;
+		var tileNum = hNum * vNum;
+		patternGenerator = new PatternGenerator(hNum, vNum);
 		patternGenerator.ChainLength = int.Parse(Storage.Get("Chain") ?? "4") /* default Chain Num */;
 		var backNum = int.Parse(Storage.Get("BackNum") ?? "2") /* default N */;
 
 		// Init pattern queue
-		var ignoreIndexes = new List<int>();
-		patternQueue = new Queue<List<int>>(Enumerable.Range(0, backNum)
-		    .Select(i => patternGenerator.Generate(ignoreIndexes))
-		    .Select(p => { ignoreIndexes.AddRange(p); return p; }));
+		var patternCache = new Queue<List<int>>();
+		patternQueue = new Queue<Stack<int>>(Enumerable.Range(0, backNum)
+	    	.Select(i => patternGenerator.Generate(patternCache.SelectMany(stack => stack).ToList()))
+	    		.Select(p => { patternCache.Enqueue(p.ToList()); return p; }));
 
 		// Init tile
 		tiles = Enumerable.Range (0, tileNum)
-			.Select(i => GameObject.Find("Tile " + i.ToString()).GetComponent<Tile>())
-			.Select((tile, i) => { tile.TileId = i; return tile; }).ToList();
+			.Select (i => GameObject.Find ("Tile " + i).GetComponent<Tile> ())
+				.Select ((tile, i) => {tile.TileId = i; return tile; }).ToList ();
+
+		// Touch event main stream
+		var touchStream = tiles.Select (tile => tile.onTouchEnter.AsObservable ())
+			.Aggregate(Observable.Merge)
+				.DistinctUntilChanged()
+				.Where (_ => gameController.gameState == GameController.GameState.Play);
+
+		var showHintStream = touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat();
+		showHintStream.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
+	        .TakeUntil(touchStream)
+	        .Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
+		.AddTo(gameObject);
+
+		var incorrectTouchStream = touchStream.Where (id => !patternCache.Peek().Where((_, i) => i <= patternGenerator.ChainLength - patternQueue.Peek().Count).Contains(id));
+		incorrectTouchStream.Subscribe (id => {
+			scoreManager.IncorrectTouch ();
+			tiles[id].EmitIncorrectTouchEffect();
+		});
+
+		var correctTouchStream = touchStream.Where (id => patternQueue.Peek ().Peek() == id)
+			.Select(id => tiles[id])
+			.Do(tile => tile.EmitCorrectTouchEffect())
+			.Do(_ => scoreManager.CorrectTouch());
+
+		// DrawLineStream
+		correctTouchStream.Buffer(2, 1).Take(patternGenerator.ChainLength - 1).Repeat()
+			.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
+
+		var correctPatternStream = correctTouchStream.Buffer(patternGenerator.ChainLength);
+		correctPatternStream.Select(b => b.Select(tile => tile.TileId))
+			.Do(_ => scoreManager.CorrectPattern())
+			.Do(_ => patternQueue.Dequeue())
+			.Do(_ => patternCache.Dequeue())
+			.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
+
+		correctTouchStream.Do(_ => patternQueue.Peek().Pop())
+			.Where(_ => patternQueue.Peek ().Count == patternGenerator.ChainLength - 1)
+				.Subscribe(_ => {
+					var ignoreIndexes = patternCache.Peek().Concat(patternCache.Last()).ToList();
+					var pattern = patternGenerator.Generate (ignoreIndexes);
+					patternQueue.Enqueue(pattern);
+					patternCache.Enqueue(pattern.ToList());
+					StartTrace(0.4f, pattern, true, tile => tile.EmitMarkEffect());
+				});
 	}
 
-	void StartTrace(float time, List<int> pattern, int startIndex, bool drawLine, Action<Tile> tileEffectEmitter) {
-		StartCoroutine(Trace(time / patternGenerator.ChainLength, pattern, startIndex, drawLine, tileEffectEmitter));
+	void StartTrace(float time, Stack<int> pattern, bool drawLine, Action<Tile> tileEffectEmitter) {
+		var traceStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (time / patternGenerator.ChainLength))
+			.Zip(pattern.ToObservable(), (_, p) => tiles[p]);
+
+		traceStream.Do(tileEffectEmitter)
+			// Drawing ilne
+			.Where (i => drawLine)
+				.Buffer(2, 1).Where(b => b.Count > 1)
+				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
 	}
-	IEnumerator Trace(float interval, List<int> pattern, int startIndex, bool drawLine, Action<Tile> emitTileEffect) {
-		foreach (var i in Enumerable.Range(startIndex, pattern.Count - startIndex)) {
-			emitTileEffect(tiles[pattern[i]]);
-			if (drawLine)
-				DrawLine(pattern, i, startIndex);
-			
-			yield return new WaitForSeconds(interval);
-		}
-	}
-	
+
 	public void StartPriorNRun() {
-		StartCoroutine(StartPriorRun());
-	}
-	IEnumerator StartPriorRun() {
-		foreach (var pattern in patternQueue) {
-			StartTrace (0.4f, pattern, 0, true, tile => tile.EmitMarkEffect());
-			yield return new WaitForSeconds(1.3f);
-		}
-		PriorNRunEnded();
-		SetTimeoutHintTrace();
-	}
-
-	void SetTimeoutHintTrace() {
-		if (hintTraceInterval != null) StopCoroutine(hintTraceInterval);
-		StartCoroutine(hintTraceInterval = HintTrace(2f));
-	}
-	IEnumerator HintTrace(float interval) {
-		while (true) {
-			yield return new WaitForSeconds(interval);
-			StartTrace(0.4f, patternQueue.Peek(), currentIndex, false, tile => tile.EmitHintEffect());
-		}
-	}
-	
-	public void Touch(int tileId) {
-		SetTimeoutHintTrace();
-		var currentPattern = patternQueue.Peek();
-
-		// Correct touch
-		if (currentPattern[currentIndex] == tileId) {
-			scoreManager.CorrectTouch();
-			tiles[currentPattern[currentIndex]].EmitCorrectTouchEffect();
-			DrawLine(currentPattern, currentIndex, 0);
-
-			currentIndex = ++currentIndex % currentPattern.Count;
-			
-			if (currentIndex == 1) {
-				EnqueueNewPattern();
-				StartTrace(0.4f, patternQueue.Last(), 0, true, tile => tile.EmitMarkEffect());
-			}
-
-			// Correct Pattern
-			if (currentIndex == 0) {
-				StartTrace(0.0f, patternQueue.Dequeue(), 0, true, tile => tile.EmitPatternCorrectEffect());
-				scoreManager.CorrectPattern();
-			}
-			
-		// Miss touch
-		} else if (!currentPattern.Where((v, i) => i < currentIndex).Contains(tileId)) {
-			scoreManager.MissTouch ();
-			tiles[tileId].EmitMissEffect();
-		}
-	}
-
-	void EnqueueNewPattern() {
-		var ignoreIndexes = new List<int>();
-		ignoreIndexes.AddRange(patternQueue.Peek());
-		ignoreIndexes.AddRange(patternQueue.Last());
-		patternQueue.Enqueue(patternGenerator.Generate(ignoreIndexes));
-	}
-	
-	void DrawLine(List<int> targetPattern, int index, int currentIndex) {
-		Tile currentTile = tiles[targetPattern[index]];
-		Tile prevTile = tiles[targetPattern[index == 0 ? index : currentIndex != 0 && index == currentIndex ? index : index - 1]];
-		
-		currentTile.DrawLine(
-			0.8f * /* ← 反対側に飛び出るのを防ぐ暫定対応 */
-			(prevTile.gameObject.transform.position - currentTile.gameObject.transform.position)
-		);
+		Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (1.3f))
+			.Zip(patternQueue.ToObservable(), (_, p) => p)
+				.Take (patternQueue.Count)
+				.Subscribe (
+					pattern => StartTrace (0.4f, pattern, true, tile => tile.EmitMarkEffect ())
+					, () => Observable.Timer(TimeSpan.FromSeconds(1.3f)).Subscribe(_ => PriorNRunEnded ()));
 	}
 }

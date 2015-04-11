@@ -4,22 +4,20 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
+using UniRx;
 
 public class Tile : MonoBehaviour {
-	public int TileId {
-		set { tileId = value; }
-	}
+	public Subject<int> onTouchEnter = new Subject<int>();
+
+	public int TileId { set { tileId = value; } get { return tileId; } }
 	int tileId;
 
 	SpriteRenderer spriteRenderer;
-	GameController gameController;
 	LineRenderer lineRenderer;
 
 	Color defaultColor = new Color(0.2f, 0.2f, 0.2f, 1);
 
 	void Awake() {
-		var gc = GameObject.Find("GameController");
-		gameController = gc == null ? null : gc.GetComponent<GameController>();
 		spriteRenderer = GetComponent<SpriteRenderer> ();
 		lineRenderer = GetComponentInChildren<LineRenderer>();
 		lineRenderer.SetWidth (0.13f, 0.13f);
@@ -27,19 +25,19 @@ public class Tile : MonoBehaviour {
 		lineRenderer.SetPosition(0, Vector3.zero);
 	}
 
-	public void DrawLine(Vector3 endPosition) {
+	public void DrawLine(Vector3 targetPosition) {
+		var endPosition = 0.8f * (targetPosition - transform.position);
 		lineRenderer.SetPosition(1, endPosition);
 	}
 	
-	void EraseLine() { DrawLine (Vector3.zero); }
+	void EraseLine() { DrawLine (transform.position); }
 
 	void CompleteEffect() {
 		EraseLine();
 	}
 
 	void OnMouseEnter() {
-		if (gameController != null)
-			gameController.TouchedTile (tileId);
+		onTouchEnter.OnNext (tileId);
 	}
 
 	public void EmitMarkEffect() {
@@ -58,7 +56,7 @@ public class Tile : MonoBehaviour {
 		DOTween.To(() => Color.cyan, UpdateColor, defaultColor, 0.4f).OnComplete(CompleteEffect).SetId(gameObject);
 	}
 
-	public void EmitMissEffect() {
+	public void EmitIncorrectTouchEffect() {
 		EraseLine();
 		DOTween.Kill(gameObject);
 		DOTween.To(() => Color.white + Color.red * 2 / 2.5f, UpdateColor, defaultColor, 0.4f).SetId(gameObject);

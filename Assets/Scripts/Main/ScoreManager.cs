@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 
 public class ScoreManager : MonoBehaviour {
@@ -19,7 +19,7 @@ public class ScoreManager : MonoBehaviour {
 		score += backNum;
 	}
 
-	public void MissTouch() {
+	public void IncorrectTouch() {
 		// miss
 		score *= 0.99f;
 	}

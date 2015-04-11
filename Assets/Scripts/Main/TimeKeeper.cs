@@ -2,34 +2,18 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using System.Collections;
+using UniRx;
 
 public class TimeKeeper : MonoBehaviour {
 	public event Action TimeUp;
-	public float timeLimit;
-	public Slider slider;
-
-	float remainingTime;
-	bool isPlaying = false;
-
-	void Update() {
-		if (!isPlaying)
-			return;
-
-		remainingTime -= Time.deltaTime;
-
-		if (remainingTime < 0) {
-			isPlaying = false;
-			TimeUp();
-		}
-		slider.value = remainingTime / timeLimit;
-	}
+	[SerializeField] float timeLimit;
+	[SerializeField] Slider slider;
 
 	public void StartCountdown() {
-		isPlaying = true;
-		remainingTime = timeLimit;
-	}
-
-	public float GetRemainingTime() {
-		return remainingTime;
+		Observable.EveryUpdate()
+			.TakeUntil(Observable.Timer(TimeSpan.FromSeconds(timeLimit)))
+				.Select(_ => Time.deltaTime)
+				.Scan((total, delta) => total + delta)
+				.Subscribe(elapsedTime => slider.value = (timeLimit - elapsedTime) / timeLimit, TimeUp);
 	}
 }

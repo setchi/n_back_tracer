@@ -1,37 +1,30 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System;
 using System.Linq;
 using System.Collections;
 using DG.Tweening;
+using UniRx;
 
 public class TouchEffect : MonoBehaviour {
 	public GameObject[] elements;
 	float animTime = 0.4f;
 
 	void Start () {
-		StartCoroutine(Emit());
-	}
-	
-	IEnumerator Emit() {
-		foreach (var obj in elements) {
-			obj.transform.SetParent(transform);
-			obj.transform.position = transform.position;
-			Animate(obj);
-
-			foreach (var i in Enumerable.Range(0, 6))
-				yield return new WaitForEndOfFrame();
-		}
-		
-		yield return new WaitForSeconds(animTime);
-		DestroyObject(gameObject);
+		Observable.Timer(TimeSpan.Zero, TimeSpan.FromMilliseconds(100))
+			.Zip(elements.ToObservable(), (_, obj) => obj)
+				.Do(obj => obj.transform.SetParent(transform))
+				.Do(obj => obj.transform.position = transform.position)
+				.Subscribe(obj => Animate(obj), () => Observable.Timer(TimeSpan.FromSeconds(animTime))
+				           .Subscribe(_ => DestroyObject(gameObject))
+				           .AddTo(gameObject))
+				.AddTo(gameObject);
 	}
 	
 	void Animate(GameObject obj) {
-		var from = Vector3.zero;
-		var to = Vector3.one * 2f;
 		var image = obj.GetComponent<Image>();
 
-		DOTween.To(() => from, scale => obj.transform.localScale = scale, to, animTime);
+		DOTween.To(() => Vector3.zero, scale => obj.transform.localScale = scale, Vector3.one * 2, animTime);
 		DOTween.To(() => Color.white, color => image.color = color, new Color(1, 1, 1, 0), animTime);
 	}
 }

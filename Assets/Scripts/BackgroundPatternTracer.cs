@@ -3,64 +3,39 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using UniRx;
 
 public class BackgroundPatternTracer : MonoBehaviour {
-	public GameObject Tile;
-	public int col;
-	public int row;
-
-	List<Tile> tiles = new List<Tile>();
-	List<List<int>> patterns;
+	[SerializeField] GameObject Tile;
+	[SerializeField] int col;
+	[SerializeField] int row;
 
 	void Awake () {
-		patterns = BackgroundPatternStore.GetPatterns();
 		transform.localPosition = new Vector3(-col * 1.7f / 2, -row * 1.7f / 2, 10);
+		
+		var tiles = Enumerable.Range(0, row).SelectMany(y => Enumerable.Range(0, col).Select(x => {
+			var obj = Instantiate(Tile) as GameObject;
+			obj.transform.SetParent(transform);
+			obj.transform.localPosition = new Vector3(x, y) * 1.7f;
+			return obj.GetComponent<Tile>();
+		})).ToArray();
 
-		for (int y = 0; y < row; y++) {
-			for (int x = 0; x < col; x++) {
-				var obj = Instantiate(Tile) as GameObject;
-				obj.transform.SetParent(transform);
-				obj.transform.localPosition = new Vector3(x * 1.7f, y * 1.7f);
-				tiles.Add(obj.GetComponent<Tile>());
-			}
-		}
-
-		StartCoroutine(StartTrace());
-	}
-
-	IEnumerator StartTrace() {
-		List<Action<Tile>> tileEffectEmitters = new List<Action<Tile>> {
+		var patterns = BackgroundPatternStore.GetPatterns();
+	 	var tileEffectEmitters = new List<Action<Tile>> {
 			tile => tile.EmitMarkEffect(),
 			tile => tile.EmitHintEffect()
 		};
-		int current = 0;
 
-		for (;;) {
-			StartCoroutine(Trace(
-				patterns[current = ++current % patterns.Count],
-				tileEffectEmitters[UnityEngine.Random.Range(0, tileEffectEmitters.Count)]
-			));
+		Observable.Interval (TimeSpan.FromMilliseconds (700))
+			.Zip(patterns.ToObservable(), (_, p) => p).Repeat().Subscribe(pattern => {
 
-			yield return new WaitForSeconds(0.7f);
-		}
-	}
-
-	IEnumerator Trace(List<int> pattern, Action<Tile> emitTileEffect) {
-		for (int i = 0, l = pattern.Count; i < l; i++) {
-			DrawLine(pattern, i, 0);
-			emitTileEffect(tiles[pattern[i]]);
-			yield return new WaitForSeconds(0.1f);
-		}
-	}
-	
-	void DrawLine(List<int> targetPattern, int index, int currentIndex) {
-		Tile currentTile = tiles [targetPattern [index]];
-		Tile prevTile = tiles[targetPattern [index == 0 ? index : currentIndex != 0 && index == currentIndex ? index : index - 1]];
+			Observable.Interval (TimeSpan.FromMilliseconds (100))
+				.Zip(pattern.ToObservable(), (_, i) => tiles[i])
+				.Do(tileEffectEmitters[pattern.Peek() % 2])
+				.Buffer(2, 1).Where(b => b.Count > 1)
+					.Subscribe(b => b[0].DrawLine(b[1].gameObject.transform.position))
+					.AddTo(gameObject);
 		
-		currentTile.DrawLine(
-			0.8f * /* ← 反対側に飛び出るのを防ぐ暫定対応 */
-			(prevTile.gameObject.transform.position - currentTile.gameObject.transform.position)
-		);
+		}).AddTo(gameObject);
 	}
-	
 }
