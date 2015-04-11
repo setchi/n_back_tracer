@@ -9,7 +9,7 @@ using UniRx;
 public class Tile : MonoBehaviour {
 	public Subject<int> onTouchEnter = new Subject<int>();
 
-	public int TileId { set { tileId = value; } }
+	public int TileId { set { tileId = value; } get { return tileId; } }
 	int tileId;
 
 	SpriteRenderer spriteRenderer;
