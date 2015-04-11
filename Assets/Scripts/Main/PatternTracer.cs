@@ -57,14 +57,14 @@ public class PatternTracer : MonoBehaviour {
 
 		// DrawLineStream
 		correctTouchStream.Buffer(2, 1).Take(patternGenerator.ChainLength - 1).Repeat()
-				.Subscribe(_ => _[1].DrawLine(_[0].gameObject.transform.position));
+				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
 
 		// パターン入力完了後のエフェクト
 		var correctPatternStream = correctTouchStream.Buffer(patternGenerator.ChainLength);
 		correctPatternStream.Select(b => b.Select(tile => tile.TileId))
 				.Do(_ => scoreManager.CorrectPattern())
 				.Do(_ => patternQueue.Dequeue())
-				.Subscribe(_ => StartTrace(0, new Stack<int>(_), 0, true, tile => tile.EmitPatternCorrectEffect()));
+				.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), 0, true, tile => tile.EmitPatternCorrectEffect()));
 
 		correctTouchStream.Subscribe(_ => {
 			patternQueue.Peek ().Pop();
