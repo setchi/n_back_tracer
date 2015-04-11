@@ -41,7 +41,7 @@ public class PatternTracer : MonoBehaviour {
 		var showHintStream = touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat();
 		showHintStream.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
 			.TakeUntil(touchStream)
-			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), 0, false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
+			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
 		.AddTo(gameObject);
 
 		var missTouchStream = touchStream.Where (id => !patternQueue.Peek ().Where ((_, i) => i > 0).Contains (id));
@@ -64,19 +64,19 @@ public class PatternTracer : MonoBehaviour {
 		correctPatternStream.Select(b => b.Select(tile => tile.TileId))
 				.Do(_ => scoreManager.CorrectPattern())
 				.Do(_ => patternQueue.Dequeue())
-				.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), 0, true, tile => tile.EmitPatternCorrectEffect()));
+				.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
 
 		correctTouchStream.Subscribe(_ => {
 			patternQueue.Peek ().Pop();
 
 			if (patternQueue.Peek ().Count == patternGenerator.ChainLength - 1) {
 				EnqueueNewPattern();
-				StartTrace(0.4f, patternQueue.Last(), 0, true, tile => tile.EmitMarkEffect());
+				StartTrace(0.4f, patternQueue.Last(), true, tile => tile.EmitMarkEffect());
 			}
 		});
 	}
 
-	void StartTrace(float time, Stack<int> pattern, int startIndex, bool drawLine, Action<Tile> tileEffectEmitter) {
+	void StartTrace(float time, Stack<int> pattern, bool drawLine, Action<Tile> tileEffectEmitter) {
 		var traceStream = Observable.Timer (TimeSpan.Zero, TimeSpan.FromSeconds (time / patternGenerator.ChainLength))
 			.Zip(pattern.ToObservable(), (_, p) => tiles[p]);
 
@@ -92,7 +92,7 @@ public class PatternTracer : MonoBehaviour {
 			.Zip(patternQueue.ToObservable(), (_, p) => p)
 				.Take (patternQueue.Count)
 				.Subscribe (
-					pattern => StartTrace (0.4f, pattern, 0, true, tile => tile.EmitMarkEffect ())
+					pattern => StartTrace (0.4f, pattern, true, tile => tile.EmitMarkEffect ())
 					, () => Observable.Timer(TimeSpan.FromSeconds(1.3f)).Subscribe(_ => PriorNRunEnded ()));
 	}
 
