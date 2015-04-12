@@ -64,8 +64,7 @@ public class PatternTracer : MonoBehaviour {
 				.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
 		
 		var drawLineStream = correctTouchStream.Publish();
-		drawLineStream.Buffer(2, 1).Where(b => b.Count > 1)
-			.Take(patternGenerator.ChainLength - 2).Repeat()
+		drawLineStream.Buffer(2, 1).Take(patternGenerator.ChainLength - 2).Repeat()
 				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
 		drawLineStream.Connect();
 
