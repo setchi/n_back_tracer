@@ -38,43 +38,46 @@ public class PatternTracer : MonoBehaviour {
 				.DistinctUntilChanged()
 				.Where (_ => gameController.gameState == GameController.GameState.Play);
 
-		var showHintStream = touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat();
-		showHintStream.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
-			.TakeUntil(touchStream)
-			.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
+		// Show hint stream
+		touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat()
+			.Subscribe(_ => Observable.Timer(TimeSpan.Zero, TimeSpan.FromSeconds(2))
+				.TakeUntil(touchStream)
+				.Subscribe(__ => StartTrace (0.4f, patternQueue.Peek (), false, tile => tile.EmitHintEffect ())).AddTo(gameObject))
 		.AddTo(gameObject);
 
-		var incorrectTouchStream = touchStream.Where (id => !patternCache.Peek().Where((_, i) => i <= patternGenerator.ChainLength - patternQueue.Peek().Count).Contains(id));
-		incorrectTouchStream.Subscribe (id => {
-			scoreManager.IncorrectTouch ();
-			tiles[id].EmitIncorrectTouchEffect();
-		});
+		// Incorrect touch stream
+		touchStream.Where (id => !patternCache.Peek().Where((_, i) => i <= patternGenerator.ChainLength - patternQueue.Peek().Count).Contains(id))
+			.Do(_ => scoreManager.IncorrectTouch())
+				.Subscribe (id => tiles[id].EmitIncorrectTouchEffect());
 
 		var correctTouchStream = touchStream.Where (id => patternQueue.Peek ().Peek() == id)
 			.Select(id => tiles[id])
 			.Do(tile => tile.EmitCorrectTouchEffect())
 			.Do(_ => scoreManager.CorrectTouch());
 
-		// DrawLineStream
-		correctTouchStream.Buffer(2, 1).Take(patternGenerator.ChainLength - 1).Repeat()
-			.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
-
-		var correctPatternStream = correctTouchStream.Buffer(patternGenerator.ChainLength);
-		correctPatternStream.Select(b => b.Select(tile => tile.TileId))
+		// Correct pattern stream
+		correctTouchStream.Buffer(patternGenerator.ChainLength)
+			.Select(b => b.Select(tile => tile.TileId))
 			.Do(_ => scoreManager.CorrectPattern())
 			.Do(_ => patternQueue.Dequeue())
 			.Do(_ => patternCache.Dequeue())
-			.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
+				.Subscribe(buffer => StartTrace(0, new Stack<int>(buffer), true, tile => tile.EmitPatternCorrectEffect()));
+		
+		var drawLineStream = correctTouchStream.Publish();
+		drawLineStream.Buffer(2, 1).Where(b => b.Count > 1)
+			.Take(patternGenerator.ChainLength - 2).Repeat()
+				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
+		drawLineStream.Connect();
 
 		correctTouchStream.Do(_ => patternQueue.Peek().Pop())
 			.Where(_ => patternQueue.Peek ().Count == patternGenerator.ChainLength - 1)
-				.Subscribe(_ => {
-					var ignoreIndexes = patternCache.Peek().Concat(patternCache.Last()).ToList();
-					var pattern = patternGenerator.Generate (ignoreIndexes);
-					patternQueue.Enqueue(pattern);
-					patternCache.Enqueue(pattern.ToList());
-					StartTrace(0.4f, pattern, true, tile => tile.EmitMarkEffect());
-				});
+			.Subscribe(_ => {
+				var ignoreIndexes = patternCache.Peek().Concat(patternCache.Last()).ToList();
+				var pattern = patternGenerator.Generate (ignoreIndexes);
+				patternQueue.Enqueue(pattern);
+				patternCache.Enqueue(pattern.ToList());
+				StartTrace(0.4f, pattern, true, tile => tile.EmitMarkEffect());
+			});
 	}
 
 	void StartTrace(float time, Stack<int> pattern, bool drawLine, Action<Tile> tileEffectEmitter) {
@@ -82,7 +85,7 @@ public class PatternTracer : MonoBehaviour {
 			.Zip(pattern.ToObservable(), (_, p) => tiles[p]);
 
 		traceStream.Do(tileEffectEmitter)
-			// Drawing ilne
+			// Drawing line
 			.Where (i => drawLine)
 				.Buffer(2, 1).Where(b => b.Count > 1)
 				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
