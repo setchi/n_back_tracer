@@ -33,10 +33,9 @@ public class PatternTracer : MonoBehaviour {
 				.Select ((tile, i) => {tile.TileId = i; return tile; }).ToList ();
 
 		// Touch event main stream
-		var touchStream = tiles.Select (tile => tile.onTouchEnter.AsObservable ())
-			.Aggregate(Observable.Merge)
-				.DistinctUntilChanged()
-				.Where (_ => gameController.gameState == GameController.GameState.Play);
+		var touchStream = Observable.Merge(tiles.Select(tile => tile.onTouchEnter.AsObservable()))
+			.Where (_ => gameController.gameState == GameController.GameState.Play)
+				.DistinctUntilChanged();
 
 		// Show hint stream
 		touchStream.Throttle (TimeSpan.FromSeconds (2)).Repeat()
@@ -65,7 +64,7 @@ public class PatternTracer : MonoBehaviour {
 		
 		var drawLineStream = correctTouchStream.Publish();
 		drawLineStream.Buffer(2, 1).Take(patternGenerator.ChainLength - 2).Repeat()
-				.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
+			.Subscribe(b => b[1].DrawLine(b[0].gameObject.transform.position));
 		drawLineStream.Connect();
 
 		correctTouchStream.Do(_ => patternQueue.Peek().Pop())
