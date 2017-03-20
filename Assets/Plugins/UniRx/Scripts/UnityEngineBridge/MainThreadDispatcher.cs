@@ -1,3 +1,7 @@
+#if !(UNITY_4_0 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5 || UNITY_4_6 || UNITY_5_0 || UNITY_5_1 || UNITY_5_2)
+#define SupportCustomYieldInstruction
+#endif
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -63,9 +67,9 @@ namespace UniRx
                 UnityEditor.EditorApplication.update += Update;
             }
 
-            public void Enqueue(Action action)
+            public void Enqueue(Action<object> action, object state)
             {
-                editorQueueWorker.Enqueue(action);
+                editorQueueWorker.Enqueue(action, state);
             }
 
             public void UnsafeInvoke(Action action)
@@ -80,9 +84,21 @@ namespace UniRx
                 }
             }
 
+            public void UnsafeInvoke<T>(Action<T> action, T state)
+            {
+                try
+                {
+                    action(state);
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                }
+            }
+
             public void PseudoStartCoroutine(IEnumerator routine)
             {
-                editorQueueWorker.Enqueue(() => ConsumeEnumerator(routine));
+                editorQueueWorker.Enqueue(_ => ConsumeEnumerator(routine), null);
             }
 
             void Update()
@@ -104,13 +120,13 @@ namespace UniRx
                     if (type == typeof(WWW))
                     {
                         var www = (WWW)current;
-                        editorQueueWorker.Enqueue(() => ConsumeEnumerator(UnwrapWaitWWW(www, routine)));
+                        editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapWaitWWW(www, routine)), null);
                         return;
                     }
                     else if (type == typeof(AsyncOperation))
                     {
                         var asyncOperation = (AsyncOperation)current;
-                        editorQueueWorker.Enqueue(() => ConsumeEnumerator(UnwrapWaitAsyncOperation(asyncOperation, routine)));
+                        editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapWaitAsyncOperation(asyncOperation, routine)), null);
                         return;
                     }
                     else if (type == typeof(WaitForSeconds))
@@ -118,7 +134,7 @@ namespace UniRx
                         var waitForSeconds = (WaitForSeconds)current;
                         var accessor = typeof(WaitForSeconds).GetField("m_Seconds", BindingFlags.Instance | BindingFlags.GetField | BindingFlags.NonPublic);
                         var second = (float)accessor.GetValue(waitForSeconds);
-                        editorQueueWorker.Enqueue(() => ConsumeEnumerator(UnwrapWaitForSeconds(second, routine)));
+                        editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapWaitForSeconds(second, routine)), null);
                         return;
                     }
                     else if (type == typeof(Coroutine))
@@ -126,9 +142,17 @@ namespace UniRx
                         Debug.Log("Can't wait coroutine on UnityEditor");
                         goto ENQUEUE;
                     }
+#if SupportCustomYieldInstruction
+                    else if (current is IEnumerator)
+                    {
+                        var enumerator = (IEnumerator)current;
+                        editorQueueWorker.Enqueue(_ => ConsumeEnumerator(UnwrapEnumerator(enumerator, routine)), null);
+                        return;
+                    }
+#endif
 
-                ENQUEUE:
-                    editorQueueWorker.Enqueue(() => ConsumeEnumerator(routine)); // next update
+                    ENQUEUE:
+                    editorQueueWorker.Enqueue(_ => ConsumeEnumerator(routine), null); // next update
                 }
             }
 
@@ -165,42 +189,59 @@ namespace UniRx
                 };
                 ConsumeEnumerator(continuation);
             }
+
+            IEnumerator UnwrapEnumerator(IEnumerator enumerator, IEnumerator continuation)
+            {
+                while (enumerator.MoveNext())
+                {
+                    yield return null;
+                }
+                ConsumeEnumerator(continuation);
+            }
         }
 
 #endif
 
         /// <summary>Dispatch Asyncrhonous action.</summary>
-        public static void Post(Action action)
+        public static void Post(Action<object> action, object state)
         {
 #if UNITY_EDITOR
-            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.Enqueue(action); return; }
+            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.Enqueue(action, state); return; }
 
 #endif
 
-            Instance.queueWorker.Enqueue(action);
+            var dispatcher = Instance;
+            if (!isQuitting && !object.ReferenceEquals(dispatcher, null))
+            {
+                dispatcher.queueWorker.Enqueue(action, state);
+            }
         }
 
         /// <summary>Dispatch Synchronous action if possible.</summary>
-        public static void Send(Action action)
+        public static void Send(Action<object> action, object state)
         {
 #if UNITY_EDITOR
-            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.Enqueue(action); return; }
+            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.Enqueue(action, state); return; }
 #endif
 
             if (mainThreadToken != null)
             {
                 try
                 {
-                    action();
+                    action(state);
                 }
                 catch (Exception ex)
                 {
-                    MainThreadDispatcher.Instance.unhandledExceptionCallback(ex);
+                    var dispatcher = MainThreadDispatcher.Instance;
+                    if (dispatcher != null)
+                    {
+                        dispatcher.unhandledExceptionCallback(ex);
+                    }
                 }
             }
             else
             {
-                Post(action);
+                Post(action, state);
             }
         }
 
@@ -217,7 +258,32 @@ namespace UniRx
             }
             catch (Exception ex)
             {
-                MainThreadDispatcher.Instance.unhandledExceptionCallback(ex);
+                var dispatcher = MainThreadDispatcher.Instance;
+                if (dispatcher != null)
+                {
+                    dispatcher.unhandledExceptionCallback(ex);
+                }
+            }
+        }
+
+        /// <summary>Run Synchronous action.</summary>
+        public static void UnsafeSend<T>(Action<T> action, T state)
+        {
+#if UNITY_EDITOR
+            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.UnsafeInvoke(action, state); return; }
+#endif
+
+            try
+            {
+                action(state);
+            }
+            catch (Exception ex)
+            {
+                var dispatcher = MainThreadDispatcher.Instance;
+                if (dispatcher != null)
+                {
+                    dispatcher.unhandledExceptionCallback(ex);
+                }
             }
         }
 
@@ -234,8 +300,58 @@ namespace UniRx
                 // call from other thread
                 if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.PseudoStartCoroutine(routine); return; }
 #endif
-                
-                Instance.queueWorker.Enqueue(() => Instance.StartCoroutine_Auto(routine));
+
+                var dispatcher = Instance;
+                if (!isQuitting && !object.ReferenceEquals(dispatcher, null))
+                {
+                    dispatcher.queueWorker.Enqueue(_ =>
+                    {
+                        var dispacher2 = Instance;
+                        if (dispacher2 != null)
+                        {
+                            (dispacher2 as MonoBehaviour).StartCoroutine(routine);
+                        }
+                    }, null);
+                }
+            }
+        }
+
+        public static void StartUpdateMicroCoroutine(IEnumerator routine)
+        {
+#if UNITY_EDITOR
+            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.PseudoStartCoroutine(routine); return; }
+#endif
+
+            var dispatcher = Instance;
+            if (dispatcher != null)
+            {
+                dispatcher.updateMicroCoroutine.AddCoroutine(routine);
+            }
+        }
+
+        public static void StartFixedUpdateMicroCoroutine(IEnumerator routine)
+        {
+#if UNITY_EDITOR
+            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.PseudoStartCoroutine(routine); return; }
+#endif
+
+            var dispatcher = Instance;
+            if (dispatcher != null)
+            {
+                dispatcher.fixedUpdateMicroCoroutine.AddCoroutine(routine);
+            }
+        }
+
+        public static void StartEndOfFrameMicroCoroutine(IEnumerator routine)
+        {
+#if UNITY_EDITOR
+            if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.PseudoStartCoroutine(routine); return; }
+#endif
+
+            var dispatcher = Instance;
+            if (dispatcher != null)
+            {
+                dispatcher.endOfFrameMicroCoroutine.AddCoroutine(routine);
             }
         }
 
@@ -245,7 +361,15 @@ namespace UniRx
             if (!ScenePlaybackDetector.IsPlaying) { EditorThreadDispatcher.Instance.PseudoStartCoroutine(routine); return null; }
 #endif
 
-            return Instance.StartCoroutine_Auto(routine);
+            var dispatcher = Instance;
+            if (dispatcher != null)
+            {
+                return (dispatcher as MonoBehaviour).StartCoroutine(routine);
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static void RegisterUnhandledExceptionCallback(Action<Exception> exceptionCallback)
@@ -253,7 +377,7 @@ namespace UniRx
             if (exceptionCallback == null)
             {
                 // do nothing
-                Instance.unhandledExceptionCallback = Stubs.Ignore<Exception>;
+                Instance.unhandledExceptionCallback = Stubs<Exception>.Ignore;
             }
             else
             {
@@ -264,8 +388,13 @@ namespace UniRx
         ThreadSafeQueueWorker queueWorker = new ThreadSafeQueueWorker();
         Action<Exception> unhandledExceptionCallback = ex => Debug.LogException(ex); // default
 
+        MicroCoroutine updateMicroCoroutine = null;
+        MicroCoroutine fixedUpdateMicroCoroutine = null;
+        MicroCoroutine endOfFrameMicroCoroutine = null;
+
         static MainThreadDispatcher instance;
         static bool initialized;
+        static bool isQuitting = false;
 
         public static string InstanceName
         {
@@ -318,17 +447,30 @@ namespace UniRx
                     throw ex;
                 }
 
+                if (isQuitting)
+                {
+                    // don't create new instance after quitting
+                    // avoid "Some objects were not cleaned up when closing the scene find target" error.
+                    return;
+                }
+
                 if (dispatcher == null)
                 {
-                    instance = new GameObject("MainThreadDispatcher").AddComponent<MainThreadDispatcher>();
+                    // awake call immediately from UnityEngine
+                    new GameObject("MainThreadDispatcher").AddComponent<MainThreadDispatcher>();
                 }
                 else
                 {
-                    instance = dispatcher;
+                    dispatcher.Awake(); // force awake
                 }
-                DontDestroyOnLoad(instance);
-                mainThreadToken = new object();
-                initialized = true;
+            }
+        }
+
+        public static bool IsInMainThread
+        {
+            get
+            {
+                return (mainThreadToken != null);
             }
         }
 
@@ -340,26 +482,70 @@ namespace UniRx
                 mainThreadToken = new object();
                 initialized = true;
 
-                // Added for consistency with Initialize()
+#if (ENABLE_MONO_BLEEDING_EDGE_EDITOR || ENABLE_MONO_BLEEDING_EDGE_STANDALONE)
+                if (UniRxSynchronizationContext.AutoInstall)
+                {
+                    SynchronizationContext.SetSynchronizationContext(new UniRxSynchronizationContext());
+                }
+#endif
+
+                updateMicroCoroutine = new MicroCoroutine(ex => unhandledExceptionCallback(ex));
+                fixedUpdateMicroCoroutine = new MicroCoroutine(ex => unhandledExceptionCallback(ex));
+                endOfFrameMicroCoroutine = new MicroCoroutine(ex => unhandledExceptionCallback(ex));
+
+                StartCoroutine(RunUpdateMicroCoroutine());
+                StartCoroutine(RunFixedUpdateMicroCoroutine());
+                StartCoroutine(RunEndOfFrameMicroCoroutine());
+
                 DontDestroyOnLoad(gameObject);
             }
             else
             {
-                if (cullingMode == CullingMode.Self)
+                if (this != instance)
                 {
-                    Debug.LogWarning("There is already a MainThreadDispatcher in the scene. Removing myself...");
-                    // Destroy this dispatcher if there's already one in the scene.
-                    DestroyDispatcher(this);
+                    if (cullingMode == CullingMode.Self)
+                    {
+                        // Try to destroy this dispatcher if there's already one in the scene.
+                        Debug.LogWarning("There is already a MainThreadDispatcher in the scene. Removing myself...");
+                        DestroyDispatcher(this);
+                    }
+                    else if (cullingMode == CullingMode.All)
+                    {
+                        Debug.LogWarning("There is already a MainThreadDispatcher in the scene. Cleaning up all excess dispatchers...");
+                        CullAllExcessDispatchers();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("There is already a MainThreadDispatcher in the scene.");
+                    }
                 }
-                else if (cullingMode == CullingMode.All)
-                {
-                    Debug.LogWarning("There is already a MainThreadDispatcher in the scene. Cleaning up all excess dispatchers...");
-                    CullAllExcessDispatchers();
-                }
-                else
-                {
-                    Debug.LogWarning("There is already a MainThreadDispatcher in the scene.");
-                }
+            }
+        }
+
+        IEnumerator RunUpdateMicroCoroutine()
+        {
+            while (true)
+            {
+                yield return null;
+                updateMicroCoroutine.Run();
+            }
+        }
+
+        IEnumerator RunFixedUpdateMicroCoroutine()
+        {
+            while (true)
+            {
+                yield return YieldInstructionCache.WaitForFixedUpdate;
+                fixedUpdateMicroCoroutine.Run();
+            }
+        }
+
+        IEnumerator RunEndOfFrameMicroCoroutine()
+        {
+            while (true)
+            {
+                yield return YieldInstructionCache.WaitForEndOfFrame;
+                endOfFrameMicroCoroutine.Run();
             }
         }
 
@@ -417,16 +603,40 @@ namespace UniRx
 
         void Update()
         {
+            if (update != null)
+            {
+                try
+                {
+                    update.OnNext(Unit.Default);
+                }
+                catch (Exception ex)
+                {
+                    unhandledExceptionCallback(ex);
+                }
+            }
             queueWorker.ExecuteAll(unhandledExceptionCallback);
         }
 
-        void OnLevelWasLoaded(int level)
+        // for Lifecycle Management
+
+        Subject<Unit> update;
+
+        public static IObservable<Unit> UpdateAsObservable()
         {
-            // TODO clear queueWorker?
-            //queueWorker = new ThreadSafeQueueWorker();
+            return Instance.update ?? (Instance.update = new Subject<Unit>());
         }
 
-        // for Lifecycle Management
+        Subject<Unit> lateUpdate;
+
+        void LateUpdate()
+        {
+            if (lateUpdate != null) lateUpdate.OnNext(Unit.Default);
+        }
+
+        public static IObservable<Unit> LateUpdateAsObservable()
+        {
+            return Instance.lateUpdate ?? (Instance.lateUpdate = new Subject<Unit>());
+        }
 
         Subject<bool> onApplicationFocus;
 
@@ -456,6 +666,7 @@ namespace UniRx
 
         void OnApplicationQuit()
         {
+            isQuitting = true;
             if (onApplicationQuit != null) onApplicationQuit.OnNext(Unit.Default);
         }
 

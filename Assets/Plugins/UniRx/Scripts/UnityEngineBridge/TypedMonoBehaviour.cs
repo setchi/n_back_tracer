@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿#if !UNITY_5_5_OR_NEWER
+
+using UnityEngine;
 
 namespace UniRx
 {
@@ -8,6 +10,7 @@ namespace UniRx
     /// <para>I recommend use ObservableTriggers(UniRx.Triggers) instead.</para>
     /// <para>More information, see github page.</para>
     /// </summary>
+    [System.Obsolete("TypedMonoBehaviour is legacy component. use triggers instead")]
     public class TypedMonoBehaviour : MonoBehaviour
     {
         /// <summary>Awake is called when the script instance is being loaded.</summary>
@@ -92,10 +95,7 @@ namespace UniRx
         /// <summary>Called when a joint attached to the same game object broke.</summary>
         public virtual void OnJointBreak(float breakForce) { }
 
-        /// <summary>This function is called after a new level was loaded.</summary>
-        public virtual void OnLevelWasLoaded(int level) { }
-
-#if !(UNITY_IPHONE || UNITY_ANDROID)
+#if !(UNITY_IPHONE || UNITY_ANDROID || UNITY_METRO)
 
         /// <summary>OnMouseDown is called when the user has pressed the mouse button while over the GUIElement or Collider.</summary>
         public virtual void OnMouseDown() { }
@@ -201,3 +201,5 @@ namespace UniRx
 #endif
     }
 }
+
+#endif

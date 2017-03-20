@@ -1,11 +1,9 @@
-﻿// from Rx Official, but convert struct to class(for iOS AOT issue)
-
-using System;
+﻿using System;
 
 namespace UniRx
 {
     [Serializable]
-    public class Unit : IEquatable<Unit>
+    public struct Unit : IEquatable<Unit>
     {
         static readonly Unit @default = new Unit();
 

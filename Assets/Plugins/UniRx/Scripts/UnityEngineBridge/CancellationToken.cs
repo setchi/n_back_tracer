@@ -1,17 +1,20 @@
-﻿using System;
+﻿#if !(ENABLE_MONO_BLEEDING_EDGE_EDITOR || ENABLE_MONO_BLEEDING_EDGE_STANDALONE)
+
+using System;
 
 namespace UniRx
 {
-    public class CancellationToken
+    public struct CancellationToken
     {
         readonly ICancelable source;
 
-        public static CancellationToken Empty = new CancellationToken(new BooleanDisposable());
+        public static readonly CancellationToken Empty = new CancellationToken(null);
+        
+        /// <summary>Same as Empty.</summary>
+        public static readonly CancellationToken None = new CancellationToken(null);
 
         public CancellationToken(ICancelable source)
         {
-            if (source == null) throw new ArgumentNullException("source");
-
             this.source = source;
         }
 
@@ -19,7 +22,7 @@ namespace UniRx
         {
             get
             {
-                return source.IsDisposed;
+                return (source == null) ? false : source.IsDisposed;
             }
         }
 
@@ -32,3 +35,6 @@ namespace UniRx
         }
     }
 }
+
+#endif
+

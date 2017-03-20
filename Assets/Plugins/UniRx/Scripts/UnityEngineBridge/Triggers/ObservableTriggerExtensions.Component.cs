@@ -1,4 +1,9 @@
-﻿using UnityEngine;
+﻿using System; // require keep for Windows Universal App
+using UnityEngine;
+
+#if !(UNITY_4_0 || UNITY_4_1 || UNITY_4_2 || UNITY_4_3 || UNITY_4_4 || UNITY_4_5)
+using UnityEngine.EventSystems;
+#endif
 
 namespace UniRx.Triggers
 {
@@ -127,9 +132,9 @@ namespace UniRx.Triggers
 
         #endregion
 
-        #region ObservableMouseTrigger
+#if !(UNITY_IPHONE || UNITY_ANDROID || UNITY_METRO)
 
-#if !(UNITY_IPHONE || UNITY_ANDROID)
+        #region ObservableMouseTrigger
 
         /// <summary>OnMouseDown is called when the user has pressed the mouse button while over the GUIElement or Collider.</summary>
         public static IObservable<Unit> OnMouseDownAsObservable(this Component component)
@@ -180,9 +185,9 @@ namespace UniRx.Triggers
             return GetOrAddComponent<ObservableMouseTrigger>(component.gameObject).OnMouseUpAsButtonAsObservable();
         }
 
-#endif
-
         #endregion
+
+#endif
 
         #region ObservableTrigger2DTrigger
 
@@ -321,6 +326,136 @@ namespace UniRx.Triggers
 
         #endregion
 
+        // uGUI
+
+        #region ObservableEventTrigger classes
+
+        public static IObservable<BaseEventData> OnDeselectAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<BaseEventData>();
+            return GetOrAddComponent<ObservableDeselectTrigger>(component.gameObject).OnDeselectAsObservable();
+        }
+
+        public static IObservable<AxisEventData> OnMoveAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<AxisEventData>();
+            return GetOrAddComponent<ObservableMoveTrigger>(component.gameObject).OnMoveAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnPointerDownAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservablePointerDownTrigger>(component.gameObject).OnPointerDownAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnPointerEnterAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservablePointerEnterTrigger>(component.gameObject).OnPointerEnterAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnPointerExitAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservablePointerExitTrigger>(component.gameObject).OnPointerExitAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnPointerUpAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservablePointerUpTrigger>(component.gameObject).OnPointerUpAsObservable();
+        }
+
+        public static IObservable<BaseEventData> OnSelectAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<BaseEventData>();
+            return GetOrAddComponent<ObservableSelectTrigger>(component.gameObject).OnSelectAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnPointerClickAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservablePointerClickTrigger>(component.gameObject).OnPointerClickAsObservable();
+        }
+
+        public static IObservable<BaseEventData> OnSubmitAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<BaseEventData>();
+            return GetOrAddComponent<ObservableSubmitTrigger>(component.gameObject).OnSubmitAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnDragAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservableDragTrigger>(component.gameObject).OnDragAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnBeginDragAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservableBeginDragTrigger>(component.gameObject).OnBeginDragAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnEndDragAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservableEndDragTrigger>(component.gameObject).OnEndDragAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnDropAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservableDropTrigger>(component.gameObject).OnDropAsObservable();
+        }
+
+        public static IObservable<BaseEventData> OnUpdateSelectedAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<BaseEventData>();
+            return GetOrAddComponent<ObservableUpdateSelectedTrigger>(component.gameObject).OnUpdateSelectedAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnInitializePotentialDragAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservableInitializePotentialDragTrigger>(component.gameObject).OnInitializePotentialDragAsObservable();
+        }
+
+        public static IObservable<BaseEventData> OnCancelAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<BaseEventData>();
+            return GetOrAddComponent<ObservableCancelTrigger>(component.gameObject).OnCancelAsObservable();
+        }
+
+        public static IObservable<PointerEventData> OnScrollAsObservable(this UIBehaviour component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<PointerEventData>();
+            return GetOrAddComponent<ObservableScrollTrigger>(component.gameObject).OnScrollAsObservable();
+        }
+
+        #endregion
+
 #endif
+
+        #region ObservableParticleTrigger
+
+        /// <summary>OnParticleCollision is called when a particle hits a collider.</summary>
+        public static IObservable<GameObject> OnParticleCollisionAsObservable(this Component component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<GameObject>();
+            return GetOrAddComponent<ObservableParticleTrigger>(component.gameObject).OnParticleCollisionAsObservable();
+        }
+
+#if UNITY_5_4_OR_NEWER
+
+        /// <summary>OnParticleTrigger is called when any particles in a particle system meet the conditions in the trigger module.</summary>
+        public static IObservable<Unit> OnParticleTriggerAsObservable(this Component component)
+        {
+            if (component == null || component.gameObject == null) return Observable.Empty<Unit>();
+            return GetOrAddComponent<ObservableParticleTrigger>(component.gameObject).OnParticleTriggerAsObservable();
+        }
+
+#endif
+
+        #endregion
     }
 }
